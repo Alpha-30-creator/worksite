@@ -24,7 +24,7 @@ or path. The author's own facts become examples a stranger can read.
         library holds the generic content, publishing would be a transformation rather than a
         copy, which ADR 0001 rules out
 
-## [~] p2.2 — Translate the fourteen skills, do not strip them @Alpha-30-creator · 2026-11-01
+## [x] p2.2 — Translate the fourteen skills, do not strip them · 2026-11-01 · @Alpha-30-creator
 
 - **Repos:** worksite (pack)
 - **Depends on:** p2.1
@@ -38,23 +38,26 @@ or path. The author's own facts become examples a stranger can read.
   | **Real worked detail** | "this service has no test suite, so run it and keep transcripts" | re-file or re-cast, below | **unchanged** |
 
 - **Acceptance:**
-  - [ ] `skills/` holds all fourteen directories, `ws-shared` included with its `review/`,
-        `stacks/` and `trackers/` subtrees
-  - [ ] **project-specific detail is re-filed, not deleted.** Anything true of one project moves
-        into that project's own `risks/` file, which is where the pack's design already says it
-        belongs. It becomes private and better-placed; today a trap about one backend sits in a
-        pack four unrelated repos load
-  - [ ] **the examples get a consistent fictional cast** — one small invented world (a two-repo
-        SaaS, a Python AI service) reused across every pack, so examples stay concrete instead of
-        being blurred into vagueness. A reader who does not know the author's projects currently
-        learns nothing from "serves `api-repo`"; they will learn something from this
-  - [ ] every pack read against one question, pass or fail recorded per pack: **is this advice
-        still actionable for someone who has never seen the original repo?** Any item answering
-        no is rewritten or moved — not shipped
-  - [ ] the result reviewed with `ws-review`, which is the pack reviewing its own translation
-  - [ ] `scripts/check.sh` reports zero hits, zero frontmatter errors, zero broken links
-  - [ ] the author's deployed library ends up holding **this** content, not the old content —
-        otherwise publishing becomes a transformation and ADR 0001 is broken
+  - [x] `skills/` holds all fourteen directories, `ws-shared` included with its `review/`,
+        `stacks/`, `trackers/` and the new `examples/` subtrees — 46 files
+  - [x] **project-specific detail re-filed, not deleted — and it turned out there was nothing to
+        move.** The one fact scheduled for re-filing was *already* in that project's own
+        `risks/`, in a richer form recording a later exception. The shared pack's copy had gone
+        stale while the correctly-filed one stayed current, which is the sharpest possible
+        argument for the rule
+  - [x] **a consistent fictional cast** — northwind (two repos plus docs), kestrel (one repo,
+        LangGraph) and atlas (a company's conventions, schools as its tenant), covering every
+        tracker adapter. Each has a currency, a framework and a domain, because a finding proved
+        that an example without them leaves rules unanchored
+  - [x] every pack read against the question, pass or fail recorded per pack. 13 pass outright,
+        2 partial, 2 failed on a single line each — all four fixed before shipping
+  - [x] reviewed independently, in a context that had not done the translation. **8 findings, all
+        8 verified against the files, none overturned.** Three were rules this session wrote
+        hours earlier being broken by this session
+  - [x] `scripts/check.sh` zero on all three sections — and **section 2 ran for the first time
+        ever**, since no `skills/` directory had previously existed
+  - [x] the library holds **this** content: verified `identical across all 14` by per-directory
+        diff, so publishing stays a plain copy and ADR 0001 holds
 - **Notes:** around 130 occurrences across 23 files; the large majority is the first kind and is
   pure find-and-replace. The third kind is the real work and the only place quality can be lost.
   Budget a day, not an afternoon. The library improves on its own merits, independently of
