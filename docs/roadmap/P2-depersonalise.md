@@ -3,7 +3,7 @@
 **Goal:** all fourteen skill directories live here and mention no private project, repo, person
 or path. The author's own facts become examples a stranger can read.
 
-## [ ] p2.1 — Apply the source-of-truth decision
+## [x] p2.1 — Apply the source-of-truth decision · 2026-11-01 · @Alpha-30-creator
 
 - **Repos:** worksite
 - **Depends on:** —
@@ -12,14 +12,19 @@ or path. The author's own facts become examples a stranger can read.
   `ws-refine`. The remaining work is applying it.
 - **Acceptance:**
   - [x] an ADR naming the choice and what was rejected and why
-  - [ ] `ws-refine`'s "edit the library, never a deployed copy" instruction gains its third
-        clause about this repo
-  - [ ] the sync direction written into `docs/engineering/`
+  - [x] `ws-refine`'s "edit the library, never a deployed copy" instruction gained its third
+        clause: the public repo is a published artifact, never edited directly, and a fix goes in
+        the library so the publish carries it
+  - [x] the sync direction written up in
+        [`engineering/sync-direction.md`](../engineering/sync-direction.md), including the
+        load-bearing property — publishing is a plain copy, never a transformation — and the two
+        consequences: drift is prevented by automation rather than architecture, and the leak
+        guard must run on the publish path
   - [ ] the publish step itself is **p6.1**, and depends on p2.2 being finished — until the
         library holds the generic content, publishing would be a transformation rather than a
         copy, which ADR 0001 rules out
 
-## [ ] p2.2 — Translate the fourteen skills, do not strip them
+## [~] p2.2 — Translate the fourteen skills, do not strip them @Alpha-30-creator · 2026-11-01
 
 - **Repos:** worksite (pack)
 - **Depends on:** p2.1

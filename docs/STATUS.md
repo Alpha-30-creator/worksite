@@ -12,7 +12,9 @@ inside `ws-refine` rather than something anyone remembers to do.
 
 ## In progress
 
-Nothing claimed.
+| id | title | who | since | note |
+|---|---|---|---|---|
+| p2.2 | Translate the fourteen skills, do not strip them | @Alpha-30-creator | 2026-11-01 | claimed; classifying every private mention before translating |
 
 
 ## Blocked
