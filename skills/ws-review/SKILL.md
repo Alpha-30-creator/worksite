@@ -111,6 +111,12 @@ This step is what separates a review from review theatre.
 - Do not defend code because this session wrote it. That is the whole reason for step 3.
 - **A clean review of a delicate change is a reason to look yourself** — money, a cap, auth, a
   migration. Clean there usually means not looked at.
+- **A clean review that followed the brief is a result, not a failure.** A reviewer that read the
+  diff, selected its risks, ran the checks and reports no `Must` and no `Should` has done the job:
+  say so in the verdict and ship. The line above is about a *delicate* change reviewed by someone
+  who may not have looked — it is not an instruction to produce findings. Never pad a thin review.
+  A finding invented to fill a section costs the next reader their trust in the ones that are real,
+  which is the whole reason *Overturned* exists.
 
 ## 5. Close the learning loop
 
@@ -121,9 +127,14 @@ For each **confirmed** finding, ask: is this risk class already written down?
 | In a pack or the project risks | nothing to do — the system worked |
 | Not written down, and it would catch bugs in **other** projects on this stack | propose one line for `../ws-shared/stacks/<name>.md` |
 | Not written down, and it is specific to this project | propose one line for `<docs_home>/risks/common.md` or `risks/<repo>.md` |
+| **It is this change's own residue** — a citation that drifted, a count that changed, a description now narrower than the behaviour | one line in the **harvest entry**, with the change that caused it. It earns a risk line or a task only when the *mechanism* recurs across three changes |
 
 Show the exact wording, wait for a yes, then write it. Stack-pack edits go through
 `agent-sync save`; project risks are a normal docs commit.
+
+**Writing a finding down is not the same as filing a task.** A risk line records a class so the
+next review catches it; a task is work someone will do. `ws-task`'s *Where a finding belongs*
+decides which, and most confirmed findings are the first.
 
 **One line, phrased as what to look for.** Not a description of this bug — a description of
 the class. This is how the packs get good instead of staying a guess.

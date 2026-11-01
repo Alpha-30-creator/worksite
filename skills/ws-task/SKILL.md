@@ -33,7 +33,7 @@ Check it is not already there: search the tracker, and the project's scope or re
 | **New task** | Next free id. Acceptance criteria as checkable, observable outcomes. Half a day to a day of work — bigger, split it |
 | **Split** | Keep the original id for the first part, add ids for the rest; move the unmet acceptance criteria; **fix every dependency that pointed at the original**. Never split someone else's in-progress task without them |
 | **Re-scope** | Edit the acceptance criteria and add a note: `<date> re-scoped by <handle>: <why>` |
-| **Drop** | Mark dropped with the reason; anything depending on it gets re-pointed or dropped too; **then retire its track if one exists locally** (below) |
+| **Drop** | **When:** nothing has depended on it for two phases; or a shipped task has covered its consequence; or it was filed where *Where a finding belongs* would now send it elsewhere; or the board has grown past what the open work can absorb and this is the row you would not miss. Mark dropped with the reason **on the heading line**; anything depending on it gets re-pointed or dropped too; **then retire its track if one exists locally** (below) |
 | **Decision** | A task whose acceptance is a written decision record; tasks it blocks get marked blocked, with a note saying which decision |
 | **Question** | Record it where the project puts open questions, referenced from the task it blocks |
 
@@ -81,13 +81,34 @@ Nothing there → done. If the directory exists:
 Removing session state is neither implementing nor branching, so this does not breach this
 skill's boundary.
 
+## Where a finding belongs
+
+**Everything found gets recorded. Not everything found is a task.** A task is work someone will
+do, and the board is read before every claim — so a board holding rows nobody will act on charges
+every future session the time to read them again.
+
+| The finding | Where it goes |
+|---|---|
+| Something **reports success while doing the wrong thing**; a check or gate can pass without running; work would be lost; a private name or a secret could escape | **a task.** These are the ones worth interrupting a board for, and they are also the ones that read as pedantry and are not — never route one of these away because it looks small |
+| Wrong behaviour, a gap a user would hit, or something the project's stated goal needs | **a task** |
+| A wording, numbering, citation or consistency defect; authoring friction; a limitation that is honest once stated | **one line in the track's worklog entry**, or the project's limitations record where it keeps one. Not a task |
+| It exists **only because another change moved something** | the worklog entry of the change that moved it. It becomes a task when the mechanism recurs across three changes |
+
+A finding recorded in the right place is closed, not dropped. Say which place you chose in one
+line and move on: *"not filing this — it is a line in the limitations record instead"* is a
+complete answer, and it is the answer more often than filing is.
+
 ## Rules
 
 - Never implement, never branch, never touch code.
 - **Ids are never reused**, even for dropped tasks. Next id = highest ever used plus one.
 - Never change someone else's in-progress task beyond adding a note, unless they agreed.
 - Never invent a dependency; only reference ids that exist.
-- A follow-up found mid-task is filed here, not done inline — that is how scope creep starts.
+- A follow-up found mid-task is **not done inline** — that is how scope creep starts. Whether it is
+  *filed* is a second question, and *Where a finding belongs* below answers it. Letting one go, on
+  the record, is a legitimate outcome and a common one.
+- **Dropping is part of the job, not a failure.** A board that only ever grows is a board nobody
+  reads. `[-] <reason>` on the heading line is maintenance, and the reason is what makes it safe.
 - **A drop keeps branches, commits and PRs.** It retires session state only, after a yes, and
   only after the three-line worklog stub is committed.
 
