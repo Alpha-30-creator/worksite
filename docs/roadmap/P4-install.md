@@ -3,7 +3,7 @@
 **Goal:** a user says "set up worksite from this repo" and their agent does it, correctly, and
 reports honestly what happened.
 
-## [ ] p4.1 — Write the README
+## [~] p4.1 — Write the README · @Alpha-30-creator · 2026-11-01
 
 - **Repos:** worksite
 - **Depends on:** p3.2

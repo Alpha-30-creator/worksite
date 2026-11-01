@@ -585,7 +585,7 @@ a decision about its safety rules — but if a second safety-rule change comes u
   warning **is** the finding: the pack already knew the risk and wrote a reminder instead of a
   check.
 
-## [ ] p8.17 — `docs_home` doubles in four sites, and `ws-fanout` silently takes the unsafe branch
+## [~] p8.17 — `docs_home` doubles in four sites, and `ws-fanout` silently takes the unsafe branch · @Alpha-30-creator · 2026-11-01
 
 - **Repos:** worksite (pack)
 - **Depends on:** —

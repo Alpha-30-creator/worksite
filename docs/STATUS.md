@@ -13,10 +13,21 @@ inside `ws-refine` rather than something anyone remembers to do.
 
 ## In progress
 
-Nothing claimed. The three-track fanout batch is closed: p3.1, p3.2 and p6.1 all shipped, each
-harvested, each track retired and verified. Publishing is now live — `ws-refine` ends by running
-`scripts/publish.sh`, and the amended skill reached this repo through that mechanism rather than
-by hand.
+A four-track fanout batch, claimed 2026-11-01 by @Alpha-30-creator. p8.17 is the batch's only library
+track, deliberately: `agent-sync save` is a global deploy-and-push (p8.5), so a second one would
+publish the first's half-finished edits. Isolation was confirmed by reading `worktrees: true` out
+of the cartridge directly — **not** through `ws-fanout`'s grep, which is the very defect p8.17
+fixes.
+
+| id | title | repo | owns | stage |
+|---|---|---|---|---|
+| p4.1 | Write the README | worksite | `README.md` | claimed, planning |
+| p3.3 | Write the extension guides | worksite | `docs/engineering/{trackers,stacks,layout}.md` | claimed, planning |
+| p3.5 | Stale pointers and the skill count | worksite | `docs/agent/reference.md` | claimed, planning |
+| p8.17 | `docs_home` doubles in four sites | agent-library | `ws-fanout`, `ws-shared/tracks.md`, `docs/integration/cartridge-schema.md` | claimed, planning |
+
+Dropped from the batch: **p3.4** — its acceptance includes the root README's documentation list,
+which p4.1 rewrites wholesale. A file collision, so it runs after p4.1.
 
 ## Blocked
 
@@ -29,7 +40,6 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
-| p8.17 | `docs_home` doubles in four sites | **live**: `ws-fanout`'s isolation gate reads the cartridge at a path that does not exist, finds nothing, and takes the shared-working-tree branch |
 | p8.3 | Close the `ws-setup` profile gap | found by using the pack on itself |
 | p8.5 | `ws-fanout` cannot isolate work outside the project's repos | found by invoking `ws-fanout` here; blocks safe parallel work on the pack |
 | p8.8 | The journal mirror leaks the device name into a public docs home | caught by the guard refusing a real commit |
@@ -45,7 +55,6 @@ today, so they do not have to wait for P1–P7.
 | p8.21 | `machine:` has no merge semantics and no reader | the cartridge advertises per-device config and delivers a comment field |
 | p8.22 | `lite` and the tracker: two files disagree | costs an agent a wrong decision rather than an error |
 | p3.4 | The docs tree has no index | three reference pages landed and two are unreachable except from the root README |
-| p3.5 | Stale pointers and the skill count in the cartridge | three one-line fixes in files that were frozen during the batch |
 
 ## Shipped
 

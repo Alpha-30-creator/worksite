@@ -57,7 +57,7 @@ pack without reading the skills' source.
         lead that never builds — because those are the reason to adopt it
   - [x] the track and journal state model is explained well enough to resume cold
 
-## [ ] p3.3 — Write the extension guides
+## [~] p3.3 — Write the extension guides · @Alpha-30-creator · 2026-11-01
 
 - **Repos:** worksite
 - **Depends on:** p3.1
@@ -87,7 +87,7 @@ pack without reading the skills' source.
 - **Notes:** raised independently by both p3.1's and p3.2's builders. Worth doing before P3 adds
   p3.3's three extension guides.
 
-## [ ] p3.5 — Stale pointers and the skill count in the cartridge
+## [~] p3.5 — Stale pointers and the skill count in the cartridge · @Alpha-30-creator · 2026-11-01
 
 - **Repos:** worksite
 - **Depends on:** p3.1
