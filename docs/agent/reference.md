@@ -8,6 +8,12 @@ artifacts: workspace-state
 agents_file: copy
 worktrees: true
 
+shared_stores:
+  - id: agent-library
+    path: ~/.agent-sync/store
+    publish: agent-sync save
+    note: "one global save — validates, deploys to every agent, then commits and pushes the whole store"
+
 tracker:
   kind: roadmap-files
   path: docs/roadmap
@@ -123,9 +129,15 @@ The workspace root **is** the repo — a single-repo project. That matters twice
   would duplicate it. Revisit if `skills/` grows a build step.
 - **`worktrees: true`**, matching the new pack default (p8.6). Free here — a repo of Markdown
   has no dependency install to repeat, and fanout batches have run here on worktrees. What a
-  worktree cannot isolate is work in the agent-sync library, which is not in `repos:`: saving the
-  library is a global deploy-and-push, so two library tracks at once overwrite each other. The
-  rule while that is true is **at most one library track per batch**. See p8.5.
+  worktree cannot isolate is work in the agent-sync library, which is not in `repos:`, so the
+  library is **declared** in `shared_stores:` above rather than remembered as a rule
+  ([ADR 0003](../decisions/0003-shared-external-stores-are-declared-in-the-cartridge.md)).
+  `ws-fanout`'s gate reads that declaration and runs **one track per declared store per batch**;
+  `agent-sync save` belongs to that one track and is forbidden by name in every other brief,
+  because it publishes the whole store and not one track's changes.
 - **No environments and nothing deploys.** `environments: {}` is accurate, not unfinished.
-- **CI does not exist yet** (p4.3). Until it does, the hook is the only thing standing between a
-  private name and a public commit, and a contributor without the hook has nothing.
+- **CI runs `scripts/check.sh`** on every pull request and on pushes to `main` (p4.3), so the
+  pre-commit hook is no longer the only guard — a contributor who never ran
+  `git config core.hooksPath .githooks` is now caught at the PR. The honest half is unchanged:
+  both run the same `scripts/leak-patterns.txt`, so a private name nobody has added to that file
+  passes every one of them. The pattern list is the limit of what either guard can catch.

@@ -91,7 +91,7 @@ out loud what they do with no cartridge do different things, and the difference 
 | `ws-review` | works without it; asks three questions — which repos changed, what the change should do, what the stack is — and never refuses | `ws-review`:16-18 |
 | `ws-start` | offers `ws-setup` in adopt mode, then continues as best it can | `ws-start`:16 |
 | `ws-sync` | skips the generated-instructions step and says nothing | `ws-sync`:101 |
-| `ws-fanout` | **stops.** With no readable cartridge it cannot establish whether worktrees isolate the tracks, so it spawns nothing and asks for the right `docs_home` or offers `ws-setup`. With a cartridge that is merely *missing the key*, it offers to set it via `ws-refine` and refuses to invent a third option | `ws-fanout`:50-59, 61-76 |
+| `ws-fanout` | **stops.** With no readable cartridge it cannot establish whether worktrees isolate the tracks, so it spawns nothing and asks for the right `docs_home` or offers `ws-setup`. With a cartridge that is merely *missing the key*, it offers to set it via `ws-refine` and refuses to invent a third option. The same gate reads [`shared_stores`](#shared_stores) the same way: unreadable stops the whole batch, while an absent key proceeds and costs the gate its view outside `repos:` | `ws-fanout`:50-59, 61-76 |
 
 **R2 — `TODO:` is a valid value; an invented fact is not.** *"Never invent a fact to fill a
 field — a wrong fact in the cartridge is worse than a missing one, because every skill reads
@@ -198,7 +198,7 @@ worktrees: true
 | `docs_home` | path to the agent docs directory — **it ends `/agent`** | no | none | `ws-start`, `ws-plan`, `ws-verify`, `ws-wrap`, `ws-review`, `ws-ship`, `ws-setup`, `ws-refine`, `ws-fanout` | on a `lite` project, a local journal only, with no mirror and nothing on the other machine, said once when the track is created (`ws-shared/tracks.md`:77). What a **`full`** project without it does is *inferred*: the journal cannot be mirrored and `risks/`, `rules/` and `worklog/` have no location |
 | `artifacts` | `workspace-state` \| `in-repo` | no | `workspace-state` — stated (`ws-shared/tracks.md`:37) | `ws-plan`, `ws-review`, `ws-ship` | `workspace-state` — plans and journals in `<state_dir>`, never in a repo (`ws-plan`:52) |
 | `agents_file` | `copy` \| `include` \| `symlink` | no | none — *template ships* `copy` | `ws-sync` | the deployed `AGENTS.md` is not refreshed or drift-checked — *inferred* |
-| `worktrees` | boolean | no | none — *template ships* `true`, and an absent key is **not** `true` | `ws-start`, `ws-plan`, `ws-fanout` | `ws-fanout` tests that the cartridge is **readable**, then greps `^worktrees:` (`ws-fanout`:31-48). Three outcomes, all stated rather than inferred: `true` proceeds; an **absent key reads as not-`true`**, so it takes the `false` branch and will not fan out without hard per-repo ownership; an **unreadable cartridge is a stop**, not that branch — spawn nothing, and the "different repos" option is disqualified by name because its own precondition is the unread `repos:` list (`ws-fanout`:61-76) |
+| `worktrees` | boolean | no | none — *template ships* `true`, and an absent key is **not** `true` | `ws-start`, `ws-plan`, `ws-fanout` | `ws-fanout` tests that the cartridge is **readable**, then greps `^worktrees:` (`ws-fanout`:31-48). Three outcomes, all stated rather than inferred: `true` proceeds; an **absent key reads as not-`true`**, so it takes the `false` branch and will not fan out without hard per-repo ownership; an **unreadable cartridge is a stop**, not that branch — spawn nothing, and the "different repos" option is disqualified by name because its own precondition is the unread `repos:` list (`ws-fanout`:61-76). **A worktree isolates the repos in `repos:` and nothing else** — a place outside them is declared in [`shared_stores`](#shared_stores) |
 
 **`artifacts: in-repo` relocates the plan, and only the plan.** There is no key that puts the
 journal or the verify evidence in a repo: those stay ephemeral workspace state under
@@ -264,6 +264,61 @@ as plausibly under `git_flow`. Setting it is therefore a guess either way until 
 **`agents_file: symlink` is a documented value you should not choose.** *"Do not use a symlink
 even on macOS. Windows git checks a symlink out as a text file containing the path, silently, and
 the agent then has no rules"* (`ws-setup`:126-127).
+
+### `shared_stores`
+
+A place the project's work edits that is **not** one of the repos in `repos:` — a library a tool
+owns, a shared fixture store, somewhere a generated artifact is published from. It exists for one
+reason: a worktree is a checkout of a repo in `repos:`, so it isolates nothing outside them, and
+without a declaration `ws-fanout`'s gate has no way to know such a place is there. The choice of a
+top-level list, and the alternatives rejected, are in
+[ADR 0003](../decisions/0003-shared-external-stores-are-declared-in-the-cartridge.md).
+
+```yaml
+shared_stores:
+  - id: agent-library
+    path: ~/.agent-sync/store
+    publish: agent-sync save
+    note: "one global save — validates, deploys to every agent, then commits and pushes the whole store"
+```
+
+| key | type | required | default | read by | missing → |
+|---|---|---|---|---|---|
+| `shared_stores` | list of maps — **top level**, never nested inside `repos:` | no | none — *template ships* `[]` | `ws-fanout` | its gate sees no further than `repos:`, so two tracks editing the same place outside them pass as safe. Stated rather than inferred: an absent key and an empty list give the gate the same *"read, and no store declared"* answer, and that answer **proceeds** |
+| `shared_stores[].id` | string, lowercase-kebab | **conditional** — once an entry exists | none | `ws-fanout` | the entry has no name to carry — not in the gate's classification, not in a brief, not in the `- Stores:` line the gate writes at claim time — so no track can be classified against it — *inferred* |
+| `shared_stores[].path` | string, `$HOME`-relative — `~/…` or `${HOME}/…`, **never an absolute home path** | **conditional** — once an entry exists | none | `ws-fanout` | the other builders' briefs have no path to forbid by name — *inferred* |
+| `shared_stores[].publish` | string \| `null` | no | none | `ws-fanout` | the one-track-per-store cap still applies, on the same working-tree grounds as a shared checkout; what is lost is the command every *other* brief forbids by name — *inferred* |
+| `shared_stores[].note` | string | no | none | `ws-fanout` | the owning builder is told it owns the store and not why it is shared — *inferred* |
+
+**No worktree isolates a declared store, and no key says so.** An `isolated_by_worktrees:` field
+could only ever hold `false` — a worktree is a checkout of a repo in `repos:`, and this key
+describes somewhere that is not one — so the invariant is prose here rather than a field with one
+legal value that invites a reader to trust the author on the only fact the gate can derive itself
+(ADR 0003).
+
+**`publish: null` is meaningful, and is not the same as an absent `shared_stores:`.** A declared
+store with no global publish command is still outside every worktree, so the one-track-per-store
+cap still applies. `publish:` adds the second and sharper failure — one global command that
+publishes the **whole** store, so the first track to run it publishes the second track's
+half-finished edits. An absent key is the project saying nothing; `publish: null` is the project
+saying "shared, but nothing here pushes it anywhere".
+
+**A per-device path is the one shape this key cannot express.** `path` is written
+`$HOME`-relative, which is identical on every machine for a store a tool owns. A store that
+genuinely moves per device has nowhere to say so: `machine:` has no merge semantics and no reader
+([gap 7](#known-gaps)), and `device.yaml`'s `projects:` map holds project workspace roots, which a
+tool-owned store is not. Write a `TODO:` and say so in the cartridge prose (R2).
+
+**What silence costs, said plainly.** A project that declares nothing has a gate that can see no
+further than `repos:` — which is where it was before this key existed. That is why `ws-setup`
+*asks* rather than only documenting, and why the absent case is written out above instead of being
+left to R1 in general.
+
+**One reader, one writer, and that pair is the point.** `ws-fanout` is the only skill that reads
+the key; `ws-setup` asks the question in its interview and its template ships `shared_stores: []`.
+Compare [gap 1](#known-gaps) — `merge_style` is read by `ws-ship` and written by no template, so
+every project sits permanently in the missing case — and [gap 2](#known-gaps), `schema_version`,
+written by the template and read by nothing.
 
 ---
 
@@ -692,6 +747,12 @@ artifacts: workspace-state      # workspace-state (default) | in-repo
 agents_file: copy               # copy | include | symlink. copy — never symlink
 worktrees: true                 # each track its own checkout; required for ws-fanout
 
+shared_stores:                  # places the work edits that are NOT repos below. [] = none, the
+  - id: agent-library           # usual answer. ws-fanout runs one track per declared store per batch
+    path: ~/.agent-sync/store   # $HOME-relative, never an absolute home path
+    publish: agent-sync save    # the ONE global command that publishes the whole store; or null
+    note: "deploys to every agent, then commits and pushes the whole store"
+
 tracker:
   kind: roadmap-files           # selects ws-shared/trackers/roadmap-files.md
   path: docs/roadmap            # the folder of P*.md phase files
@@ -763,6 +824,21 @@ is a published copy and does not carry that change until `scripts/publish.sh` ru
 library landing it and that publish, `check.sh` §4 reports parity drift — informational, never a
 failure, and the state every change passes through (`docs/engineering/layout.md`:73).
 
+`shared_stores:` was added to the library in p8.5 and **no gap row is added for it** — it ships
+with a reader and a writer, which is what rows 1 and 2 are about. Two consequences for the numbers
+on this page, both worth stating rather than leaving to be discovered. The `ws-fanout` citations
+above (`:31-48`, `:50-59`, `:61-76`) point into the "Is isolation on?" section, which p8.5 did not
+touch; every `ws-fanout`, `ws-setup`, `ws-shared/tracks.md` and `ws-shared/reference.md` citation
+pointing *below* the sections p8.5 edited moves once the publish carries p8.5, and is recorded here
+against the commits this paragraph names, not against the live library. **`ws-setup` is in that
+list, and its sixteen citations are the largest group affected** — p8.5 inserts the shared-store
+question into its *Repos* interview question, so the symlink rule cited above as `ws-setup`:126-127
+sits ten lines lower in the library, and 126-127 there is now a table row. Re-deriving those
+numbers is a separate task: this page anchors them to the published copy, which does not move
+until `scripts/publish.sh` runs. Nothing on this page claims what `check.sh` covers: §3 resolves
+relative links and checks nothing else — not an anchor, not a line number, and not its own
+coverage.
+
 | # | Gap | Evidence | Follow-up |
 |---|---|---|---|
 | 1 | **`merge_style` is read but never defined.** `ws-ship` uses *"the project's merge style (`merge_style` in the cartridge)"*, and no template, example or adapter defines the key — so `ws-ship` always falls back to asking or to the repo's default. That fallback is its only degrade behaviour | `ws-ship`:85 | `ws-refine` should add the key to `ws-setup`'s template with its value set, or `ws-ship` should stop naming a key the schema does not have |
@@ -792,4 +868,5 @@ failure, and the state every change passes through (`docs/engineering/layout.md`
 | What a tracker adapter must answer | [`skills/ws-shared/trackers/`](../../skills/ws-shared/trackers/) |
 | Tracks, the journal, the artifact lifecycle | [`skills/ws-shared/tracks.md`](../../skills/ws-shared/tracks.md) |
 | Devices, stores, review packs, house rules | [`skills/ws-shared/reference.md`](../../skills/ws-shared/reference.md) |
+| Why a shared external store is declared here | [ADR 0003](../decisions/0003-shared-external-stores-are-declared-in-the-cartridge.md) |
 | What is still to be written in this docs tree | [`docs/roadmap/P3-reference.md`](../roadmap/P3-reference.md) |
