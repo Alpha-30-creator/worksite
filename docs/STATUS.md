@@ -35,7 +35,7 @@ A two-track fanout batch, claimed 2026-11-02.
 
 | id | title | holder | where it is |
 |---|---|---|---|
-| p8.5 | `ws-fanout` cannot isolate work outside the project's repos | @Alpha-30-creator | claimed — the batch's one library track |
+| p8.5 | `ws-fanout` cannot isolate work outside the project's repos | @Alpha-30-creator | PR open: [#9](https://github.com/Alpha-30-creator/worksite/pull/9); library saved and deployed |
 
 **Two tracks, not more, and the reason is p8.5 itself.** Every other open task on this board
 edits the agent-sync library, `agent-sync save` is a single global deploy-and-push, and worktrees
