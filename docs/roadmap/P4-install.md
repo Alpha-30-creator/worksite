@@ -31,7 +31,7 @@ reports honestly what happened.
         because `check.sh` §3 fails on a missing target. Without this criterion the links are
         never added by anyone.*
 
-## [~] p4.3 — Repo furniture · @Alpha-30-creator · 2026-11-02
+## [r] p4.3 — Repo furniture · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/8
 
 - **Repos:** worksite
 - **Depends on:** p4.1
