@@ -24,3 +24,11 @@ was.
   of `check.sh` catches it only for files that are tracked.
 - A doc asserting a capability the pack does not have yet, because the README was written from
   the plan rather than from the tree. Every README claim is checkable against the repo.
+- A publish that lands a private name the pattern file does not know — `scripts/publish.sh` runs
+  the guard twice (in a throwaway clone, then in the pre-commit hook), but both runs read the same
+  `scripts/leak-patterns.txt`, so a new private name passes both. A green publish means "no known
+  pattern", never "no private data"; the content still needs a human read before it is published.
+- A publish doing anything other than copying — a path rewrite, a substitution, a "fix" applied on
+  the way out. `publish.sh` asserts `diff -rq` library-against-candidate is silent, so this fails
+  loudly; when it does, the de-personalisation in P2 is incomplete and the fix belongs there, not
+  in the publish.
