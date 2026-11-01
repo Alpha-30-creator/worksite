@@ -14,7 +14,12 @@ working copy, this repo is a published artifact.
 - **Repos:** worksite (pack)
 - **Depends on:** p2.2
 - **Acceptance:**
-  - [~] `ws-refine` ends by copying the generic `ws-*` skills into this repo, running the leak
+  - [~] **kept partial 2026-11-02: the outstanding half is a boundary, not work.** Whether an
+        agent performs the publish unprompted is observable only in ordinary use, and it is
+        recorded as the last of the eleven entries in
+        [`records/known-limitations.md`](../records/known-limitations.md) — the pack's gates are
+        desk-verified, not live-verified. Original text follows.
+        `ws-refine` ends by copying the generic `ws-*` skills into this repo, running the leak
         guard, committing and pushing — as a step, not a suggestion
         **Mechanically proven, behaviourally outstanding.** The step is mandatory in wording and
         the command ran end to end at ship time — candidate scan, staged-tree scan, hook, commit
