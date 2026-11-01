@@ -6,19 +6,24 @@ user who installed in January can take February's version safely.
 Shaped by [ADR 0001](../decisions/0001-library-is-the-source-of-truth.md): the library is the
 working copy, this repo is a published artifact.
 
-## [~] p6.1 — Build publishing into ws-refine · @Alpha-30-creator · 2026-11-01
+## [x] p6.1 — Build publishing into ws-refine · 2026-11-01 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/3
 
 - **Repos:** worksite (pack)
 - **Depends on:** p2.2
 - **Acceptance:**
-  - [ ] `ws-refine` ends by copying the generic `ws-*` skills into this repo, running the leak
+  - [~] `ws-refine` ends by copying the generic `ws-*` skills into this repo, running the leak
         guard, committing and pushing — as a step, not a suggestion
-  - [ ] the guard runs on the publish path, since publishing is the only way content gets here
-  - [ ] publishing a skill whose content still holds a private name **fails loudly** and changes
+        **Mechanically proven, behaviourally outstanding.** The step is mandatory in wording and
+        the command ran end to end at ship time — candidate scan, staged-tree scan, hook, commit
+        `0e6481a`, real push — taking `check.sh` §4 from drift back to "ok — identical". That an
+        agent performs it unprompted on the next refinement is the half still to be observed.
+  - [x] the guard runs on the publish path, since publishing is the only way content gets here —
+        three times: the candidate clone, the real staged tree, and the pre-commit hook
+  - [x] publishing a skill whose content still holds a private name **fails loudly** and changes
         nothing in the repo
-  - [ ] `ws-refine`'s "edit the library, never a deployed copy" instruction gains its third
+  - [x] `ws-refine`'s "edit the library, never a deployed copy" instruction gains its third
         clause, so an agent cannot reasonably guess wrong about which copy to edit
-  - [ ] the publish is a plain copy with no transformation — if it needs to rewrite anything, P2
+  - [x] the publish is a plain copy with no transformation — if it needs to rewrite anything, P2
         is not finished and the fix belongs there
 - **Notes:** the friction budget for this is zero. If refining a skill becomes more steps than it
   is today, the design in ADR 0001 has failed and should be revisited rather than endured.
