@@ -22,3 +22,12 @@ Side Quests
 # from an illustrative one.
 /Users/abdur
 /home/abdur
+# Abbreviations of the private project names. Added 2026-11-01 after `vp`, `ttl`, `ae` and `ms`
+# survived the p2.2 translation and three reached the public repo: the scan matched full names
+# only. Anchored to backticks or a trailing hyphen so ordinary words are not caught.
+`vp`
+`ttl`
+`ms`
+\bvp-[a-z]
+\bttl-[a-z]
+\bms-[a-z]

@@ -56,7 +56,7 @@ Then generate and stop. No tracker, no journal, no rule skills, no risks file.
 ### Full profile
 
 1. **Identity** — project id (matching `agent-sync`'s, if linked), one-line description, short
-   prefix for the rule skills — two or three letters.
+   prefix for the rule skills — two or three letters, e.g. `nw` for northwind.
 2. **Repos** — for each: folder, GitHub owner, role (`backend` / `frontend` / `docs` / `infra` /
    `lab` / `legacy`), integration branch. Propose the list you found on disk.
 3. **Docs home** — decided by the project's shape, not by who owns the repos:
@@ -158,8 +158,8 @@ Never write first. Read, compare, show, wait.
 | AGENTS.md | symlink into docs repo | generated copy + source | change (Windows-safe) |
 | tracker | roadmap files | unchanged | leave |
 | state dir | .<project>/active-task.md | .<project>/tracks/<id>/ | migrate |
-| <prefix>-plan … <prefix>-ship | project skills | generic ws-* | retire after the loop lands |
-| risks | in a project review skill's prompt | <docs_home>/risks/common.md | extract |
+| `<prefix>`-plan … `<prefix>`-ship | project workflow skills | generic `ws-*` | retire after the loop lands |
+| risks | inline in a project review skill's prompt | `<docs_home>/risks/common.md` | extract |
 ```
 
 4. **Apply only what was approved**, one line at a time where the user wants that.
