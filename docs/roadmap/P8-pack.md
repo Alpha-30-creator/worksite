@@ -128,28 +128,10 @@ should.
 
 ## [-] p8.4 — Prove the pack copes with setups it was not written against — absorbed into p7.1 and p8.24
 
-**Dropped 2026-11-02**, body kept. Its two cheapest cases — run with no cartridge, and run
+**Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. Its two cheapest cases — run with no cartridge, and run
 against a tracker kind with no adapter — are now criteria of **p7.1**, which stands up the
 throwaway project they need. The class the rest of it was really testing, a check that cannot
 tell "read it, the answer is no" from "could not read it", is **p8.24**.
-
-- **Repos:** worksite (pack)
-- **Depends on:** p8.1
-- **Why:** every stack pack, tracker adapter and house rule was written against a handful of the
-  author's own projects. The degrade-never-fail rule is asserted everywhere and tested nowhere.
-- **Acceptance:**
-  - [ ] the loop run on a repo whose stack has **no** pack at all — tiers 1 and 3 must still
-        produce a usable review, and the missing pack must be reported, not silently skipped
-  - [ ] run with **no cartridge**: `ws-review` must ask its three questions and continue;
-        `ws-env` and `ws-sync` must work from the device file alone
-  - [ ] run against a tracker kind with no adapter — the four questions must get asked and a new
-        adapter written, with no skill edited
-  - [ ] run on a repo with no test runner, and on one with no git remote
-  - [ ] run on a monorepo, which the `repos:` list assumes does not exist
-  - [ ] each gap found becomes a fix or a stated limitation in the docs. A gap recorded as a note
-        to self does not count
-- **Notes:** distinct from p7.1. That one asks whether a stranger can install it; this asks
-  whether the pack is honest about the projects it claims to handle.
 
 ## [x] p8.5 — ws-fanout cannot isolate work that lives outside the project's repos · 2026-11-02 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/9
 
@@ -226,60 +208,11 @@ tell "read it, the answer is no" from "could not read it", is **p8.24**.
 
 **Dropped 2026-11-02**, body kept: the device name in the journal mirror is one of p8.31's items.
 
-- **Repos:** worksite (pack)
-- **Depends on:** —
-- **Why:** found by the leak guard refusing a real commit. `tracks.md` defines the journal entry
-  header as `<stage> · <date> · <device> · <handle>`, and mirrors the journal to
-  `<docs_home>/journal/<track-id>.md` so a track can be resumed on another machine. When
-  `docs_home` is **public**, that publishes the device name on every stage boundary — and a
-  device name is commonly the owner's own name, which is exactly what the guard exists to stop.
-- **The general shape:** `artifacts: workspace-state` plus a public `docs_home` is an unsafe
-  combination, and nothing in the pack notices. The mirror is also the wrong thing to publish on
-  its own merits: it is internal, ephemeral session state that `ws-ship` deletes, and it is noise
-  to anyone reading the repo.
-- **Acceptance:**
-  - [ ] the cartridge schema gains a way to say the docs home is public — or `ws-setup` asks —
-        and the loop skills do not mirror the journal when it is
-  - [ ] `tracks.md` states the local-only consequence where it describes the mirror, next to the
-        existing note about `lite` projects with no `docs_home`
-  - [ ] the journal header uses a device **alias** rather than the raw device id, so a device
-        named after its owner cannot reach a public repo through any other path
-  - [ ] `ws-setup` warns when it generates a cartridge whose `docs_home` is inside a public repo
-  - [ ] changed through `ws-refine`, with its graph audit
-- **Notes:** third finding from using the pack on itself, and the first one caught by a guard
-  rather than by reading. Mitigated here by gitignoring the mirror, which costs this project
-  cross-machine resume — acceptable for a solo repo, not a fix.
-
 ## [-] p8.9 — The graph audit cannot see whether a referenced file reached each agent — absorbed into p8.24 as its per-agent instance
 
-**Dropped 2026-11-02**, body kept. It is the same defect as p8.24 one layer down — an audit that
+**Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. It is the same defect as p8.24 one layer down — an audit that
 reports clean about something it did not read — so it is fixed in the same change, and p8.24
 carries its per-agent criteria.
-
-- **Repos:** worksite (pack)
-- **Depends on:** —
-- **Why:** found while shipping p8.2. `ws-refine`'s audit reported **clean** at the same moment
-  `ws-review` on one agent referenced `review/documentation.md` and that file was **not present in
-  that agent's deployment**. The audit resolves links *within the library*, where everything was
-  correct; it never asks whether the deployed copy each agent actually reads contains the file.
-- **Why it matters more than it sounds:** `ws-refine` already states the principle — "a broken
-  link is silent at runtime; the agent reads nothing and carries on as if the rulebook said
-  nothing". This is that exact failure, one layer below where the audit looks. A review would have
-  run with the new pack silently absent and reported itself complete.
-- **The trigger:** a deployment that was skipped because the artifact was `conflicted`, which
-  `agent-sync save` reports but the audit does not read.
-- **Acceptance:**
-  - [ ] the audit checks the **deployed** copies, not only the library: for every file a skill
-        references, confirm it exists under each agent this project deploys to
-  - [ ] the audit fails loudly when `agent-sync status` shows any `ws-*` artifact conflicted or
-        pending, rather than auditing a library that was never deployed
-  - [ ] it reports per agent, since a file can reach two of three
-  - [ ] changed through `ws-refine`
-- **Notes:** fourth finding from using the pack on itself, and the second found by a check rather
-  than by reading. Also worth noting as a cause: a manual `cp` into a deployed copy — done earlier
-  in this session to resolve a conflict — is what made `agent-sync` treat the artifact as
-  hand-edited and skip it thereafter. The real fix for that was deleting the deployed copy and
-  letting it redeploy clean, which also re-recorded the hash correctly.
 
 ## [x] p8.10 — Cleanup exists on exactly one path, and nothing ever sweeps · 2026-11-01 · @Alpha-30-creator
 
@@ -427,53 +360,14 @@ carries its per-agent criteria.
 
 ## [-] p8.11 — `ws-wrap` clears `tracks/current` and says nothing about the id — the consumer is already fail-safe; filed because p8.10 shipped, not because anything misbehaves
 
-**Dropped 2026-11-02**, body kept. p8.10 made `ws-ship` ask rather than clean up nothing, so the
+**Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. p8.10 made `ws-ship` ask rather than clean up nothing, so the
 missing line costs a question, not a wrong answer.
-
-- **Repos:** worksite (pack)
-- **Depends on:** p8.10
-- **Why:** found while building p8.10, and it is the non-fanout half of that task's gap 1.
-  `ws-wrap` step 3 clears `tracks/current` on **all three** paths — keep, hand over and release —
-  while deliberately keeping the track directory. So the next `ws-ship` on that track has no
-  `current` to read. p8.10 made `ws-ship` resolve that case gracefully (it asks rather than
-  cleaning up nothing), but `ws-wrap` still hands the user a track with no statement of how to
-  ship it, and `ws-wrap` was outside p8.10's owned files.
-- **Acceptance:**
-  - [ ] `ws-wrap`'s Keep / Hand over / Release table says, once: a later `ws-ship` must be given
-        the track id in the invocation, because `current` has been cleared
-  - [ ] the resume note it writes carries the id in a form that can be pasted into `/ws-ship`
-  - [ ] changed through `ws-refine`, with its graph audit
-- **Notes:** one sentence and a line in a template. Small, and it closes the last channel where a
-  track is left with no id source.
 
 ## [-] p8.12 — The tracker adapters cannot answer "what is the status of id X?" — a stated limitation with an asking gate
 
-**Dropped 2026-11-02**, body kept. Recorded instead as a boundary in
+**Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. Recorded instead as a boundary in
 [`records/known-limitations.md`](../records/known-limitations.md): the sweep uses set difference
 and asks rather than removing.
-
-- **Repos:** worksite (pack)
-- **Depends on:** p8.10
-- **Why:** `ws-start`'s stale sweep (p8.10) decides whether a track is finished by a set
-  difference: an id **absent** from the adapter's open + claimed + blocked lists is treated as
-  closed. That is exact for `roadmap-files` and `tasks-file`, which grep the status markers
-  explicitly. It is **not** exact for `github-projects` and `trello`, whose list is
-  status-filtered — `github-projects` defaults to the project's to-do equivalent — so an item
-  merely moved to another status is absent too, and absence cannot distinguish done from dropped
-  from "moved somewhere else" from "never existed". The sweep ships with that limitation stated in
-  its own text and the question phrased as the weaker signal it is, which is correct but is
-  wording standing in for a capability.
-- **Acceptance:**
-  - [ ] a fifth adapter question — `status <id>` — answered by all four adapters, returning the
-        item's current state or "not found", distinguishing done from dropped
-  - [ ] `ws-start`'s sweep prefers it where the adapter answers it, and keeps the set-difference
-        approximation (with its stated caveat) only as the fallback
-  - [ ] `ws-shared/trackers/README.md`'s four questions become five, and the adapter contract in
-        the cartridge schema says so
-  - [ ] changed through `ws-refine`, with its graph audit
-- **Notes:** deliberately **not** built with p8.10 — the adapters were outside that track's owned
-  files, and keeping the sweep to data the skill had already fetched is what kept p8.10 inside its
-  own file set. This is the follow-up that turns an approximation into a contract.
 
 ## [x] p8.10 — decision record: the show-and-wait carve-out was rejected · 2026-11-01
 
@@ -525,124 +419,21 @@ a decision about its safety rules — but if a second safety-rule change comes u
 
 ## [-] p8.14 — Nothing ever enumerates the track root, so a forgotten worktree is invisible — its cheap half is absorbed into p8.32; the third sweep pass is dropped
 
-**Dropped 2026-11-02**, body kept. **p8.32** takes the half that stops the residue being created
+**Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. **p8.32** takes the half that stops the residue being created
 at all: retirement removes the parent `<id>/` directory it currently leaves behind. The third
 sweep pass — enumerate the track root, subtract live worktrees and track directories, report
 disk-only orphans with their size — is **dropped explicitly**: it reports residue that the cheap
 half stops producing, and it needs a resolved root, a size calculation and its own asking gate to
 do it.
 
-- **Repos:** worksite (pack)
-- **Depends on:** p8.10
-- **Why:** p8.10 added two sweep passes and both ask **git** what exists. Pass 1 walks
-  `<state_dir>/tracks/` and asks `git worktree list` per repo. Pass 2 walks `git worktree list`
-  and subtracts the track directories. Neither ever reads the **track root directory itself**, so
-  a directory under `<project>-tracks/` that git has forgotten is enumerated by nothing. Pass 2's
-  stated purpose is "the residue of a folder deleted by hand" — but git still *lists* such a
-  worktree until it is pruned, which is what pass 2 catches. The reverse case, git pruned and the
-  folder still on disk, has no pass at all.
-- **Confirmed, not hypothetical:** on one of the author's own projects,
-  `<project>-tracks/<id>/<repo>/dist` — 9.6M — with the task shipped and harvested four days
-  earlier, its track directory gone, and all three repos' `worktree list` showing only their
-  primary checkout. Both passes report nothing stale. It had survived every `ws-start` since.
-- **The mechanism is now established — found by shipping the p3.1/p3.2/p6.1 batch.** `ws-start`
-  creates the worktree at `<root>/<id>/<repo>`, so it creates the parent `<id>/` as a side effect.
-  `git worktree remove` removes `<repo>`, which is the worktree; **nothing removes the parent.**
-  Retiring all three tracks of that batch left `<root>/p3.1`, `<root>/p3.2` and `<root>/p6.1` on
-  disk as empty shells, with git knowing of no worktrees and `.worksite/tracks/` empty — so both
-  sweep passes reported nothing stale while three directories sat there. Benign while empty; that
-  same shell is what a later build fills with gitignored output, which is the 9.6M case above. So
-  the fix is two parts: the third pass below, and retirement removing the parent it leaves empty.
-- **One candidate is ruled out, recorded so nobody re-derives it.** Tested: a clean
-  `git worktree remove` deletes gitignored content along with the worktree, and refuses only on
-  untracked files that are **not** ignored — so the documented removal path does not itself leave
-  build output behind.
-- **Acceptance:**
-  - [ ] a third pass: list the entries of the track root, subtract both the live worktree ids and
-        the track directories, and report what is left as a disk-only orphan, with its size —
-        size is what makes it worth acting on
-  - [ ] *Retiring a track* removes the parent `<id>/` directory when removing its last worktree
-        leaves it empty — the cheaper half of this fix, and it stops the residue being created at
-        all rather than only reporting it afterwards
-  - [ ] a pass that cannot resolve the track root says so, rather than finding nothing silently.
-        It depends on p8.15 for a root it can name
-  - [ ] same asking rules as the other two passes: shown, never removed without a yes. A directory
-        that still contains a working `.git` is **not** a disk-only orphan and is not offered
-  - [ ] the sweep's own text states which of the three passes finds which residue, so the next
-        person extending it can tell whether a case is covered
-  - [ ] proven against fixtures, by execution: a worktree removed with `--force`, and one
-        `rm -rf`'d then pruned. Reading the passes is what missed this
-  - [ ] changed through `ws-refine`, with its graph audit
-- **Notes:** the **eighth** instance of the recurring shape, with a twist worth naming: here the
-  rule and its executing path both exist, and the path cannot see the state. Asking git about
-  residue git has forgotten is the precise failure. Second finding produced by explaining the
-  pack's own layout rather than by running a check.
-
 ## [-] p8.15 — The worktree root is a relative path with no defined base — absorbed into p8.32, the merged worktree-hygiene task
 
 **Dropped 2026-11-02**, body kept: resolving the root once instead of seven literals is p8.32's
 other half.
 
-- **Repos:** worksite (pack)
-- **Depends on:** —
-- **Why:** `ws-start` creates worktrees with
-  `git -C <repo> worktree add "../<project>-tracks/$id/<repo>"`. `git -C` changes directory first,
-  so `../` is relative to **the repo**, which in a multi-repo workspace means
-  `<workspace>/<project>-tracks/`. On one of the author's multi-repo projects the root is actually
-  a **sibling of the workspace** — what you get resolving `../` from the workspace root instead.
-  The literal appears in seven places across `ws-start` and `ws-shared/tracks.md`, and no line in
-  the pack says what it is relative to, so both readings are defensible and two agents on one
-  project can create two roots.
-- **Why it stayed invisible:** every consumer re-derives paths from `git worktree list`, which
-  returns absolute paths, so retirement and both sweep passes work under either reading. What
-  breaks is anything needing the root as a **place**: the `- Worktrees:` line in `task.md`, whose
-  reader is a cold session with no cwd; the `root="<project>-tracks"` segment match in the sweep's
-  awk, which matches that name under any parent and so cannot tell two roots apart; and p8.14's
-  disk pass, which cannot list a directory it cannot name.
-- **Acceptance:**
-  - [ ] the worktree root becomes a cartridge key with a stated default, resolved to an absolute
-        path once per session — one definition, not seven literals
-  - [ ] `task.md`'s `- Worktrees:` line records absolute paths
-  - [ ] every site that writes or names the root reads the resolved value
-  - [ ] `ws-setup` writes the key, and states where the root lands in the **single-repo** case,
-        where it is necessarily outside the workspace and cannot be otherwise
-  - [ ] a project with an existing root under the other reading is detected and reported, rather
-        than a second root being created beside it
-  - [ ] changed through `ws-refine`, with its graph audit
-- **Notes:** **not** the usual shape, and recorded for that reason. This is an under-specified
-  value rather than a rule with no executor — the pack never decided the thing, and git's absolute
-  paths hid the consequence. The defects dogfooding finds are not all one kind.
-
 ## [-] p8.16 — Inside a git repo, the state dir rests on one gitignore line nothing re-asserts — absorbed into p8.31, the merged leak-surface task
 
 **Dropped 2026-11-02**, body kept: the `git check-ignore` assertion is p8.31's first item.
-
-- **Repos:** worksite (pack)
-- **Depends on:** —
-- **Why:** state is normally uncommittable **by construction** — the workspace root is not a git
-  repo, so there is nothing to commit it to. In the **single-repo layout**, which the pack
-  supports, the root *is* the repo and that structural guarantee is replaced by a line in
-  `.gitignore`. `ws-setup` adds it once at setup; nothing ever checks it is still there. So the
-  pack's strongest safety property degrades, on a supported layout, to someone remembering —
-  the exact pattern `ws-shared/tracks.md` rejects when it argues for the journal.
-- **What it costs if the line goes:** `<state_dir>/tracks/<id>/` holds `task.md`, `plan.md`,
-  `journal.md` and `verify/`. The journal format embeds the device name (p8.8), so on a public
-  repo this is a leak, not untidiness. **This repo is that case**, and its cartridge says *"Do not
-  remove that line"* in bold — a bold reminder standing in for a check the pack would demand
-  anywhere else.
-- **Acceptance:**
-  - [ ] when `state_dir` is inside a git repo, something asserts the ignore rule instead of
-        trusting it. `git check-ignore -q <state_dir>` is the whole test
-  - [ ] it runs where it is seen before damage: the project's own `verify` where there is one,
-        `ws-start` otherwise
-  - [ ] `ws-setup` states the fragility when it generates this layout, rather than adding the line
-        silently
-  - [ ] `scripts/check.sh` in this repo gains it, as the first consumer
-  - [ ] proven by deleting the line and watching the check fail — not by reading it
-  - [ ] changed through `ws-refine`, with its graph audit
-- **Notes:** smallest of the three and the only one with a one-line test. The cartridge's bold
-  warning **is** the finding: the pack already knew the risk and wrote a reminder instead of a
-  check.
 
 ## [x] p8.17 — `docs_home` doubles in four sites, and `ws-fanout` silently takes the unsafe branch · 2026-11-02 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/7
 
@@ -680,158 +471,32 @@ other half.
 
 ## [-] p8.18 — Two rules in `tracks.md` rest on wrong premises — both are recorded as boundaries in the limitations record instead
 
-**Dropped 2026-11-02**, body kept. Not named either way in the approved target shape; dropped
+**Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. Not named either way in the approved target shape; dropped
 rather than left open because both of its items are among the eleven sentences in
 [`records/known-limitations.md`](../records/known-limitations.md) — the no-upstream refusal is
 deliberately conservative, and an `in-repo` project's journal does not travel. Each refuses or
 costs something knowingly, neither reports success while doing the wrong thing, so neither is a
 defect by this phase's new goal line.
 
-- **Repos:** worksite (pack)
-- **Depends on:** p8.10
-- **Why:** both were found by *using* the retirement path, not by reading it, and both state a
-  reason that is not true.
-- **The no-upstream refusal tests a proxy.** *Retiring a track* refuses a worktree whose branch has
-  no upstream, on the stated grounds that "those commits exist nowhere else". p6.1's library branch
-  was merged locally into `main` and pushed via `main`, so it had no upstream of its own while both
-  its commits were reachable from `origin/main`. The guard therefore refuses safe work, and the
-  operator's only escape is to override a safety check — which is how a check becomes routinely
-  bypassed. The property it wants is reachability from any remote-tracking ref.
-- **The `in-repo` mirror exemption rests on a false premise.** `tracks.md`:76 exempts
-  `artifacts: in-repo` projects from the journal mirror because "the task branch already carries the
-  files". p3.1 established that `in-repo` relocates **the plan, and only the plan** — the journal
-  stays ephemeral workspace state and is deleted at ship whatever `artifacts` says. So the branch
-  carries the plan, not the journal, and an `in-repo` project is exempted from the mirror while
-  having no way at all to carry its journal between machines.
-- **Acceptance:**
-  - [ ] the refusal tests whether HEAD is reachable from a remote-tracking ref, and still refuses
-        when it is not; the message says which ref proved it
-  - [ ] the `in-repo` exemption is either corrected (mirror the journal anyway) or kept with the
-        real consequence stated — an `in-repo` project's journal does not travel
-  - [ ] every caller of *Retiring a track* still reads one definition, not a copy
-  - [ ] changed through `ws-refine`, with its graph audit
-- **Notes:** the second item is a **cross-track** finding: p3.2 quoted the pack faithfully and p3.1
-  documented the mechanism faithfully, and only the two together show the pack wrong. Neither
-  reviewer could have seen it from one track.
-
 ## [-] p8.19 — The cartridge cannot hold what the pack already asks for — absorbed into p8.33, the merged cartridge-honesty task
 
 **Dropped 2026-11-02**, body kept: `merge_style` and the rule-skill prefix are p8.33's first two items.
-
-- **Repos:** worksite (pack)
-- **Depends on:** p3.1
-- **Why:** p3.1's ledger found five things the pack reads, collects or names with **no key to land
-  in**. Each one is a question an agent asks every time, or a value nobody can record.
-- `ws-setup`:58-59 interviews for a one-line project description and a rule-skill prefix, and
-  neither has a key. `ws-fanout`:192 then briefs builders to read `<prefix>-<area>` skills — so the
-  prefix is load-bearing for a skill that cannot look it up.
-- `merge_style` is read at `ws-ship`:85 and written by no template, so **every project is in the
-  missing case** and the fallback is the key's only behaviour.
-- `repos[].role` enumerates six values at `ws-setup`:60-61 and is consumed nowhere.
-- Collaborators live in `<state_dir>/me`, which is local and uncommitted, so "two people work on
-  this project" is unrecordable — confirmed by a blind reader who had to put it in prose.
-- **Acceptance:**
-  - [ ] each of the five is resolved **in one direction and stated**: given a key, or removed, or
-        documented as deliberately out of scope with the reason. No silent third option
-  - [ ] `merge_style` specifically: added to `ws-setup`'s template with a value set, or `ws-ship`
-        stops naming it — a key that only ever falls back is worse than no key
-  - [ ] p3.1's affected gap rows updated or closed to match
-  - [ ] changed through `ws-refine`, with its graph audit
 
 ## [-] p8.20 — Keys that exist but cannot express the ordinary shape — absorbed into p8.33, the merged cartridge-honesty task
 
 **Dropped 2026-11-02**, body kept: `owned_by`'s permissive degrade and the `lite` disagreement carry over; the rest is recorded as a boundary.
 
-- **Repos:** worksite (pack)
-- **Depends on:** p3.1
-- **Why:** distinct from p8.19 and worse. These keys exist and their documented contract **excludes
-  the values a writer most wants to set**, so an author invents schema and is never told it was
-  ignored.
-- **`tracker.lists` holds two lists and only two** — open and in progress. A three-list Trello board
-  is the ordinary shape, and the adapter asks where a finished card goes **every task, forever**,
-  with no way to pre-answer it. A blind reader invented `done:` relying on unknown-keys-are-ignored
-  and expected it to do nothing. Called the sharpest authoring gap on the schema page.
-- **`tracker.statuses` has no documented shape** — the page declares it schema-less.
-- **`house_rules.owned_by` is `me | company`**, which does not cover a small team that collectively
-  authors its own rules; and an absent or `TODO:` value degrades to `me`, the **permissive** branch,
-  so `ws-refine` proposes rule changes it may not be entitled to, with no error and no prompt.
-- **There is no way to say "this command exists, do not run it"** — `null` means the repo does not
-  have it, which is a different claim.
-- **Acceptance:**
-  - [ ] `tracker.lists` accepts the finished-card list, or the trello adapter states in its own text
-        that it cannot and will ask every time
-  - [ ] `owned_by` covers the small-team case, and its permissive degrade is either reversed or
-        warned about where it is read
-  - [ ] a documented way to express a command that exists and must not be run, or a stated decision
-        that the pack will not model it
-  - [ ] `tracker.statuses` gets a shape or is removed
-  - [ ] changed through `ws-refine`, with its graph audit
-
 ## [-] p8.21 — `machine:` has no merge semantics and no reader — absorbed into p8.33, the merged cartridge-honesty task
 
 **Dropped 2026-11-02**, body kept: `machine:` being notes-only is stated in the schema by p8.33.
-
-- **Repos:** worksite (pack)
-- **Depends on:** p3.1
-- **Why:** the key is named and keyed off `device.yaml`'s `device:` id
-  (`ws-shared/reference.md`:77, 188), but **no skill is documented as applying a device block over
-  the top-level keys**. p3.1 refused to invent a merge rule and documented the only dependable use
-  as a free-text `note:`. So the cartridge advertises per-device configuration and delivers a
-  comment field.
-- **Acceptance:**
-  - [ ] decided either way and written down: `machine:` merges over the top-level keys, with the
-        rule stated and a skill that applies it — or it carries notes only, and says so where it is
-        documented so nobody writes `machine.<device>.repos[].dir` and gets silence
-  - [ ] if it merges: which keys may be overridden, and what happens to a list or a map
-  - [ ] p3.1's gap updated or closed
-  - [ ] changed through `ws-refine`, with its graph audit
-- **Notes:** a blind reader's brief asked for a per-device repo path and the schema page **stopped it
-  writing one**, correctly, because workspace paths resolve from `device.yaml`. That is the page
-  working; the key still promises more than it does.
 
 ## [-] p8.22 — `lite` and the tracker: two files disagree — absorbed into p8.33, the merged cartridge-honesty task
 
 **Dropped 2026-11-02**, body kept: the `lite` contradiction is p8.33's last item.
 
-- **Repos:** worksite (pack)
-- **Depends on:** —
-- **Why:** `ws-setup`:54 says a `lite` profile gets no tracker; `ws-shared/trackers/tasks-file.md`:3
-  calls itself the `lite` default. An outright contradiction, found by p3.1's ledger. The schema page
-  resolves it in favour of "a tracker key on a `lite` cartridge is read exactly like any other" and
-  records the disagreement as a gap.
-- **Acceptance:**
-  - [ ] one of the two sentences changes; the pack says one thing about `lite` and trackers
-  - [ ] p3.1's gap updated or closed
-  - [ ] changed through `ws-refine`, with its graph audit
-- **Notes:** small, and the kind of thing that costs an agent a wrong decision rather than an error.
-
 ## [-] p8.23 — The pack's rule numbers are cited everywhere and defined nowhere, and `R3` means two things — label and citation hygiene, and the citation practice itself is being removed, which ends the class
 
-**Dropped 2026-11-02**, body kept.
-
-- **Repos:** worksite (pack)
-- **Depends on:** p3.1
-- **Why:** `R1`–`R5` are cited in five library files — `ws-refine`:38/67/69, `ws-setup`:89/182/190,
-  `ws-shared/trackers/README.md`:10/12, `ws-start`:16 — and **nothing in the library defines them.**
-  The only definitions anywhere are on `docs/integration/cartridge-schema.md`, which the skills
-  cannot read and which postdates them.
-- **And the numbers already collide.** `ws-shared/trackers/README.md`:10 uses **R3** for "an unknown
-  *kind* is not an error"; the schema page defines **R3** as "unknown *keys* are ignored". Two rules,
-  one label, both published. **p3.1 introduced the collision** — it invented definitions for labels
-  the library was already using informally, which was a reasonable thing to do when the alternative
-  was citing undefined labels, but `R3` was taken. Nobody caught it: not the builder, not two review
-  rounds, not two blind readers, because there was no definition site to check a new definition
-  against.
-- **Acceptance:**
-  - [ ] one definition site in `ws-shared/`, listing every rule the pack cites by number
-  - [ ] the `R3` collision resolved by renumbering whichever meaning loses, in **both** the library
-        and the schema page, so no number carries two rules
-  - [ ] every existing citation checked against the new definitions — a citation that was already
-        pointing at the wrong rule is the thing to find here
-  - [ ] changed through `ws-refine`, with its graph audit
-- **Notes:** found by p3.3's planner, which needed to cite `R4` and went looking for what `R4` *is*.
-  The guides it then wrote cite `R4` by label only, define nothing, and never cite `R3` — so they do
-  not deepen it, and they are the model for what any page may do until this lands.
+**Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`.
 
 ## [ ] p8.24 — Gates that read an empty result as a pass, and the graph audit has two of them
 
@@ -909,106 +574,27 @@ defect by this phase's new goal line.
 
 ## [-] p8.26 — Three things the guard does not cover, and nothing says so — its two real items are absorbed into p8.31; the §3 fence case is recorded as a limitation
 
-**Dropped 2026-11-02**, body kept. **p8.31** takes the `disable-model-invocation` check and §1's
+**Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. **p8.31** takes the `disable-model-invocation` check and §1's
 inline allowlist. The §3 fence case is documented rather than fixed, in
 [`records/known-limitations.md`](../records/known-limitations.md).
 
-- **Repos:** worksite (pack)
-- **Depends on:** —
-- **Why:** `scripts/check.sh` is the whole test suite, so its blind spots are the project's blind
-  spots. Three were found by using it, and only the third is documented anywhere.
-- **§3 has no fence awareness.** Its extraction greps the whole file, so a bracket-paren link written
-  **inside prose or a fenced block** is resolved as a real target and fails the build. It bit p3.3
-  while that page was documenting the link checker, and then bit the worklog entry describing p3.3.
-  Either make the extraction fence-aware or document it as intended behaviour — it is currently
-  neither.
-- **Nothing asserts `disable-model-invocation: true` survives a publish.** If `ws-shared` ever loses
-  that flag the pack silently becomes fourteen invocable skills, and the README, the concepts page and
-  the cartridge all become wrong about the count in the same moment. One line of check.
-- **§1 carries an inline allowlisted string** that is not in `scripts/leak-patterns.txt`, so coverage
-  is "the listed patterns, minus the excluded files, minus one string hardcoded in the script". An
-  auditor reading the pattern file alone would not find it. `docs/engineering/layout.md` now records
-  this; the script does not.
-- **Acceptance:**
-  - [ ] §3's behaviour on a bracket-paren link in prose is either fixed or documented in the script
-        itself, not only in a guide
-  - [ ] a check that `ws-shared` still carries `disable-model-invocation: true`
-  - [ ] §1's inline allowlist is visible where coverage is defined, not only in the script body
-  - [ ] `docs/engineering/layout.md`'s coverage table stays true to whatever changes
-- **Notes:** the §3 case is the funniest and the least important; the flag check is the one with a
-  silent blast radius across three documents.
-
 ## [-] p8.27 — `ws-start` never writes the `- Stores:` line the gate reads — the consumer is already fail-safe; filed because p8.5 shipped, not because anything misbehaves
 
-**Dropped 2026-11-02**, body kept. The gate's three pre-claim inputs stand on their own and
+**Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. The gate's three pre-claim inputs stand on their own and
 anything they cannot settle is `unknown`, which is a drop — the safe answer, reached by having no
 evidence rather than by reading it, which is a cost in elegance and not in correctness.
 
-- **Repos:** worksite (pack)
-- **Depends on:** p8.5
-- **Why:** p8.5 gave `ws-fanout` a `- Stores:` line in `task.md`, written at claim time, and a
-  resumed or taken-over track is classified from it. But `ws-start` claims every single-session
-  track, and its `task.md` shape is `- Repos: <which this touches>` with no `- Stores:` line — so
-  no track claimed outside a fanout batch ever carries one. The gate still works, because the three
-  pre-claim inputs stand on their own and anything they cannot settle is `unknown`, which is a drop.
-  The cost is that the safe answer is reached by having no evidence rather than by reading it.
-- **Deliberately not fixed in p8.5**, and the reason is worth keeping: adding a line to
-  `ws-start/SKILL.md` shifts every `file:line` citation below it, and
-  `docs/integration/cartridge-schema.md` carries four `ws-start` citations. p8.5's own review found
-  exactly that defect in p8.5 — a deferral paragraph that named three files and omitted the fourth,
-  `ws-setup`, whose sixteen citations had moved. Repeating it in the same batch to save one line was
-  not worth it.
-- **Acceptance:**
-  - [ ] `ws-start` writes `- Stores:` into `task.md`, for the same classification `ws-fanout` does
-  - [ ] every `ws-start` citation on the schema page is re-derived in the same change, or the
-        deferral paragraph names `ws-start` too — **not neither**
-  - [ ] changed through `ws-refine`, with its graph audit
-- **Notes:** the first task to inherit p8.5's own lesson about its own mechanism.
-
 ## [-] p8.28 — The schema page's sixteen `ws-setup` citations moved, and the page says so instead of being right — label and citation hygiene, and the citation practice itself is being removed, which ends the class
 
-**Dropped 2026-11-02**, body kept. Its own closing question — whether the page should cite line
+**Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. Its own closing question — whether the page should cite line
 numbers at all — is the answer: it should not, and
 [`records/known-limitations.md`](../records/known-limitations.md) records that a `file:line`
 citation is advisory and the quote is the durable half.
 
-- **Repos:** worksite (pack)
-- **Depends on:** p8.5
-- **Why:** p8.5 inserted ten lines into `ws-setup/SKILL.md`'s *Repos* interview question, so every
-  `ws-setup` citation on `docs/integration/cartridge-schema.md` below that point is off by ten in
-  the library — the symlink rule cited as `ws-setup`:126-127 now sits at 136-137, and 126-127 there
-  is a table row. The page's deferral paragraph was corrected to name `ws-setup` and to say its
-  sixteen citations are the largest affected group, which is honest but is not the same as correct.
-  The citations anchor to the published copy, which moved when p8.5 published.
-- **Acceptance:**
-  - [ ] the sixteen `ws-setup` numbers re-derived against a named commit of the published copy
-  - [ ] the same pass covers the `ws-fanout`, `ws-shared/tracks.md` and `ws-shared/reference.md`
-        citations the paragraph defers — the known shifts were recorded in p8.5's review
-  - [ ] the deferral paragraph shrinks to whatever is genuinely still deferred, or goes
-  - [ ] no new citation added by this task that is not re-derived in it
-- **Notes:** this is the fifth time in one day that a `file:line` citation drifted, and the third
-  where the wrong fact was inside the sentence written to manage the drift. Worth asking in this
-  task whether the page should cite line numbers at all, rather than quoting the line.
-
 ## [-] p8.29 — `ws-fanout`'s description no longer says what it refuses — label and citation hygiene, and the citation practice itself is being removed, which ends the class
 
-**Dropped 2026-11-02**, body kept. Flagged twice and deliberately not taken twice, which is the
+**Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. Flagged twice and deliberately not taken twice, which is the
 third signal that it is not worth a track.
-
-- **Repos:** worksite (pack)
-- **Depends on:** p8.5
-- **Why:** the frontmatter says *"Refuses tracks that would touch the same files"*. Since p8.5 it
-  also refuses a second track touching a declared shared store, and drops a track whose store usage
-  cannot be determined. p8.5's builder flagged this twice and deliberately did not take it, which
-  was right: a description edit changes the pack's trigger space, and p8.1 made description
-  accuracy a rule of its own — every description must say what the skill **ends with**, and the
-  expensive skills narrow their own trigger on purpose.
-- **Acceptance:**
-  - [ ] the description names both refusals without widening the trigger
-  - [ ] checked against the collision matrix p8.1 built, so no phrase moves to a second owner
-  - [ ] changed through `ws-refine`, with its graph audit
-- **Notes:** small, and the only reason it is a task rather than a line in p8.5 is that trigger
-  space is shared by thirteen skills and is not a thing to edit in passing.
 
 ## [ ] p8.30 — Two skills give opposite instructions about pushing the library
 

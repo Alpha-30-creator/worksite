@@ -38,16 +38,6 @@ working copy, this repo is a published artifact.
 
 ## [-] p6.2 — Document how a user takes an update — absorbed into p4.2; its pull-request criterion already shipped in the README
 
-**Dropped 2026-11-02**, body kept. The convergence criterion and the locally-edited-skill
+**Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. The convergence criterion and the locally-edited-skill
 criterion are now p4.2's; the README already declines pull requests, shipped in p4.1.
 
-- **Repos:** worksite
-- **Depends on:** p6.1, p4.2
-- **Acceptance:**
-  - [ ] re-running the install over an existing copy converges, and shows a diff **before**
-        changing anything
-  - [ ] a skill the user edited locally either survives or is flagged before it is lost — never
-        silently overwritten
-  - [ ] documented in `INSTALL.md` and the README
-  - [ ] the README declines pull requests plainly: the pack is one person's way of working and
-        is shared rather than co-developed. Fork it if you want it different
