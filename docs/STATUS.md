@@ -32,10 +32,12 @@ today, so they do not have to wait for P1–P7.
 | p8.8 | The journal mirror leaks the device name into a public docs home | caught by the guard refusing a real commit |
 | p8.9 | The graph audit cannot see whether a referenced file reached each agent | the audit passed while a pack was missing from one agent |
 | p8.10 | Cleanup exists on exactly one path, and nothing ever sweeps | reported from real use: track files and worktrees survive a finished task, especially under fanout |
-| p1.2 | Prove the leak guard refuses a private name | now pickable; nothing else is safe until this is proven |
 | p3.1 | Write the cartridge schema | the highest-value doc, and it does not exist in any form |
 | p1.2 | Prove the leak guard refuses a private name | it has now refused four real commits, and missed two whole classes; worth recording properly |
 | p8.13 | `for r in <repos>` survives in three skills, one of which warns against it | reports false success, which is worse than crashing |
+| p8.14 | Nothing ever enumerates the track root | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |
+| p8.15 | The worktree root has no defined base | two defensible readings of one `../`, and two roots on one project |
+| p8.16 | State dir inside a repo rests on one gitignore line | a public repo, a device name in the journal, and nothing asserting the line |
 
 ## Shipped
 

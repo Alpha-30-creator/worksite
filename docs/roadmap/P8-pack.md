@@ -475,3 +475,103 @@ a decision about its safety rules — but if a second safety-rule change comes u
 - **Notes:** the **seventh** instance of the pack's recurring shape — a rule that exists with no
   path that executes it. Found by the lead's own grep after the review, which had declared it
   skimmed `ws-start` outside the diff hunks. A coverage gap honestly declared, not a miss.
+
+## [ ] p8.14 — Nothing ever enumerates the track root, so a forgotten worktree is invisible
+
+- **Repos:** worksite (pack)
+- **Depends on:** p8.10
+- **Why:** p8.10 added two sweep passes and both ask **git** what exists. Pass 1 walks
+  `<state_dir>/tracks/` and asks `git worktree list` per repo. Pass 2 walks `git worktree list`
+  and subtracts the track directories. Neither ever reads the **track root directory itself**, so
+  a directory under `<project>-tracks/` that git has forgotten is enumerated by nothing. Pass 2's
+  stated purpose is "the residue of a folder deleted by hand" — but git still *lists* such a
+  worktree until it is pruned, which is what pass 2 catches. The reverse case, git pruned and the
+  folder still on disk, has no pass at all.
+- **Confirmed, not hypothetical:** on one of the author's own projects,
+  `<project>-tracks/<id>/<repo>/dist` — 9.6M — with the task shipped and harvested four days
+  earlier, its track directory gone, and all three repos' `worktree list` showing only their
+  primary checkout. Both passes report nothing stale. It had survived every `ws-start` since.
+- **The mechanism is not established, and the obvious candidate is ruled out.** Tested: a clean
+  `git worktree remove` deletes gitignored content along with the worktree, and refuses only on
+  untracked files that are **not** ignored. The leftover directory there was gitignored build
+  output, so the documented removal path did not produce this. What did — a partial hand delete, a
+  `prune` after a move, a deleted `.git` file — is unknown, and does not change the fix: no pass
+  would find it however it arose. Recorded so nobody re-derives the wrong mechanism.
+- **Acceptance:**
+  - [ ] a third pass: list the entries of the track root, subtract both the live worktree ids and
+        the track directories, and report what is left as a disk-only orphan, with its size —
+        size is what makes it worth acting on
+  - [ ] a pass that cannot resolve the track root says so, rather than finding nothing silently.
+        It depends on p8.15 for a root it can name
+  - [ ] same asking rules as the other two passes: shown, never removed without a yes. A directory
+        that still contains a working `.git` is **not** a disk-only orphan and is not offered
+  - [ ] the sweep's own text states which of the three passes finds which residue, so the next
+        person extending it can tell whether a case is covered
+  - [ ] proven against fixtures, by execution: a worktree removed with `--force`, and one
+        `rm -rf`'d then pruned. Reading the passes is what missed this
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** the **eighth** instance of the recurring shape, with a twist worth naming: here the
+  rule and its executing path both exist, and the path cannot see the state. Asking git about
+  residue git has forgotten is the precise failure. Second finding produced by explaining the
+  pack's own layout rather than by running a check.
+
+## [ ] p8.15 — The worktree root is a relative path with no defined base
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Why:** `ws-start` creates worktrees with
+  `git -C <repo> worktree add "../<project>-tracks/$id/<repo>"`. `git -C` changes directory first,
+  so `../` is relative to **the repo**, which in a multi-repo workspace means
+  `<workspace>/<project>-tracks/`. On one of the author's multi-repo projects the root is actually
+  a **sibling of the workspace** — what you get resolving `../` from the workspace root instead.
+  The literal appears in seven places across `ws-start` and `ws-shared/tracks.md`, and no line in
+  the pack says what it is relative to, so both readings are defensible and two agents on one
+  project can create two roots.
+- **Why it stayed invisible:** every consumer re-derives paths from `git worktree list`, which
+  returns absolute paths, so retirement and both sweep passes work under either reading. What
+  breaks is anything needing the root as a **place**: the `- Worktrees:` line in `task.md`, whose
+  reader is a cold session with no cwd; the `root="<project>-tracks"` segment match in the sweep's
+  awk, which matches that name under any parent and so cannot tell two roots apart; and p8.14's
+  disk pass, which cannot list a directory it cannot name.
+- **Acceptance:**
+  - [ ] the worktree root becomes a cartridge key with a stated default, resolved to an absolute
+        path once per session — one definition, not seven literals
+  - [ ] `task.md`'s `- Worktrees:` line records absolute paths
+  - [ ] every site that writes or names the root reads the resolved value
+  - [ ] `ws-setup` writes the key, and states where the root lands in the **single-repo** case,
+        where it is necessarily outside the workspace and cannot be otherwise
+  - [ ] a project with an existing root under the other reading is detected and reported, rather
+        than a second root being created beside it
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** **not** the usual shape, and recorded for that reason. This is an under-specified
+  value rather than a rule with no executor — the pack never decided the thing, and git's absolute
+  paths hid the consequence. The defects dogfooding finds are not all one kind.
+
+## [ ] p8.16 — Inside a git repo, the state dir rests on one gitignore line nothing re-asserts
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Why:** state is normally uncommittable **by construction** — the workspace root is not a git
+  repo, so there is nothing to commit it to. In the **single-repo layout**, which the pack
+  supports, the root *is* the repo and that structural guarantee is replaced by a line in
+  `.gitignore`. `ws-setup` adds it once at setup; nothing ever checks it is still there. So the
+  pack's strongest safety property degrades, on a supported layout, to someone remembering —
+  the exact pattern `ws-shared/tracks.md` rejects when it argues for the journal.
+- **What it costs if the line goes:** `<state_dir>/tracks/<id>/` holds `task.md`, `plan.md`,
+  `journal.md` and `verify/`. The journal format embeds the device name (p8.8), so on a public
+  repo this is a leak, not untidiness. **This repo is that case**, and its cartridge says *"Do not
+  remove that line"* in bold — a bold reminder standing in for a check the pack would demand
+  anywhere else.
+- **Acceptance:**
+  - [ ] when `state_dir` is inside a git repo, something asserts the ignore rule instead of
+        trusting it. `git check-ignore -q <state_dir>` is the whole test
+  - [ ] it runs where it is seen before damage: the project's own `verify` where there is one,
+        `ws-start` otherwise
+  - [ ] `ws-setup` states the fragility when it generates this layout, rather than adding the line
+        silently
+  - [ ] `scripts/check.sh` in this repo gains it, as the first consumer
+  - [ ] proven by deleting the line and watching the check fail — not by reading it
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** smallest of the three and the only one with a one-line test. The cartridge's bold
+  warning **is** the finding: the pack already knew the risk and wrote a reminder instead of a
+  check.
