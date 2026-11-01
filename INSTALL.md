@@ -47,13 +47,18 @@ current pack rather than an old checkout.
 ## 3. Find the library
 
 ```
-agent-sync status
+agent-sync doctor --json
 ```
 
-The library is where agent-sync keeps the canonical copy of every skill — `~/.agent-sync/store` by
-default. **If `status` fails because there is no library, stop**: the user has agent-sync installed
-but not set up, and `agent-sync setup` asks questions only they can answer. Point them at
-agent-sync's `INSTALL.md` step 3 and come back.
+The library is where agent-sync keeps the canonical copy of every skill. **Read its path out of
+that JSON's `store` field — do not assume `~/.agent-sync/store`.** It is the default, but
+`agent-sync --store <path>` overrides it, and the next step compares against this path before
+writing: if you guess it wrong, the comparison finds nothing, tells you there is nothing to lose,
+and step 5 then deletes the user's real skills.
+
+**If `storeExists` is `false`, stop**: the user has agent-sync installed but not set up, and
+`agent-sync setup` asks questions only they can answer. Point them at agent-sync's `INSTALL.md`
+step 3 and come back.
 
 ## 4. Compare before you write
 
@@ -63,7 +68,8 @@ a re-run it would destroy any change the user has made to any of these skills �
 every time, including the first time.
 
 ```bash
-LIB="$HOME/.agent-sync/store/skills"
+LIB="$(agent-sync doctor --json | node -e 'console.log(JSON.parse(require("fs").readFileSync(0,"utf8")).store)')/skills"
+[ -d "$LIB" ] || { echo "the store path did not resolve to a directory: $LIB"; exit 1; }
 for d in skills/ws-*/; do
   id="$(basename "$d")"
   if [ ! -d "$LIB/$id" ]; then
@@ -93,6 +99,10 @@ Then, by what it printed:
 
 If every skill is `CURRENT`, the pack is already installed and current. Say that and go to step 7.
 
+This comparison runs one way — over what this pack ships. A `ws-*` skill in the user's library that
+this pack does not have (one they wrote, or one retired from an older version) is not printed and
+is not touched. Nothing deletes it; just do not report the library as fully accounted for.
+
 ## 5. Add what is missing, then save once
 
 For each skill the user agreed to install:
@@ -121,10 +131,15 @@ agent-sync status
 agent-sync doctor --json
 ```
 
-In `status`, the fourteen `skill/ws-*` entries should read `synced`. In `doctor`, read the
-**`healthy`** field, not `ok` — `ok` only says the command ran, and is `true` even with work
-pending. Exit code 2 means it worked with warnings: repeat them to the user rather than swallowing
-them. If an agent they use was not detected, say so.
+In `status`, **the `skill/ws-*` entries for the skills the user agreed to install** should read
+`synced`. The full set is fourteen — thirteen workflow skills plus `ws-shared` — but if they chose
+to keep their own version of one in step 4, expect one fewer and say which. Do not re-add a skill
+to make the number come out.
+
+In `doctor --json`, **do not look for an `ok: true` and stop there** — `ok` only says the command
+ran. Read **`problems`** and **`notes`**: both empty is the healthy case, and anything in either is
+something to repeat to the user rather than swallow. Exit code 2 means it worked with warnings. If
+an agent they use was not detected, say so.
 
 ## 7. Their first project
 
@@ -133,7 +148,7 @@ project's repos, tracker and rules are.
 
 Tell the user to open the project they want to use this on and run **`/ws-setup`** (`$ws-setup` in
 Codex). It interviews them and generates the cartridge, the state directory and the workspace
-instruction files. Two worked examples are in `skills/ws-shared/examples/`.
+instruction files. Worked cartridges are in `skills/ws-shared/examples/`, alongside a device file and a secrets manifest.
 
 After that, **`/ws-start`** begins the loop.
 
