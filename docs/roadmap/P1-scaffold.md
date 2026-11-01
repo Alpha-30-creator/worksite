@@ -29,11 +29,20 @@ copying files out of a personal setup.
 - **Repos:** worksite
 - **Depends on:** p1.1
 - **Acceptance:**
-  - [ ] `git config core.hooksPath .githooks` documented in the contributor docs
+  - [x] `git config core.hooksPath .githooks` documented in the contributor docs — **delivered by
+        p4.3, ticked 2026-11-02:** `CONTRIBUTING.md` on `main` opens with *Step one, before any
+        commit* and that exact command
   - [ ] a deliberate test commit containing a private project name is **refused**, with the file
         and line printed — recorded in `docs/records/`
   - [ ] `LICENSE` and the public npm scope `@abdur-codes/...` do **not** trip the guard
-  - [ ] the same check runs in CI, so a contributor without the hook cannot merge a leak
+  - [x] the same check runs in CI, so a contributor without the hook cannot merge a leak —
+        **delivered by p4.3, ticked 2026-11-02:** `.github/workflows/check.yml` on `main` runs
+        `bash scripts/check.sh` on every pull request into `main` and every push to `main`
+- **Re-scoped 2026-11-02** by the owner after an independent audit: two of the four criteria were
+  p4.3's deliverables and p4.3 shipped on 2026-11-02, so they are ticked above on the evidence
+  named. What remains is the pair this task is actually about — the recorded refusal and the
+  false-positive test. Requiring the CI check before a merge is branch protection, which is a
+  repo setting rather than a criterion here.
 - **Notes:** the guard is in `scripts/check.sh` section 1; patterns in
   `scripts/leak-patterns.txt`. A false negative here is the one failure mode that cannot be
   undone after the repo is public.

@@ -19,11 +19,25 @@ reports honestly what happened.
 
 - **Repos:** worksite
 - **Depends on:** p4.1
+- **Absorbed 2026-11-02** by the owner after an independent audit: **p6.2**'s two real criteria
+  (an update converges rather than duplicating; a locally edited skill survives or is flagged)
+  and **p2.3**'s one undelivered criterion (a second example cartridge covering a hosted
+  tracker). Both of those tasks are dropped and their bodies kept. p6.2's remaining criterion —
+  the README declining pull requests — shipped with p4.1.
 - **Acceptance:**
   - [ ] addressed to the agent, in the same voice as agent-sync's `INSTALL.md`
   - [ ] checks prerequisites and **stops** rather than installing runtimes itself
   - [ ] installs or repairs agent-sync, then places the pack in the user's library and saves
-  - [ ] safe to re-run: converges instead of duplicating
+  - [ ] safe to re-run: converges instead of duplicating, and shows a diff **before** changing
+        anything *(absorbed from p6.2, 2026-11-02)*
+  - [ ] a skill the user edited locally either survives or is flagged before it is lost — never
+        silently overwritten *(absorbed from p6.2, 2026-11-02)*
+  - [ ] a **second** example cartridge covering a shape the first does not: a hosted tracker
+        (`github-projects` or `trello`), `artifacts: in-repo`, and a non-empty `machine:` — the
+        install is the first thing that needs one, since a stranger's project is likelier to be
+        the shape neither existing example tests *(absorbed from p2.3, 2026-11-02 — its one
+        undelivered criterion; p3.1's blind readers wrote two such cartridges from the schema
+        page alone and those are a usable starting point)*
   - [ ] ends by pointing at `/ws-setup` for the user's first project
   - [ ] tells the agent to report what actually happened, including failures
   - [ ] **the link from `README.md` is added by this task.** *2026-11-02 re-scoped by

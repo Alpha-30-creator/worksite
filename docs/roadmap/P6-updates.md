@@ -1,5 +1,8 @@
 # P6 — Publishing, and how users take updates
 
+**This phase is closed (2026-11-02).** p6.1 shipped; p6.2 is dropped, two of its criteria
+absorbed into p4.2 and one already delivered by the README. Nothing here is open.
+
 **Goal:** every refinement reaches the public repo without anyone remembering to send it, and a
 user who installed in January can take February's version safely.
 
@@ -11,7 +14,12 @@ working copy, this repo is a published artifact.
 - **Repos:** worksite (pack)
 - **Depends on:** p2.2
 - **Acceptance:**
-  - [~] `ws-refine` ends by copying the generic `ws-*` skills into this repo, running the leak
+  - [~] **kept partial 2026-11-02: the outstanding half is a boundary, not work.** Whether an
+        agent performs the publish unprompted is observable only in ordinary use, and it is
+        recorded as the last of the eleven entries in
+        [`records/known-limitations.md`](../records/known-limitations.md) — the pack's gates are
+        desk-verified, not live-verified. Original text follows.
+        `ws-refine` ends by copying the generic `ws-*` skills into this repo, running the leak
         guard, committing and pushing — as a step, not a suggestion
         **Mechanically proven, behaviourally outstanding.** The step is mandatory in wording and
         the command ran end to end at ship time — candidate scan, staged-tree scan, hook, commit
@@ -28,15 +36,8 @@ working copy, this repo is a published artifact.
 - **Notes:** the friction budget for this is zero. If refining a skill becomes more steps than it
   is today, the design in ADR 0001 has failed and should be revisited rather than endured.
 
-## [ ] p6.2 — Document how a user takes an update
+## [-] p6.2 — Document how a user takes an update — absorbed into p4.2; its pull-request criterion already shipped in the README
 
-- **Repos:** worksite
-- **Depends on:** p6.1, p4.2
-- **Acceptance:**
-  - [ ] re-running the install over an existing copy converges, and shows a diff **before**
-        changing anything
-  - [ ] a skill the user edited locally either survives or is flagged before it is lost — never
-        silently overwritten
-  - [ ] documented in `INSTALL.md` and the README
-  - [ ] the README declines pull requests plainly: the pack is one person's way of working and
-        is shared rather than co-developed. Fork it if you want it different
+**Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. The convergence criterion and the locally-edited-skill
+criterion are now p4.2's; the README already declines pull requests, shipped in p4.1.
+
