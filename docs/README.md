@@ -19,8 +19,18 @@ the page itself or the folder that contains it.
 
 Each row gives the page, the question it answers, and the kind of the folder it sits in — living
 means it is maintained and can drift; immutable means it is never edited once written. Folder links
-are deliberate where a collection is homogeneous: the ADRs, the roadmap phases and the worklog grow
-by file, and a list of them here would go stale by the next merge.
+are deliberate where, and only where, a collection grows by file: the ADRs, the eight roadmap
+phase files, the dated records and the worklog entries, whose list here would go stale by the next
+merge. A *fixed* reference page is always linked directly even when it sits inside such a folder —
+`roadmap/README.md` and `records/known-limitations.md` are the two, and both are rows below.
+
+**Where this classification comes from, and who owns it.** The living/immutable property is the
+pack's, specified once in its shared reference; this index restates it because knowing whether a
+page can be trusted to be current is half of finding the right page.
+[engineering/layout.md](engineering/layout.md) carries a table over the same folders and is the
+authority for everything this index leaves out of it — what belongs in each folder *here*, which
+copy of a path is authoritative, and which `check.sh` section reads it. Where the two disagree
+about a folder's contents or provenance, layout.md is right and this page is stale.
 
 ### Root of `docs/`
 
@@ -59,7 +69,8 @@ by file, and a list of them here would go stale by the next merge.
 
 | Page | The question it answers | Kind |
 |---|---|---|
-| [roadmap/](roadmap/) | What work is planned and what state is it in? The tracker itself — one file per phase, one heading per task. | living |
+| [roadmap/](roadmap/) | What work is planned, and what state is each piece in? The tracker itself, one file per phase. | living |
+| [roadmap/README.md](roadmap/README.md) | What does each task marker mean, how is a task claimed, and when is one pickable? The marker vocabulary and the claim protocol. | living |
 | [agent/reference.md](agent/reference.md) | This project's own cartridge, and the two rules that make this repo unusual. | living |
 | [agent/risks/common.md](agent/risks/common.md) | What has gone wrong here before, so a review looks for it again? This project's own risk list. | living |
 | [agent/workspace/AGENTS.md](agent/workspace/AGENTS.md) | The source of the root `AGENTS.md` — edit this one, never the generated copy. | living |
@@ -92,7 +103,9 @@ while a dated record simply cannot go stale — it says what was true on a day.
 ## Deliberately absent
 
 Three things the pack's own docs structure allows are missing here, and the absence is the
-decision rather than an oversight.
+decision rather than an oversight. `engineering/layout.md`, linked above, makes the same
+declaration for the first two in the same terms; it is the authority if the reasons ever diverge,
+and this paragraph is here so a reader of the index alone does not read absence as oversight.
 
 `design/` — the pack lists it as a living, slow folder beside `product/`. This repo ships Markdown
 and shell; it has no screen, no control and no design system, so there is nothing for the folder to
