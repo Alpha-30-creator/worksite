@@ -6,9 +6,10 @@ right copy.
 
 **What is not on this page.** How to *work* on this project — the loop, the claim flow, the rules
 that override an agent's defaults — is the root [`AGENTS.md`](../../AGENTS.md) and the cartridge
-at [`agent/reference.md`](../agent/reference.md); this page restates neither. Which copy of the
-pack is authoritative, and the publish mechanism that moves bytes into `skills/`, is
-[sync-direction.md](./sync-direction.md). Cartridge keys are
+at [`agent/reference.md`](../agent/reference.md); this page restates neither. *Why* the library
+owns the skills, and why a publish is a copy rather than a merge, is
+[ADR 0001](../decisions/0001-library-is-the-source-of-truth.md) and
+[ADR 0002](../decisions/0002-publishing-is-a-guarded-copy-from-the-library.md). Cartridge keys are
 [the schema page](../integration/cartridge-schema.md).
 
 ## The repo in one table
@@ -39,6 +40,52 @@ the pack. Editing them here does not change the pack, and the next publish overw
 review pack is a new file in the *working* copy, never a file added here. The procedures are
 [trackers.md](./trackers.md) and [stacks.md](./stacks.md).
 
+## Where `skills/` comes from
+
+```
+  agent-sync library                 this repo                      your agents
+  (private, the working copy)        (public, a published artifact)
+  ~/.agent-sync/store/skills/   ──→  skills/                   ──→  Claude, Codex, Cursor
+          ▲                                                              ▲
+          │ ws-refine edits here                                         │ agent-sync save
+          └──────────────────────────────────────────────────────────────┘
+```
+
+**One direction only.** The library is edited; this repo receives. Nothing is ever edited here
+and carried back. Which copy is authoritative, and the two alternatives rejected, are
+[ADR 0001](../decisions/0001-library-is-the-source-of-truth.md).
+
+### How a publish actually works
+
+`ws-refine` ends by reading `~/.agent-sync/publish.targets` — one absolute workspace path per
+line — and running each target's own `scripts/publish.sh`. No such file means no targets, and
+nothing to publish. The target's path is never written into a skill: this repo's own location is
+one of the private names the guard looks for, so a hardcoded target would be caught by the very
+check it runs.
+
+[`scripts/publish.sh`](../../scripts/publish.sh) then:
+
+1. **refuses up front** on a missing library, a library with no `ws-*` skills, a symlink or an
+   unexpected file inside a skill directory, a tree that is not on `main`, a dirty tree, a
+   missing pre-commit hook, a `check.sh` that is already failing here, or a skill published here
+   that the library no longer has (`--prune` is how a deletion is meant, and `--prune-many` is
+   how a large one is);
+2. assembles the candidate — the library's `skills/ws-*`, selected **by glob, never by a list** —
+   inside a throwaway `git clone` of this repo, and runs
+   [`scripts/check.sh`](../../scripts/check.sh) **there**. So a leak is refused before a single
+   byte is written here: no commit, no staged change, no new file;
+3. asserts the copy is plain, with `diff -rq` of library against candidate having to be silent —
+   publishing is a copy, never a transformation, turned into an assertion;
+4. writes this tree and stages it, then **runs the guard and the assertion again on that staged
+   tree** — the bytes actually about to be committed, which until then nothing had checked — and
+   commits (the pre-commit hook runs the same guard once more on those bytes) and pushes.
+   Nothing to copy means "nothing to publish" and a clean exit. Any failure between the first
+   write and the commit restores this repo to the HEAD and the clean tree it was found with.
+
+Publish commits land on `main` directly rather than through a pull request. That carve-out, its
+residual risk and the mechanism's rejected alternatives are
+[ADR 0002](../decisions/0002-publishing-is-a-guarded-copy-from-the-library.md).
+
 ## The docs tree here
 
 The pack's shared reference holds the generic docs structure and the living/immutable property
@@ -47,7 +94,7 @@ for each folder. This is that structure as it actually stands in this repo.
 | Folder | What belongs in it here | Kind | Stale means |
 |---|---|---|---|
 | [`product/`](../product/overview.md) | what the pack is, the design moves and why | living, slow | drift |
-| `engineering/` (this folder) | how the pack is built and composed: this page, [trackers.md](./trackers.md), [stacks.md](./stacks.md), [sync-direction.md](./sync-direction.md) | **living, fast** | **confidently wrong** — changes in the same PR as what it describes |
+| `engineering/` (this folder) | how the pack is built and composed: this page, [trackers.md](./trackers.md), [stacks.md](./stacks.md) | **living, fast** | **confidently wrong** — changes in the same PR as what it describes |
 | [`integration/`](../integration/cartridge-schema.md) | the contracts, key by key — the cartridge schema | living, contract | another reader builds against a shape that is not there |
 | [`decisions/`](../decisions/0001-library-is-the-source-of-truth.md) | ADRs, `NNNN-<slug>.md` | **immutable** | never edited; superseded by a newer ADR |
 | [`roadmap/`](../roadmap/) | phases and tasks — this project's tracker | living | the plan is wrong, and the loop reads it |
@@ -121,7 +168,8 @@ the repo, so that ignore line is the only thing protecting it.
 
 - [`AGENTS.md`](../../AGENTS.md) and the cartridge at [`agent/reference.md`](../agent/reference.md)
   — how to work here
-- [sync-direction.md](./sync-direction.md) — which copy of the pack is the real one
+- [ADR 0001](../decisions/0001-library-is-the-source-of-truth.md) — which copy of the pack is
+  the real one, and why
 - [trackers.md](./trackers.md) and [stacks.md](./stacks.md) — extending the pack
 - [the cartridge schema](../integration/cartridge-schema.md) — the keys, one by one
 - [the concepts page](../product/overview.md) — what the pack is and why it is shaped this way

@@ -154,8 +154,6 @@ on now.
 - [docs/integration/cartridge-schema.md](docs/integration/cartridge-schema.md) — every cartridge
   key: type, default, which skills read it, and what happens when it is missing. For writing
   your own.
-- [docs/engineering/sync-direction.md](docs/engineering/sync-direction.md) — how a change
-  travels from the working copy to this repo to your agents, and which direction is never valid.
 - [docs/engineering/trackers.md](docs/engineering/trackers.md) — adding a tracker kind is one
   file answering four questions, worked end to end on an invented board. Its honest centre is
   that claim is *not* uniform: a task file inside a repo gives a real lock, because a rejected
@@ -169,7 +167,8 @@ on now.
   evidence that a pack should be written.
 - [docs/engineering/layout.md](docs/engineering/layout.md) — a map of this repo: what each path
   is, whether it is authored here or a received copy the next publish overwrites, and which
-  check looks at it, including what each section of `check.sh` does **not** look at.
+  check looks at it, including what each section of `check.sh` does **not** look at. It also
+  holds where `skills/` comes from and what a publish does, step by step.
 - [docs/decisions/](docs/decisions/) — why things are the way they are, including the two
   rejected alternatives for which copy of the skills is authoritative.
 - [docs/STATUS.md](docs/STATUS.md) and [docs/roadmap/](docs/roadmap/README.md) — what is in

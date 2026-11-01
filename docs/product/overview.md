@@ -337,8 +337,8 @@ An honest list, because a page that oversells this is worse than no page.
 - [docs/roadmap/](../roadmap/README.md) — the phases, and the open problems named as tasks
 - [ADR 0001](../decisions/0001-library-is-the-source-of-truth.md) — which copy of the skills is
   authoritative, and the two alternatives that were rejected
-- [docs/engineering/sync-direction.md](../engineering/sync-direction.md) — how a change travels
-  from the working copy to this repo to your agents
+- [docs/engineering/layout.md](../engineering/layout.md) — what lives where in this repo, and how
+  a change travels from the working copy to this repo to your agents
 - [docs/integration/cartridge-schema.md](../integration/cartridge-schema.md) — every cartridge
   key: type, default, which skills read it, what happens when it is missing, and the gaps that
   are the pack's rather than the page's
