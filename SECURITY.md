@@ -28,9 +28,10 @@ of every hit. It runs in four places:
   of which exists because publish commits land on `main` directly
   ([ADR 0002](docs/decisions/0002-publishing-is-a-guarded-copy-from-the-library.md)).
 
-The one thing that is guaranteed: a string matching a pattern in that file cannot reach `main`
-through a pull request without CI going red, and cannot be committed on a clone where the hook is
-installed.
+The one thing that is guaranteed, stated no wider than it holds: in a file that is neither
+excluded nor caught by the inline allowlist, a string matching a pattern in
+`scripts/leak-patterns.txt` cannot reach `main` through a pull request without CI going red, and
+cannot be committed on a clone where the hook is installed.
 
 ## What it does not protect
 
