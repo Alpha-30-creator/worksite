@@ -191,6 +191,15 @@ block (repos, tracker, git flow, environments, house rules, `machine:` overrides
 `manifest.tsv` alone. Cartridges are enrichment. This is the degrade-never-fail rule, and it
 is why credentials sync works today, before any project has been migrated.
 
+**`shared_stores:` declares a place the project's work reaches that is not one of its repos** — a
+library a tool owns, a shared fixture store. A top-level list of `{id, path, publish, note}`, with
+`path` written `$HOME`-relative because a cartridge is committed and read on every machine. It is
+there for one reason: a worktree is a checkout of a repo in `repos:`, so it isolates nothing
+outside them, and `ws-fanout`'s gate runs **one track per declared store per batch**. `ws-fanout`
+is the only reader; `ws-setup` asks the question and writes the key, with **none** as its
+recommendation. A project that declares nothing has a gate that can see no further than `repos:`,
+which is what the silence costs — not an error (R1).
+
 ## Tracks, the journal and the artifact lifecycle
 
 The state model the loop skills share — track directories, `tracks/current`, the journal format

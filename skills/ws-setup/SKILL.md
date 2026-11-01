@@ -59,6 +59,16 @@ Then generate and stop. No tracker, no journal, no rule skills, no risks file.
    prefix for the rule skills — two or three letters, e.g. `nw` for northwind.
 2. **Repos** — for each: folder, GitHub owner, role (`backend` / `frontend` / `docs` / `infra` /
    `lab` / `legacy`), integration branch. Propose the list you found on disk.
+
+   Then: **is there anywhere else this project's work edits, that is not one of these repos?** A
+   library a tool owns, a shared fixture store, somewhere a generated artifact is published from.
+   Recommend **none** — most projects have none, and a wrong entry is worse than an absent one
+   (R2). Each one the answer names becomes a `shared_stores:` entry: an `id`, a `$HOME`-relative
+   `path` (**never an absolute home path** — the cartridge is committed and read on every
+   machine), the single global command that publishes the **whole** store as `publish:` or `null`
+   if there is none, and a `note`. It is read by `ws-fanout`, which runs one track per declared
+   store per batch because a worktree isolates the repos above and nothing outside them. Declaring
+   nothing is a real answer with a real cost: that gate can then see no further than `repos:`.
 3. **Docs home** — decided by the project's shape, not by who owns the repos:
 
    | Project shape | Docs home |

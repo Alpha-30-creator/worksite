@@ -8,6 +8,10 @@ artifacts: workspace-state      # workspace-state | in-repo
 agents_file: copy               # copy | include | symlink  (copy unless you know why not)
 worktrees: true                 # each track its own checkout; false only where the per-worktree dependency install is genuinely prohibitive
 
+shared_stores: []               # places the work edits that are NOT repos above; [] = none, which is
+                                # the usual answer. Each: {id, path ($HOME-relative), publish, note}.
+                                # ws-fanout runs one track per declared store per batch
+
 tracker:
   kind: <github-projects | roadmap-files | trello | tasks-file | none>
   # kind-specific keys — the adapter in ws-shared/trackers/ says what it needs

@@ -79,7 +79,7 @@ created, so nobody expects it on the other machine.
 
 ## Running several tracks at once
 
-Tracks make this possible; two things make it **safe**, and both are in `ws-fanout`:
+Tracks make this possible; three things make it **safe**, and all three are in `ws-fanout`:
 
 1. **Isolation.** `worktrees: true` gives each track its own checkout. With `worktrees: false`
    every track shares one working tree and two agents editing it overwrite each other silently.
@@ -87,6 +87,13 @@ Tracks make this possible; two things make it **safe**, and both are in `ws-fano
    a gate that cannot find its input must not silently choose the unsafe answer.
 2. **File ownership assigned before any work starts.** Two tracks that touch the same file do not
    run in the same batch — the overlapping one is dropped and run afterwards.
+3. **One track per shared store.** A worktree is a checkout of a repo in `repos:`, so it isolates
+   nothing that lives outside them — a library a tool owns, a shared fixture store. A project
+   declares those places in its cartridge's `shared_stores:`, and of the tracks that touch one,
+   exactly one runs per batch; the rest are dropped, and so is a track whose use of a store cannot
+   be determined. The second failure there is not a file collision at all: where a store has a
+   single global `publish:` command, the first track to run it publishes the second track's
+   half-finished edits, which no worktree can prevent.
 
 `tracks/current` is for a **single** session on one track. A lead session running several does not
 set it; each subagent is told its track explicitly. The same goes for shipping: a lead names the

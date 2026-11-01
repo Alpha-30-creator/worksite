@@ -24,7 +24,7 @@ whole point was to keep one head above the work.
 
 ## 1. The safety gate — do this before claiming anything
 
-Two things decide whether fanning out is safe, and both are refusals rather than warnings.
+Three things decide whether fanning out is safe, and each is a refusal rather than a warning.
 
 ### Is isolation on?
 
@@ -75,6 +75,86 @@ silently choose the unsafe answer. Concretely, on `UNREADABLE`:
   invented third option this section forbids, and fanning out against a guessed cartridge is worse
   than stopping: it is the same silent overwrite with a reason attached.
 
+### Does any track touch a shared store?
+
+Worktrees isolate checkouts of the repos in `repos:`. Some projects' work also reaches into a
+place that is **not** one of those repos — a library a tool owns, a shared fixture store, a
+generated-artifact store — and no worktree isolates any of it. The cartridge declares such a place
+in `shared_stores:`, a list of `{id, path, publish, note}`. This gate reasons from that
+declaration; it never holds knowledge of a particular store.
+
+Readable first, then the content, for the same reason as above:
+
+```bash
+cartridge="<docs_home>/reference.md"   # quoted: a workspace path may contain a space
+if [ ! -r "$cartridge" ]; then
+  echo "UNREADABLE: $cartridge — isolation is UNKNOWN"
+else
+  ids=$(sed -n '/^shared_stores:/,/^[^ #-]/p' "$cartridge" | sed -n 's/^ *- *id: *//p')
+  if [ -n "$ids" ]; then
+    printf '%s\n' "$ids" | while IFS= read -r id; do echo "declared store: $id"; done
+  else
+    echo "read, and no store declared"
+  fi
+fi
+```
+
+| What came back | What it means | What you do |
+|---|---|---|
+| `read, and no store declared` | the project declares nothing outside `repos:`. An absent key and an empty list give the same answer | **Proceed.** The gate can then see no further than `repos:`, which is what the silence costs rather than a clean bill of health. If you know of a place the work reaches that is not one of the repos, offer `ws-refine` to declare it |
+| `declared store: <id>`, one line per store | a place no worktree isolates | classify every candidate against every id, below |
+| `UNREADABLE: …` | you do not know what the project declares | **Stop the whole batch**, exactly as above — spawn nothing, claim nothing |
+
+**Classify each candidate, per store, before claiming anything.** Three inputs, every one of which
+exists before the task is **claimed** — which is why the question is answerable at this point at
+all:
+
+- its entry on the tracker, including whatever it says about where the work lives;
+- its acceptance criteria;
+- its `plan.md`, where the track already has one.
+
+**`- Stores:` is not one of them.** This skill writes that line into `task.md` at claim time, in
+step 3, so a fresh candidate does not carry it and `ws-start`'s own `task.md` shape has no such
+line. It is what a **resumed or taken-over** track is read from, where the classification was
+already made and recorded. Anything the three inputs above cannot settle is `unknown`.
+
+Each candidate comes out **touches**, **does not touch** or **unknown** per store. Print the
+classification before the batch table.
+
+Then, **per store**: of the tracks that touch it, **one stays and the rest are dropped from this
+batch** — not reordered, not given a "primary owner", not serialised inside the batch. It is the
+same decision as a file overlap and it gets the same vocabulary. The recommendation for which one
+stays is the candidate with no same-batch dependency, then the lowest id; the user picks. Two
+tracks touching two *different* declared stores collide on nothing, and both may run. **If the
+drops leave fewer than two tracks there is no batch left** — say so, abandon the fanout, and run
+the one track in a normal single session, because a one-track "batch" pays every coordination cost
+in this file for none of the parallelism.
+
+**`unknown` is a drop, never a quiet "does not touch".** Same house rule as the unreadable
+cartridge: a gate that cannot find its input must not silently choose the unsafe answer. The two
+scopes of stop are different, and keeping them apart is the point:
+
+| Cannot answer | Scope of the stop |
+|---|---|
+| the cartridge is unreadable | **the whole batch** — spawn nothing, claim nothing |
+| the cartridge was read, and one track's store usage is undeterminable | **that track** — dropped from the batch, with the reason said out loud |
+
+The second is a drop rather than a batch stop because a drop is already this gate's answer to "not
+safe to run alongside the others", and it costs the user one track instead of the whole batch.
+
+Three audiences are told, and the third is the one a narrower rule would miss:
+
+1. **the user**, in the batch table, before the yes;
+2. **the owning builder**, in its brief: it owns the store for this batch, and where the entry has
+   a `publish:` command it may run it — `publish: null` means there is none, and then the cap above
+   rests on the shared working tree alone;
+3. **every other builder in the batch**, in its brief: the store's `path` and, where there is one,
+   its `publish:` command, forbidden by name — *including* tracks that do not touch the store. A
+   track that never edits the store but runs its publish command for an unrelated reason publishes
+   the owner's half-finished work to wherever that command publishes.
+
+Say which declared stores this batch touches and who owns each, out loud, before continuing.
+
 ### Do the tracks overlap?
 
 For each candidate track, work out which files it will touch — from its plan if it has one, from
@@ -106,6 +186,7 @@ without a word of warning. Before claiming, name what the tracks will share and 
 | **One port per service** | the second track's dev server silently fails or attaches to the first's | assign ports per track in the brief; never let a builder discover 8000 is taken |
 | **One mail catcher, queue or other dev service** | one track's test run consumes or clears another's | same — assign, or say in the brief that it is shared and must be left as found |
 | **The docs repo** | it usually gets no worktree, so two tracks edit one working tree and their changes land in one uncommitted file for the lead to split by hunk | give the docs repo a worktree too, or name in the brief exactly which files each track may touch |
+| **A global deploy or publish command** — a declared store's `publish:`, such as one that validates, deploys to every agent, then commits and pushes the **whole** store | It publishes the store, not one track's changes. The **first** track to run it publishes the **second** track's half-finished edits and pushes them; the second track's own run then publishes a state nobody reviewed. **Not a file collision** — worktrees cannot see it, and both tracks' reports read as successes | One track per store per batch owns it, per the gate above. That brief names the command as its own; **every other brief forbids it by name**, including tracks that do not touch the store. It runs once, after review |
 
 Say which of these this batch shares, out loud, before continuing. A builder that is told "another
 track holds port 8000 and the database is shared; leave its migration alone" behaves; one that is
@@ -134,6 +215,16 @@ means that task went to someone else: drop it from the batch and say so.
 
 Then per track: create `<state_dir>/tracks/<id>/`, write `task.md`, append a `claimed` journal
 entry, and create the worktree if isolation is on.
+
+`task.md` carries one line beyond the shape in `ws-start`, because this gate is the only place the
+question is asked:
+
+```markdown
+- Stores: <the declared store ids this task touches, or none>
+```
+
+Write it for **every** track in the batch, from the classification above — `none` included, since an
+absent line and a written `none` are the difference between asked and never asked.
 
 **Do not write `tracks/current`.** That file is for a single session working one track; the lead
 is working several and none of them is "current". Each subagent is told its own track explicitly,
@@ -214,6 +305,11 @@ Every brief contains:
 - **The files it owns, and the instruction that it may not write outside them.** State the other
   tracks' owned paths explicitly as forbidden. This is the single most important line in the
   brief.
+- **The declared stores it may touch, and the ones it may not.** For the batch's owner of a store:
+  its `path`, its `note` verbatim, and that it may run that store's `publish:` command where the
+  entry has one. For **every other** builder, including the ones that touch no store: that `path`
+  and, where there is one, that command, forbidden by name. A builder nobody told cannot avoid a
+  command it has no reason to think is dangerous.
 - **The rule skills and rulebooks to read**, named by path, in **two or three calls, never one** (a single
   batched read of a dozen files truncates silently): the project's
   `<prefix>-<area>` skills, `<docs_home>/rules/`, and the repo's own practices docs.
@@ -327,6 +423,9 @@ disk and not a word about them.
   mockup gate — with N agents building, a wrong approach costs N times as much.
 - **Five in flight, maximum**, builders and reviewers counted together.
 - **No track that overlaps another's files.** Drop it and run it afterwards.
+- **One track per declared store per batch.** Worktrees isolate the repos in `repos:`, not a store
+  outside them. The rest are dropped and run afterwards, and a track whose store usage cannot be
+  determined is dropped too.
 - **Never the same agent for building and reviewing** a track.
 - **Subagents commit but never push, PR or merge.**
 - **Never `tracks/current`** from the lead — pass the track id to `ws-ship` in the invocation
