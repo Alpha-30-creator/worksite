@@ -658,6 +658,20 @@ third signal that it is not worth a track.
         the string to `@abdur-codes/` does **not** fix it — the fix is to strip the allowlisted
         substring from the line before matching. Proven by a line carrying both, which must
         FAIL §1 afterwards and passes today
+  - [ ] **nothing has ever looked at the object store, and it already holds private names.**
+        `git add` writes a blob before the hook can refuse the commit, so a refused commit still
+        leaves its content in `.git/objects` — found 2026-11-02 while building p1.2, which
+        removed its own probe blob by exact hash. Measuring the store afterwards found **two
+        unreachable blobs carrying real private project names, inside a packfile**, so they
+        predate that task — residue of the P2 depersonalisation, packed by a later `gc`.
+        **`origin/main` is clean** (every file in the pushed tree checked against the full
+        pattern set with the allowlist applied) and unreachable objects are never pushed, so
+        nothing has escaped. But §1 reads working-tree and staged files and has never read the
+        object store, and [the purge runbook](../runbooks/purge-a-leak-from-history.md) covers
+        the reachable case only. What is wanted is an assertion that no **unreachable** object
+        carries a pattern, and a decision on pruning — which must not be a bare
+        `git gc --prune=now`, because this workspace's object store is shared with live
+        worktrees whose unreachable objects are wanted
   - [ ] **`SECURITY.md` undercounts its own run sites**: it says §1 "runs in four places" and
         lists four, omitting `scripts/publish.sh`:181, the working-tree preflight. There are
         five automated invocations — `publish.sh`:181, `publish.sh`:277, `publish.sh`:321,
