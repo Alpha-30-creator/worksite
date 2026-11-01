@@ -93,7 +93,7 @@ The workspace root **is** the repo — a single-repo project. That matters twice
 | The cartridge format | not written yet — task p3.1. The template in the pack's `ws-setup/templates/`, and this file, are the only examples |
 | Project-specific review risks | [risks/common.md](risks/common.md) |
 | What a shipped task left behind | `worklog/<track-id>.md` — created by `ws-ship` on the first harvest |
-| An in-flight track's journal | `journal/<track-id>.md` — created when the first track is claimed |
+| An in-flight track's journal | `.worksite/tracks/<id>/journal.md` — **local only** here, not mirrored; see p8.8 |
 
 ## Rules that override defaults
 

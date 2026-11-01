@@ -186,3 +186,29 @@ should.
         own tracker — `ws-setup`'s rule is that setup never touches a repo's own files
 - **Notes:** the useful half of this finding is the correction. Changing `ws-setup` would have
   fixed nothing; the house rule is prevention, not a cure.
+
+## [ ] p8.8 — The journal mirror leaks the device name into a public docs home
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Why:** found by the leak guard refusing a real commit. `tracks.md` defines the journal entry
+  header as `<stage> · <date> · <device> · <handle>`, and mirrors the journal to
+  `<docs_home>/journal/<track-id>.md` so a track can be resumed on another machine. When
+  `docs_home` is **public**, that publishes the device name on every stage boundary — and a
+  device name is commonly the owner's own name, which is exactly what the guard exists to stop.
+- **The general shape:** `artifacts: workspace-state` plus a public `docs_home` is an unsafe
+  combination, and nothing in the pack notices. The mirror is also the wrong thing to publish on
+  its own merits: it is internal, ephemeral session state that `ws-ship` deletes, and it is noise
+  to anyone reading the repo.
+- **Acceptance:**
+  - [ ] the cartridge schema gains a way to say the docs home is public — or `ws-setup` asks —
+        and the loop skills do not mirror the journal when it is
+  - [ ] `tracks.md` states the local-only consequence where it describes the mirror, next to the
+        existing note about `lite` projects with no `docs_home`
+  - [ ] the journal header uses a device **alias** rather than the raw device id, so a device
+        named after its owner cannot reach a public repo through any other path
+  - [ ] `ws-setup` warns when it generates a cartridge whose `docs_home` is inside a public repo
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** third finding from using the pack on itself, and the first one caught by a guard
+  rather than by reading. Mitigated here by gitignoring the mirror, which costs this project
+  cross-machine resume — acceptable for a solo repo, not a fix.

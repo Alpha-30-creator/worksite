@@ -1,6 +1,11 @@
 # Workspace state — tracks, journals, scratch. Never committed.
 .worksite/
 
+# The journal mirror. Normally committed so a track can be resumed on another
+# machine; not here, because the journal's own format embeds the device name and
+# this repo is public. See p8.8. The journal stays local for this project.
+docs/agent/journal/
+
 # OS / editor
 .DS_Store
 Thumbs.db
