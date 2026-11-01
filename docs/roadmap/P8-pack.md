@@ -45,42 +45,40 @@ should.
 - **Notes:** this is not a one-line flip in fourteen files. Removing the flag is five minutes;
   making fourteen descriptions trigger correctly and not collide is the actual work.
 
-## [~] p8.2 — Teach review and planning where documentation belongs @Alpha-30-creator · 2026-11-01
+## [x] p8.2 — Teach review and planning where documentation belongs · 2026-11-01 · @Alpha-30-creator
 
 - **Repos:** worksite (pack)
-- **Depends on:** —
-- **Why:** code in the author's projects carries comments far longer and more detailed than they
-  should be — explanations of architecture and rationale sitting in source files, where they rot
-  and where nobody not reading that exact file will ever find them. Review never catches it, and
-  the cause is specific: **`tier1-universal.md` check 7 does cover comments, but the severity
-  table files comments under `Note`, which "never blocks".** The rule exists and is declawed.
-  Check 9 only fires when a change alters how something is built, run, used or released, so a
-  thirty-line design essay in a source file trips nothing at all.
 - **Acceptance:**
-  - [ ] check 7 split in two: *a comment restating the code* stays a `Note`; *a comment that is
-        really a document* becomes **Should fix**, because it hides knowledge and goes stale
-  - [ ] a new always-on pack `ws-shared/review/documentation.md`, drawing the line explicitly:
-        **structured API documentation belongs in the code** (Python docstrings, TSDoc/JSDoc on
-        exported symbols, Go doc comments on exported identifiers — tooling reads these and the
-        reader is at the call site); **narrative belongs in the docs** (why the subsystem is
-        shaped this way, what was rejected, how the pieces fit)
-  - [ ] the pack is language-aware: a per-language table of what is idiomatic in code versus
-        what is misplaced. "Fewer comments" is the wrong rule — a missing docstring on a public
-        Python function is a finding in the other direction
-  - [ ] destinations named, so a finding is actionable rather than a complaint: `engineering/`
-        for how it is built, `decisions/` for an ADR when a choice was made and alternatives
-        rejected, `integration/` when the comment is really describing a contract
-  - [ ] a comment that contradicts the code is **Must fix**, not a Note — it is a lie about
-        behaviour and worse than no comment
-  - [ ] `ws-plan` step 11 ("Docs impact") changes from a list of destinations into a decision:
-        name the narrative this change produces and where it will live, and carry it as an
-        acceptance criterion so `ws-verify` checks it actually shipped
-  - [ ] validated against a real recent diff from one of the author's projects: the new rules
-        must flag the over-detailed comments that exist today, and must not flag legitimate
-        docstrings
-- **Notes:** the highest-value task on any phase, because it improves every project immediately
-  and compounds. Severity is the crux — a rule filed under "never blocks" produces no change in
-  behaviour, which is exactly what has happened so far.
+  - [x] check 7 split in two: *restates the code* stays a `Note`; *is really a document* is now
+        **Should fix**; *contradicts the code* is **Must fix**
+  - [x] **the severity table rewritten — this was the whole defect.** The `Note` row read
+        "naming, comments, a simpler alternative. Never blocks", so every comment finding was
+        unactionable by construction. The word "comments" is gone from that row
+  - [x] new always-on pack `ws-shared/review/documentation.md`, wired into `ws-review`'s *always*
+        column and listed in `ws-shared/reference.md`
+  - [x] five detectors, each quotable rather than a matter of taste: time-relative claim, dated
+        measurement, rejected alternative, system-fact-not-line-fact, self-duplication
+  - [x] counter-rules stated as loudly as the detectors — structured API documentation belongs in
+        the code, usage blocks stay, a durable one-line *why* stays, and a **missing** docstring
+        on an exported public symbol is a finding in the other direction
+  - [x] per-language table: Python, TS/JS, Go, SQL migrations, shell, config
+  - [x] destinations named, so a finding is actionable: `engineering/`, an ADR in `decisions/`, a
+        record in `records/`
+  - [x] `ws-plan` step 11 changed from a list of destinations into a decision, carried as an
+        acceptance criterion so `ws-verify` checks the writing shipped
+  - [x] validated against three real specimens — see
+        [records](../records/2026-11-01-documentation-pack-validation.md). The pass condition was
+        **discrimination**: flag both offenders, leave a usage block alone, and not touch two
+        exemplary docstrings. All three correct
+  - [x] deployed to all three agents, `ws-refine` graph audit clean
+  - [ ] **asserted, not verified:** the Go and Rust rows of the language table. No specimen
+        existed in these projects to test against
+  - [ ] **observable later:** whether step 11 actually changes planning behaviour. That needs a
+        real task planned after this change, not an inspection
+- **Notes:** the survey is what made this work. Planned from two files it would have become "write
+  shorter comments", which the evidence disproves — the same two repos hold the two worst
+  offenders *and* 682 exemplary docstrings, so any length or density rule would have destroyed the
+  good ones and missed the actual defect.
 
 ## [ ] p8.3 — Close the ws-setup profile gap
 
@@ -212,3 +210,30 @@ should.
 - **Notes:** third finding from using the pack on itself, and the first one caught by a guard
   rather than by reading. Mitigated here by gitignoring the mirror, which costs this project
   cross-machine resume — acceptable for a solo repo, not a fix.
+
+## [ ] p8.9 — The graph audit cannot see whether a referenced file reached each agent
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Why:** found while shipping p8.2. `ws-refine`'s audit reported **clean** at the same moment
+  `ws-review` on one agent referenced `review/documentation.md` and that file was **not present in
+  that agent's deployment**. The audit resolves links *within the library*, where everything was
+  correct; it never asks whether the deployed copy each agent actually reads contains the file.
+- **Why it matters more than it sounds:** `ws-refine` already states the principle — "a broken
+  link is silent at runtime; the agent reads nothing and carries on as if the rulebook said
+  nothing". This is that exact failure, one layer below where the audit looks. A review would have
+  run with the new pack silently absent and reported itself complete.
+- **The trigger:** a deployment that was skipped because the artifact was `conflicted`, which
+  `agent-sync save` reports but the audit does not read.
+- **Acceptance:**
+  - [ ] the audit checks the **deployed** copies, not only the library: for every file a skill
+        references, confirm it exists under each agent this project deploys to
+  - [ ] the audit fails loudly when `agent-sync status` shows any `ws-*` artifact conflicted or
+        pending, rather than auditing a library that was never deployed
+  - [ ] it reports per agent, since a file can reach two of three
+  - [ ] changed through `ws-refine`
+- **Notes:** fourth finding from using the pack on itself, and the second found by a check rather
+  than by reading. Also worth noting as a cause: a manual `cp` into a deployed copy — done earlier
+  in this session to resolve a conflict — is what made `agent-sync` treat the artifact as
+  hand-edited and skip it thereafter. The real fix for that was deleting the deployed copy and
+  letting it redeploy clean, which also re-recorded the hash correctly.
