@@ -53,9 +53,12 @@ shared_stores:
    [the cartridge schema](../integration/cartridge-schema.md#shared_stores).
 2. **`ws-fanout`'s gate gains a second question** — *does any candidate track touch a declared
    store?* — established readable-first, exactly as the isolation check already is. Each candidate
-   is classified **touches / does not touch / unknown** per store, from the task's `- Repos:` and
-   `- Stores:` lines, its acceptance criteria and its plan: all of which exist before any work
-   starts.
+   is classified **touches / does not touch / unknown** per store, from the inputs that exist
+   before the task is claimed — its tracker entry, its acceptance criteria, and its plan where it
+   has one. `- Stores:` is written into `task.md` at claim time by this same gate, so it is what a
+   **resumed or taken-over** track is read from, not an input the gate has on a fresh candidate. A
+   candidate whose use of a store cannot be determined from what exists is `unknown`, and `unknown`
+   is a drop.
 3. **One track per store per batch.** Of the tracks that touch a store, one stays and the rest are
    dropped from the batch — the same decision as a file overlap, in the same vocabulary. `unknown`
    is a drop too, never a quiet "does not touch".

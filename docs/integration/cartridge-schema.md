@@ -271,7 +271,7 @@ A place the project's work edits that is **not** one of the repos in `repos:` �
 owns, a shared fixture store, somewhere a generated artifact is published from. It exists for one
 reason: a worktree is a checkout of a repo in `repos:`, so it isolates nothing outside them, and
 without a declaration `ws-fanout`'s gate has no way to know such a place is there. The choice of a
-top-level list, and the four alternatives rejected, are in
+top-level list, and the alternatives rejected, are in
 [ADR 0003](../decisions/0003-shared-external-stores-are-declared-in-the-cartridge.md).
 
 ```yaml
@@ -285,7 +285,7 @@ shared_stores:
 | key | type | required | default | read by | missing → |
 |---|---|---|---|---|---|
 | `shared_stores` | list of maps — **top level**, never nested inside `repos:` | no | none — *template ships* `[]` | `ws-fanout` | its gate sees no further than `repos:`, so two tracks editing the same place outside them pass as safe. Stated rather than inferred: an absent key and an empty list give the gate the same *"read, and no store declared"* answer, and that answer **proceeds** |
-| `shared_stores[].id` | string, lowercase-kebab | **conditional** — once an entry exists | none | `ws-fanout` | the entry cannot be matched against a task's `- Stores:` line, so the gate cannot classify any track against it — *inferred* |
+| `shared_stores[].id` | string, lowercase-kebab | **conditional** — once an entry exists | none | `ws-fanout` | the entry has no name to carry — not in the gate's classification, not in a brief, not in the `- Stores:` line the gate writes at claim time — so no track can be classified against it — *inferred* |
 | `shared_stores[].path` | string, `$HOME`-relative — `~/…` or `${HOME}/…`, **never an absolute home path** | **conditional** — once an entry exists | none | `ws-fanout` | the other builders' briefs have no path to forbid by name — *inferred* |
 | `shared_stores[].publish` | string \| `null` | no | none | `ws-fanout` | the one-track-per-store cap still applies, on the same working-tree grounds as a shared checkout; what is lost is the command every *other* brief forbids by name — *inferred* |
 | `shared_stores[].note` | string | no | none | `ws-fanout` | the owning builder is told it owns the store and not why it is shared — *inferred* |
@@ -828,11 +828,16 @@ failure, and the state every change passes through (`docs/engineering/layout.md`
 with a reader and a writer, which is what rows 1 and 2 are about. Two consequences for the numbers
 on this page, both worth stating rather than leaving to be discovered. The `ws-fanout` citations
 above (`:31-48`, `:50-59`, `:61-76`) point into the "Is isolation on?" section, which p8.5 did not
-touch; every `ws-fanout`, `ws-shared/tracks.md` and `ws-shared/reference.md` citation pointing
-*below* those sections moves once the publish carries p8.5, and is recorded here against the
-commits this paragraph names, not against the live library. Nothing on this page claims what
-`check.sh` covers: §3 resolves relative links and checks nothing else — not an anchor, not a line
-number, and not its own coverage.
+touch; every `ws-fanout`, `ws-setup`, `ws-shared/tracks.md` and `ws-shared/reference.md` citation
+pointing *below* the sections p8.5 edited moves once the publish carries p8.5, and is recorded here
+against the commits this paragraph names, not against the live library. **`ws-setup` is in that
+list, and its sixteen citations are the largest group affected** — p8.5 inserts the shared-store
+question into its *Repos* interview question, so the symlink rule cited above as `ws-setup`:126-127
+sits ten lines lower in the library, and 126-127 there is now a table row. Re-deriving those
+numbers is a separate task: this page anchors them to the published copy, which does not move
+until `scripts/publish.sh` runs. Nothing on this page claims what `check.sh` covers: §3 resolves
+relative links and checks nothing else — not an anchor, not a line number, and not its own
+coverage.
 
 | # | Gap | Evidence | Follow-up |
 |---|---|---|---|
