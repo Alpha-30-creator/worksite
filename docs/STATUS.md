@@ -1,15 +1,27 @@
 # worksite status
 
-**Updated:** 2026-11-01
+**Updated:** 2026-11-02
 
-**Where it is:** the pack is in the repo and generic — 46 files, no private names. Not yet
-installable: there is no README or install path (P3, P4). Public at
-[github.com/Alpha-30-creator/worksite](https://github.com/Alpha-30-creator/worksite). The pack
-itself has not been moved in, so there is nothing installable yet.
+**Where it is:** the pack is in the repo and generic — the thirteen `ws-*` workflow skills plus
+the `ws-shared` reference pack, no private names. Public at
+[github.com/Alpha-30-creator/worksite](https://github.com/Alpha-30-creator/worksite).
+**Publishing works**: `ws-refine` ends by running [scripts/publish.sh](../scripts/publish.sh),
+which copies the skills out of the library behind the leak guard, and the pack reached this repo
+through that mechanism for the first time on 2026-11-01. The cartridge schema
+([integration/cartridge-schema.md](integration/cartridge-schema.md)) and the concepts page
+([product/overview.md](product/overview.md)) are written.
+
+**Still not installable, and no stranger has run it.** There is no `INSTALL.md` (p4.2), no
+contributing or security docs (p4.3), and no CI (p4.3) — so the pre-commit hook is the only thing
+between a private name and a public commit, and a contributor without it has nothing. The README
+is being rewritten now (p4.1).
 
 **Decided:** [ADR 0001](decisions/0001-library-is-the-source-of-truth.md) — the agent-sync
 library stays the working copy, this repo is a published artifact, and publishing is a step
 inside `ws-refine` rather than something anyone remembers to do.
+[ADR 0002](decisions/0002-publishing-is-a-guarded-copy-from-the-library.md) — that publish is a
+guarded plain copy, and its commits land directly on `main`, with the reasoning and the residual
+risk recorded.
 
 ## In progress
 
