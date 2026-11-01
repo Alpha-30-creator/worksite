@@ -1,5 +1,10 @@
 # P4 — README and an agent-readable install
 
+**This phase is complete (2026-11-02).** p4.1 wrote the README, p4.3 added the repo furniture and
+CI, and p4.2 wrote `INSTALL.md`. All three shipped. What the phase does **not** establish is that
+the install works for someone who is not the author — that is p7.1, and until it runs, this phase
+is complete rather than proven.
+
 **Goal:** a user says "set up worksite from this repo" and their agent does it, correctly, and
 reports honestly what happened.
 

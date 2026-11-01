@@ -97,7 +97,7 @@ today, so they do not have to wait for P1–P7.
 | [P1](roadmap/P1-scaffold.md) | A public repo with guard rails | no |
 | [P2](roadmap/P2-depersonalise.md) | The pack in the repo, generic — **closed** | no |
 | [P3](roadmap/P3-reference.md) | The docs a stranger needs | no |
-| [P4](roadmap/P4-install.md) | README and an agent-readable install | no |
+| [P4](roadmap/P4-install.md) | README and an agent-readable install — **complete** | no |
 | [P5](roadmap/P5-secrets.md) | Credentials sync that starts from nothing — **closed, both tasks dropped** | no |
 | [P6](roadmap/P6-updates.md) | Publishing, and how users take updates — **closed** | no |
 | [P7](roadmap/P7-release.md) | Proven by a stranger, then tagged | no |
