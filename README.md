@@ -135,12 +135,11 @@ agent-sync library into this repo, refuses the copy if any known private name su
 `ws-refine` runs it as a step rather than leaving it to be done by hand. That is how everything
 you are reading arrived.
 
-Three things do not work yet, and the roadmap carries each as a task:
+The roadmap carries each remaining gap as a task:
 
 | Gap | Task |
 |---|---|
 | no install path — `INSTALL.md` is not written, so there is nothing to point an agent at | p4.2 |
-| no CI, and no `CONTRIBUTING.md`, `SECURITY.md` or `CODE_OF_CONDUCT.md` | p4.3 |
 | no stranger has run the loop end to end from these instructions | p7.1 |
 
 Until p4.2 lands, the way in is to read [docs/product/overview.md](docs/product/overview.md) and
@@ -185,9 +184,13 @@ would be overwritten by the next publish. Fork it if you want it different.
 
 If you do work in a fork, step one is `git config core.hooksPath .githooks`. This repo is
 assembled by copying out of a private setup, and the hook refuses any commit carrying a private
-name; without it there is no guard. What that scan does and does not cover — green means no
-*known* pattern, never no private data — is in
+name; without it there is no guard. [CONTRIBUTING.md](CONTRIBUTING.md) is the rest of that
+setup, and [SECURITY.md](SECURITY.md) says what the guard does and does not protect — green
+means no *known* pattern, never no private data. Which check looks at which path is in
 [docs/engineering/layout.md](docs/engineering/layout.md).
+
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) applies to the issue tracker, which is the one place
+anyone interacts here.
 
 MIT — see [LICENSE](LICENSE). Built on
 [agent-sync](https://github.com/Alpha-30-creator/agent-sync).

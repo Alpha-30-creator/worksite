@@ -22,6 +22,10 @@ the pack. Editing them here does not change the pack, and the next publish overw
 | `AGENTS.md` | the agent-facing workspace brief at the repo root | **generated** here, from `docs/agent/workspace/AGENTS.md` — edit the source | names, links |
 | `CLAUDE.md` | a pointer at `AGENTS.md`, so one file serves both | authored here | names, links |
 | `LICENSE` | the licence | authored here | **excluded from the name scan** — the copyright holder's name belongs there |
+| `CONTRIBUTING.md` | how to work in a fork, starting with the hook command; why `skills/` is not editable here | authored here | names, links |
+| `SECURITY.md` | what the guard protects, the four limits on it, and the two reporting routes | authored here | names, links |
+| `CODE_OF_CONDUCT.md` | Contributor Covenant 2.1, with the contact method filled in and a scope note added above *Our Pledge* — the Covenant's own text and structure are otherwise unchanged. Scoped to the issue tracker, since no pull request is accepted | authored here | names, links |
+| `.github/workflows/check.yml` | runs `bash scripts/check.sh` in CI on every PR into `main` and every push to `main` | authored here | names only — section 3 reads `.md` files, so a link in a workflow is never resolved |
 | `docs/` | everything on this page's docs-tree table | authored here | names, links |
 | `skills/` | the pack itself: the `ws-*` skills and the shared reference material they read | **received copy** | names, frontmatter, links, parity |
 | `scripts/check.sh` | the whole verification suite for this repo | authored here | **excluded from the name scan** — it holds the exclusion logic |
@@ -62,6 +66,19 @@ kept out of history on purpose.
 `verify` for this repo is `bash scripts/check.sh`. There is no typecheck, lint, test or build
 here, by design. The script runs over the working tree, or with `--staged` over staged content
 only — which is how [the pre-commit hook](../../.githooks/pre-commit) invokes it.
+
+It also runs in CI. [`.github/workflows/check.yml`](../../.github/workflows/check.yml) invokes
+`bash scripts/check.sh` with no arguments — so the broader working-tree mode, over a fresh
+checkout — on every pull request into `main` and on every push to `main`. The push trigger is not
+optional: publish commits land on `main` directly
+([ADR 0002](../decisions/0002-publishing-is-a-guarded-copy-from-the-library.md)), so a PR-only
+workflow would leave the publish path unchecked. **CI running the suite is not CI blocking a
+merge**: requiring the `check` job is a branch-protection setting on `main` rather than a file in
+this tree, and it is not yet set. And **the push-to-`main` run cannot block anything even once it
+is** — the commit has already landed when that run starts, so it reports after the fact, which is
+why the publish path keeps its own three runs of the guard rather than relying on this one. The
+hook therefore remains the only guard on a clone where nobody ran
+`git config core.hooksPath .githooks`.
 
 Each numbered section, and the gap it leaves:
 

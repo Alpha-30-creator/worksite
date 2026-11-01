@@ -1,0 +1,24 @@
+name: check
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  # A superseded PR run is noise. A superseded push-to-main run is not: it is the only
+  # after-the-fact leak signal for the commit it was started for, so it is left to finish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: bash scripts/check.sh
+        run: bash scripts/check.sh
