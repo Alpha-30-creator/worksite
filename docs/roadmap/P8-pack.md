@@ -45,7 +45,7 @@ should.
 - **Notes:** this is not a one-line flip in fourteen files. Removing the flag is five minutes;
   making fourteen descriptions trigger correctly and not collide is the actual work.
 
-## [ ] p8.2 — Teach review and planning where documentation belongs
+## [~] p8.2 — Teach review and planning where documentation belongs @Alpha-30-creator · 2026-11-01
 
 - **Repos:** worksite (pack)
 - **Depends on:** —

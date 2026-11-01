@@ -14,6 +14,7 @@ inside `ws-refine` rather than something anyone remembers to do.
 
 | id | title | who | since | note |
 |---|---|---|---|---|
+| p8.2 | Teach review and planning where documentation belongs | @Alpha-30-creator | 2026-11-01 | claimed; surveying real comment patterns before planning |
 | p8.1 | Make every skill model-invocable | @Alpha-30-creator | 2026-11-01 | 13 workflow skills invocable and deployed, no drift; `ws-env` gate, trigger narrowing and the `ws-refine` rules done. **Description tuning is all that remains** |
 
 ## Blocked
@@ -27,7 +28,6 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
-| p8.2 | Teach review and planning where documentation belongs | improves every project immediately; the rule exists but is filed under a severity that never blocks |
 | p8.3 | Close the `ws-setup` profile gap | found by using the pack on itself |
 | p8.5 | `ws-fanout` cannot isolate work outside the project's repos | found by invoking `ws-fanout` here; blocks safe parallel work on the pack |
 | p1.2 | Prove the leak guard refuses a private name | now pickable; nothing else is safe until this is proven |
