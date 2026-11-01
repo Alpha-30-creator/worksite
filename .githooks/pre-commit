@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Refuses any commit that carries one of the author's private project names into
+# a public repo. Enable with:  git config core.hooksPath .githooks
+#
+# This is a guard rail, not a secret scanner — see SECURITY.md for that.
+exec scripts/check.sh --staged

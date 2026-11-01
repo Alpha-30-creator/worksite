@@ -1,0 +1,17 @@
+# One extended-regex per line, matched case-insensitively against staged content.
+# These are the author's own private project, repo, person and path names. The pack
+# is generic by design, so any of them appearing in a committed file is a bug.
+#
+# scripts/check.sh and this file are excluded from the scan, as is LICENSE
+# (the copyright holder's name belongs there) and any match for the public npm
+# scope @abdur-codes, which is a real install command.
+vinpit
+makerspark
+aetea
+trust[ -]?loop
+trustloop
+trust[ -]?score
+abdur
+/Users/
+Side Quests
+abdur-s-mac

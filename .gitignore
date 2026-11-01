@@ -1,0 +1,7 @@
+# Workspace state — tracks, journals, scratch. Never committed.
+.worksite/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
