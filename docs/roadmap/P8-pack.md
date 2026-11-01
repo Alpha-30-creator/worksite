@@ -520,10 +520,12 @@ defect by this phase's new goal line.
 - **`ws-refine`'s own graph audit has it twice**, which makes it the sharpest and the first to fix,
   because it is the block every pack change is required to run:
   - its block opens by `cd`-ing into the library; if the `cd` fails or the glob does not expand,
-    every loop runs zero times and prints **one meaningless line** — `NAME MISMATCH: ws-* -> `,
-    from the unexpanded glob — so it **reports a clean audit of a change it never audited**,
-    defeating the skill's own line that an unaudited change is not finished. **Corrected
-    2026-11-02:** this body said "prints nothing", which asks a different thing of a reader.
+    every loop runs zero times and prints **two meaningless lines** from the unexpanded glob —
+    `NAME MISMATCH: ws-* -> ` and `DESCRIPTION PROBLEM: ws-* (0)`, plus four stderr lines from
+    `sed`/`grep` — so it **reports a clean audit of a change it never audited**, defeating the
+    skill's own line that an unaudited change is not finished. **Corrected twice, 2026-11-02:**
+    this body said "prints nothing"; the first correction said one line. It is two, measured.
+    Two findings that read as dismissible noise are easier to wave past than one.
     And a count floor alone is not the fix: run from `<repo>/skills/`, where the `cd` can fail
     and leave the shell, the block enumerates all **fourteen published skills**, resolves every
     link and reports clean — certifying the published artifact instead of the library, which is
