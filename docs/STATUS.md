@@ -13,12 +13,10 @@ inside `ws-refine` rather than something anyone remembers to do.
 
 ## In progress
 
-A three-track fanout batch, claimed 2026-11-01 by @Alpha-30-creator. p6.1 is the batch's only
-library track, deliberately: `agent-sync save` is a global deploy-and-push (p8.5), so a
-second one would publish the first's half-finished edits.
-
-| id | title | repo | owns | stage |
-|---|---|---|---|---|
+Nothing claimed. The three-track fanout batch is closed: p3.1, p3.2 and p6.1 all shipped, each
+harvested, each track retired and verified. Publishing is now live — `ws-refine` ends by running
+`scripts/publish.sh`, and the amended skill reached this repo through that mechanism rather than
+by hand.
 
 ## Blocked
 

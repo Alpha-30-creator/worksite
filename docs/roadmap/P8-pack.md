@@ -491,16 +491,25 @@ a decision about its safety rules — but if a second safety-rule change comes u
   `<project>-tracks/<id>/<repo>/dist` — 9.6M — with the task shipped and harvested four days
   earlier, its track directory gone, and all three repos' `worktree list` showing only their
   primary checkout. Both passes report nothing stale. It had survived every `ws-start` since.
-- **The mechanism is not established, and the obvious candidate is ruled out.** Tested: a clean
+- **The mechanism is now established — found by shipping the p3.1/p3.2/p6.1 batch.** `ws-start`
+  creates the worktree at `<root>/<id>/<repo>`, so it creates the parent `<id>/` as a side effect.
+  `git worktree remove` removes `<repo>`, which is the worktree; **nothing removes the parent.**
+  Retiring all three tracks of that batch left `<root>/p3.1`, `<root>/p3.2` and `<root>/p6.1` on
+  disk as empty shells, with git knowing of no worktrees and `.worksite/tracks/` empty — so both
+  sweep passes reported nothing stale while three directories sat there. Benign while empty; that
+  same shell is what a later build fills with gitignored output, which is the 9.6M case above. So
+  the fix is two parts: the third pass below, and retirement removing the parent it leaves empty.
+- **One candidate is ruled out, recorded so nobody re-derives it.** Tested: a clean
   `git worktree remove` deletes gitignored content along with the worktree, and refuses only on
-  untracked files that are **not** ignored. The leftover directory there was gitignored build
-  output, so the documented removal path did not produce this. What did — a partial hand delete, a
-  `prune` after a move, a deleted `.git` file — is unknown, and does not change the fix: no pass
-  would find it however it arose. Recorded so nobody re-derives the wrong mechanism.
+  untracked files that are **not** ignored — so the documented removal path does not itself leave
+  build output behind.
 - **Acceptance:**
   - [ ] a third pass: list the entries of the track root, subtract both the live worktree ids and
         the track directories, and report what is left as a disk-only orphan, with its size —
         size is what makes it worth acting on
+  - [ ] *Retiring a track* removes the parent `<id>/` directory when removing its last worktree
+        leaves it empty — the cheaper half of this fix, and it stops the residue being created at
+        all rather than only reporting it afterwards
   - [ ] a pass that cannot resolve the track root says so, rather than finding nothing silently.
         It depends on p8.15 for a root it can name
   - [ ] same asking rules as the other two passes: shown, never removed without a yes. A directory
