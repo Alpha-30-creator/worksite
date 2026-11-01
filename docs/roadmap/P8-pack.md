@@ -408,6 +408,11 @@ a decision about its safety rules — but if a second safety-rule change comes u
         find the bug
   - [ ] the mirror-image warning added to the cross-platform table in `ws-shared`'s reference,
         which today documents only the zsh under-splitting trap and not this one
+  - [ ] **two unlisted `What next?` exits, in these same two files** *(found 2026-11-02 by
+        p8.24's reverse coverage check, both confirmed against the files)*: `ws-plan`:15 sends
+        the agent to `ws-start` and `ws-plan`'s `What next?` does not list it; `ws-start`:16
+        offers `ws-setup` and `ws-start`'s does not list it. Added here rather than to p8.24
+        because they are p8.13's files, and the check that finds them ships with p8.24
   - [ ] changed through `ws-refine`, with its graph audit
 - **Where the three sites are (2026-11-02):** `ws-start`, `ws-plan` and `ws-review` — and
   `ws-start` itself warns against the idiom, which is the instance that proves the point. **It is
@@ -515,8 +520,15 @@ defect by this phase's new goal line.
 - **`ws-refine`'s own graph audit has it twice**, which makes it the sharpest and the first to fix,
   because it is the block every pack change is required to run:
   - its block opens by `cd`-ing into the library; if the `cd` fails or the glob does not expand,
-    every loop runs zero times and prints nothing, so it **reports a clean audit of a change it
-    never audited**, defeating the skill's own line that an unaudited change is not finished;
+    every loop runs zero times and prints **one meaningless line** — `NAME MISMATCH: ws-* -> `,
+    from the unexpanded glob — so it **reports a clean audit of a change it never audited**,
+    defeating the skill's own line that an unaudited change is not finished. **Corrected
+    2026-11-02:** this body said "prints nothing", which asks a different thing of a reader.
+    And a count floor alone is not the fix: run from `<repo>/skills/`, where the `cd` can fail
+    and leave the shell, the block enumerates all **fourteen published skills**, resolves every
+    link and reports clean — certifying the published artifact instead of the library, which is
+    ADR 0001's whole failure mode signed off green. Reproduced 2026-11-02, so the gate must
+    assert **cwd identity**, not merely a positive count;
   - its coverage is **forward only** — it verifies that every skill *named* in a `What next?` exists,
     with no reverse check that every exit the *prose* offers is listed. p8.17 added a `ws-setup`
     exit and the audit stayed clean. **The audit cannot catch the kind of gap the change introduced.**
@@ -637,6 +649,19 @@ third signal that it is not worth a track.
         other path *(from p8.8)*
   - [ ] `tracks.md` states the consequence where it describes the mirror, next to the existing
         note about `lite` projects with no `docs_home` *(from p8.8)*
+  - [ ] **§1's allowlist drops the whole line, so a private name sharing a line with the
+        allowlisted npm scope passes silently** *(measured 2026-11-02 while planning p1.2, and
+        reproduced)*. `scripts/check.sh`:46 pipes the hit list through `grep -vi 'abdur-codes'`,
+        which discards the entire output line rather than the allowlisted substring. Narrowing
+        the string to `@abdur-codes/` does **not** fix it — the fix is to strip the allowlisted
+        substring from the line before matching. Proven by a line carrying both, which must
+        FAIL §1 afterwards and passes today
+  - [ ] **`SECURITY.md` undercounts its own run sites**: it says §1 "runs in four places" and
+        lists four, omitting `scripts/publish.sh`:181, the working-tree preflight. There are
+        five automated invocations — `publish.sh`:181, `publish.sh`:277, `publish.sh`:321,
+        `.githooks/pre-commit`, `.github/workflows/check.yml`:24 — plus the documented manual
+        run at `CONTRIBUTING.md`:62. `docs/agent/risks/common.md`:56-59 repeats the same count
+        *(measured 2026-11-02 while planning p1.2)*
   - [ ] a check that `ws-shared` still carries `disable-model-invocation: true` — if it ever
         loses the flag the pack silently becomes fourteen invocable skills, and the README, the
         concepts page and the cartridge all become wrong about the count in the same moment
