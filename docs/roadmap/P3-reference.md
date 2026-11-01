@@ -45,17 +45,17 @@ pack without reading the skills' source.
 - **Notes:** the highest-value document in the repo and the one that does not exist in any form
   today. `ws-setup` generates cartridges by interview, so the format has never been written down.
 
-## [~] p3.2 — Write the concepts page · @Alpha-30-creator · 2026-11-01
+## [x] p3.2 — Write the concepts page · 2026-11-01 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/2
 
 - **Repos:** worksite
 - **Depends on:** p2.2
 - **Acceptance:**
-  - [ ] `docs/product/overview.md` — the problem, the loop, and the four design moves:
+  - [x] `docs/product/overview.md` — the problem, the loop, and the four design moves:
         generic skills plus a cartridge, tracker adapters, tracks plus an append-only journal,
         harvest-then-delete
-  - [ ] it argues for the opinions rather than listing them — gates, fresh-eyes review, the
+  - [x] it argues for the opinions rather than listing them — gates, fresh-eyes review, the
         lead that never builds — because those are the reason to adopt it
-  - [ ] the track and journal state model is explained well enough to resume cold
+  - [x] the track and journal state model is explained well enough to resume cold
 
 ## [ ] p3.3 — Write the extension guides
 

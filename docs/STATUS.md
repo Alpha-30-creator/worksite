@@ -19,7 +19,6 @@ second one would publish the first's half-finished edits.
 
 | id | title | repo | owns | stage |
 |---|---|---|---|---|
-| p3.2 | Write the concepts page | worksite | `docs/product/**` | claimed, planning |
 | p6.1 | Build publishing into ws-refine | agent-library | `skills/ws-refine/**` | claimed, planning |
 
 ## Blocked
@@ -56,6 +55,7 @@ today, so they do not have to wait for P1–P7.
 | p8.6 | worktrees defaulted to false | 2026-11-01 |
 | p8.7 | settings.json: the pack is not the cause | 2026-11-01 |
 | p3.1 | Write the cartridge schema | 2026-11-01 |
+| p3.2 | Write the concepts page | 2026-11-01 |
 
 ## Phases
 
