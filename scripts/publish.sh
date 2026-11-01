@@ -130,15 +130,17 @@ DATA=""
 for s in "${SRC[@]}"; do
   while IFS= read -r f; do
     [ -n "$f" ] || continue
-    case "$(basename "$f")" in .*) EXTRA="$EXTRA${f#$FROM/}
-"; continue ;; esac
-    case "$f" in
-      */.*/*) EXTRA="$EXTRA${f#$FROM/}
+    # Classify the path RELATIVE to the source. The source itself lives under a dot-directory
+    # (`~/.agent-sync/…`), so testing the absolute path for a dot segment would condemn every
+    # file in the library.
+    rel="${f#"$FROM"/}"
+    case "$rel" in
+      .*|*/.*) EXTRA="$EXTRA$rel
 " ;;
       *.md) ;;
-      *.tsv|*.csv|*.yaml|*.yml|*.json|*.txt) DATA="$DATA${f#$FROM/}
+      *.tsv|*.csv|*.yaml|*.yml|*.json|*.txt) DATA="$DATA$rel
 " ;;
-      *) EXTRA="$EXTRA${f#$FROM/}
+      *) EXTRA="$EXTRA$rel
 " ;;
     esac
   done < <(find "$s" ! -type d 2>/dev/null)
