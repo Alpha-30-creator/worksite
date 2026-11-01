@@ -1,0 +1,20 @@
+# ~/.agent-secrets/manifest.tsv — every encrypted file, and where it is materialised.
+#
+# Tab-separated on purpose, not YAML: the consumer is a bash loop, and neither `yq` nor `jq`
+# can be assumed on every machine.
+#
+# src	type	project	dest
+#   src     path inside the secrets store
+#   type    dotenv | json | binary
+#   dest    path RELATIVE TO THE WORKSPACE ROOT, resolved per device via device.yaml
+#
+# `dotenv` encrypts values but leaves names and comments readable, so a diff shows WHICH
+# variable changed without revealing it. `binary` makes the whole file opaque — use it for
+# SSH keys, certificates, and any file whose bytes must come back exactly.
+
+northwind/api.local.env	dotenv	northwind	northwind-api/.env
+northwind/api.staging.env	dotenv	northwind	northwind-api/.env.staging
+northwind/web.local.env	dotenv	northwind	northwind-web/.env.local
+northwind/service-account.json	json	northwind	northwind-api/secrets/service-account.json
+kestrel/api.local.env	dotenv	kestrel	kestrel-ai/.env
+atlas/deploy-key	binary	atlas	atlas-infra/.ssh/deploy-key

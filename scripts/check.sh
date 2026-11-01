@@ -24,7 +24,10 @@ files() {
   if [ "$MODE" = "--staged" ]; then
     git diff --cached --name-only --diff-filter=ACM
   else
-    git ls-files 2>/dev/null || find . -type f -not -path './.git/*' | sed 's|^\./||'
+    # --others --exclude-standard so a NEW, not-yet-staged file is checked too. Without it
+    # a manual run reports ok on a file nobody has added yet, which is a false pass.
+    git ls-files --cached --others --exclude-standard 2>/dev/null \
+      || find . -type f -not -path './.git/*' | sed 's|^\./||'
   fi
 }
 
@@ -80,6 +83,9 @@ while IFS= read -r f; do
   while IFS= read -r target; do
     [ -n "$target" ] || continue
     case "$target" in http*|mailto:*|\#*) continue ;; esac
+    # A target containing <placeholder> is a template, not a path. ws-setup/templates/ is
+    # full of them by design, and resolving one is meaningless.
+    case "$target" in *'<'*|*'>'*) continue ;; esac
     t="${target%%#*}"
     [ -n "$t" ] || continue
     [ -e "$dir/$t" ] || { say "  $f -> $target"; BROKEN=$((BROKEN + 1)); }

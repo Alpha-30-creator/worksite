@@ -1,0 +1,180 @@
+---
+name: ws-review
+description: Independently review unshipped work in a fresh context that did not write the code - compose a standalone brief from the acceptance criteria, the approved plan, the universal checks, the documentation rules, the stack packs for what changed and the project's own risk list, run it in a background subagent, then verify every finding against the code before reporting and record the ones overturned. Ends with a verdict you can act on and, where something was learned, a better risk list. Use before shipping, when asked for a code review, or when a change touches money, auth, migrations or concurrency. Not for proving the work functions, which is ws-verify.
+---
+
+# Review the current work
+
+Ends with a verdict you can act on, and — where something was learned — a risk list that is
+better than it was.
+
+## Before anything
+
+1. Read [../ws-shared/reference.md](../ws-shared/reference.md).
+2. Find the project: resolve the workspace root from `device.yaml`, then read its cartridge at
+   `<docs_home>/reference.md` if there is one.
+3. **No cartridge?** Work without it. Ask three questions and carry on: which repos changed,
+   what the change is supposed to do, and what the stack is. Never refuse for a missing
+   cartridge.
+4. Read the task and the approved plan if they exist (`<state_dir>/tracks/<id>/`, or the
+   project's own location — a project whose cartridge sets `artifacts: in-repo` keeps plans in
+   the repo, typically under `implementation_plans/<id>/`).
+5. `git -C <repo> fetch -q` for each changed repo, so the diff is against the real integration
+   branch and not a stale ref.
+
+## 1. Choose the rulebooks
+
+| Always | Then, by what changed |
+|---|---|
+| `../ws-shared/review/tier1-universal.md` | one `../ws-shared/stacks/<name>.md` per `stack:` tag on each changed repo |
+| `../ws-shared/stacks/security-baseline.md` — objective, OWASP Top 10:2025 | |
+| `../ws-shared/review/documentation.md` — where writing belongs, and what not to report | |
+| `../ws-shared/review/ai-slop.md` — any change an agent wrote | `<docs_home>/risks/common.md` and `risks/<repo>.md`, if they exist |
+| | the repo's own practices docs, named by the stack pack |
+
+Name them explicitly in the brief. A generic brief gets a generic review.
+
+## 2. Pick the risks that actually apply to *this* change
+
+Read the diff yourself first — enough to choose. From the packs and the project risks, select
+**only the items this change can plausibly trip**, and write them into the brief as specific
+questions. Six sharp risks beat forty generic ones.
+
+Always include, when the diff touches them: auth and permission gaps, a read-then-write on
+shared state, money, a migration, a new dependency, a new route, a webhook, a server-side fetch
+of a user-supplied URL, user content rendered as HTML, and any prompt built from user input.
+
+**Separate objective from preference in the brief.** An objective violation (security baseline,
+tier 1) is a defect and can block. A house preference from the project's practices docs is
+reported as a preference, with the rule it comes from named, and never blocks on its own. Tell
+the reviewer which is which, or it will report taste as though it were a bug — and you will
+stop trusting it.
+
+## 3. Run it somewhere that did not write the code
+
+**Never review in the session that wrote it.** That session reads its own intent into the code
+and will defend it. Options, in order:
+
+| Reviewer | When |
+|---|---|
+| **Background subagent** (Claude Code: the Agent tool; Codex/Cursor: their equivalent) | the default |
+| **An external agent** — Codex reviewing Claude's work, or the reverse | a delicate change: money, auth, a migration, the cap. Two different models miss different things |
+| In-session | only if no subagent exists, and only after saying so and getting a yes |
+
+Carry on with something else while it runs.
+
+### The brief must stand alone
+
+The reviewer has none of this conversation. Include:
+
+- **Layout**: workspace root path; that the root is *not* a git repo; use `git -C <repo>`; which
+  repos changed and on which branch; the integration branch to diff against.
+- **The task**: id, title, and the **acceptance criteria verbatim**, plus what is explicitly out
+  of scope.
+- **Approved decisions**, summarised in the brief itself — not a pointer to the plan.
+  *Do not report these as deviations; do report them if implemented wrongly.*
+- **The rulebooks by path**, to read in **two or three calls, never one** — a single batched read of a dozen
+  files truncates, and a reviewer that lost them says nothing and falls back to the brief. Tell it to confirm
+  it has each file's text before relying on it, and to re-read individually anything a truncated call dropped.
+- **The selected risks** from step 2, as questions.
+- **Constraints**: read-only. No edits, commits, staging, pushes, network writes, paid API
+  calls. Leave the working trees exactly as found.
+- **One-pass gather** — this single call shows branch, status, committed diff, uncommitted
+  changes and every untracked file:
+
+```bash
+cd "<workspace>"; for r in <repos>; do
+  echo "=== $r ($(git -C $r branch --show-current))"; git -C $r status --short
+  git -C $r diff origin/<integration>...HEAD; git -C $r diff HEAD
+  git -C $r ls-files --others --exclude-standard | while read -r f; do echo "--- NEW: $r/$f"; cat "$r/$f"; done
+done
+```
+
+- **Checks to run and report** pass/fail, never fix: each changed repo's `commands` from the
+  cartridge (`verify` if it has one, else typecheck/lint/test/build plus `extra`). Batch
+  independent commands into one call.
+- **Budget: 10–15 tool calls.** Each call re-sends the whole brief, so cost is round trips, not
+  bytes. Read more per call; never re-read what the diff already showed.
+- **Quote the exact source line** for every finding, never a line number — reviewers invent
+  line numbers.
+- **Declare coverage**: which files were read fully, which were skimmed.
+
+**Do not tell it what you already checked, or that anything passed.** Both bias it.
+
+## 4. Verify everything before you report it
+
+This step is what separates a review from review theatre.
+
+- **Check every finding against the code.** Grep the quoted line, read around it.
+- **Drop the wrong ones and say why**, in an *Overturned* section. A reviewer that invents
+  findings is worse than none, and you only find out by checking.
+- Do not defend code because this session wrote it. That is the whole reason for step 3.
+- **A clean review of a delicate change is a reason to look yourself** — money, a cap, auth, a
+  migration. Clean there usually means not looked at.
+
+## 5. Close the learning loop
+
+For each **confirmed** finding, ask: is this risk class already written down?
+
+| If it is | Then |
+|---|---|
+| In a pack or the project risks | nothing to do — the system worked |
+| Not written down, and it would catch bugs in **other** projects on this stack | propose one line for `../ws-shared/stacks/<name>.md` |
+| Not written down, and it is specific to this project | propose one line for `<docs_home>/risks/common.md` or `risks/<repo>.md` |
+
+Show the exact wording, wait for a yes, then write it. Stack-pack edits go through
+`agent-sync save`; project risks are a normal docs commit.
+
+**One line, phrased as what to look for.** Not a description of this bug — a description of
+the class. This is how the packs get good instead of staying a guess.
+
+## Output
+
+```markdown
+# Review: <task> <title>
+
+## Verdict
+<Ready to ship | Needs fixes | Blocked — one line why>
+
+## Acceptance
+- [x] / [ ] <criterion verbatim> — <evidence or gap>
+
+## Checks
+<repo: command — pass/fail, per changed repo>
+
+## Must fix
+## Should fix
+## Notes
+
+## Coverage
+<files read fully | skimmed | not reached>
+
+## Scope
+<in scope | drifted — what>
+
+## Overturned
+<reviewer findings that were wrong, and why>
+
+## Learned
+<risk classes proposed, and where they would go — or "nothing new">
+
+## Next step
+```
+
+## Rules
+
+- Never review in the session that wrote the code without saying so and getting a yes.
+- Never report a finding you have not verified against the code.
+- Never let "lint and typecheck pass" stand in for a verdict — that covers ~16% of what matters.
+- Read-only. The reviewer changes nothing; you change nothing in this skill either.
+- No AI attribution in anything this produces.
+
+## What next?
+
+Invoke with `/skill-name` in Claude Code or Cursor, `$skill-name` in Codex.
+
+- Fix the Must findings, then `ws-review` again
+- `ws-ship` — the verdict is ready to ship
+- `ws-debug` — a finding is a real defect with an unknown cause
+- `ws-task` — a finding is real but out of this task's scope
+- `ws-fanout` — this review is one of a batch; reconcile across the tracks there

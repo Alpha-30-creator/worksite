@@ -1,0 +1,24 @@
+# ~/.agent-sync/device.yaml — the only file that knows where things are on THIS machine.
+#
+# Always resolve a workspace path from here. Never hardcode one: another machine has
+# different paths, and that is the whole reason this file exists.
+
+device: work-laptop          # this device's id; `machine:` overrides in a cartridge key off it
+agents:
+  - claude
+  - codex
+  - cursor
+projects:
+  northwind: /Users/example/code/northwind
+  kestrel:   /Users/example/code/kestrel
+  atlas:     /Users/example/work/atlas
+unlinked: []
+
+# A project in the library but absent from `projects:` is not linked on this device
+# (`agent-sync link` / `unlink`). A workspace folder that does not exist yet is normal on a
+# new machine: `ws-sync --new-device` clones it.
+#
+# On Windows the same file reads:
+#   device: windows-desktop
+#   projects:
+#     northwind: C:/Users/example/code/northwind

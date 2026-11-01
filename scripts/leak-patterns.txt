@@ -12,6 +12,13 @@ trust[ -]?loop
 trustloop
 trust[ -]?score
 abdur
-/Users/
-Side Quests
 abdur-s-mac
+Side Quests
+# Narrowed from a bare `/Users/` on 2026-11-01. That pattern blocked the pack's own invented
+# examples, which must show a realistic absolute path to be useful, while adding nothing: the
+# only home path that matters here is the author's, and `abdur` above already catches it.
+# The broader "no hardcoded local path in a generic skill" rule is enforced by ws-refine's
+# generic-means-generic rule and by review, not by grep, because grep cannot tell a real path
+# from an illustrative one.
+/Users/abdur
+/home/abdur
