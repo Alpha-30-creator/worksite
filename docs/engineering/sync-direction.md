@@ -22,7 +22,45 @@ carried back.
 | Role | the working copy | a published artifact |
 | Edited by | `ws-refine` | nothing — it receives a copy |
 | Visibility | private | public |
-| How a change arrives | an agent edits it, `agent-sync save` deploys | the publish step in `ws-refine` (task p6.1) |
+| How a change arrives | an agent edits it, `agent-sync save` deploys | `ws-refine`'s publish step runs [`scripts/publish.sh`](../../scripts/publish.sh) |
+
+## How a publish actually works
+
+`ws-refine` ends by reading `~/.agent-sync/publish.targets` — one absolute workspace path per
+line — and running each target's own `scripts/publish.sh`. No such file means no targets, and
+nothing to publish. The target's path is never written into a skill: this repo's own location is
+one of the private names the guard looks for, so a hardcoded target would be caught by the very
+check it runs.
+
+[`scripts/publish.sh`](../../scripts/publish.sh) then:
+
+1. **refuses up front** on a missing library, a library with no `ws-*` skills, a symlink or an
+   unexpected file inside a skill directory, a tree that is not on `main`, a dirty tree, a
+   missing pre-commit hook, a `check.sh` that is already failing here, or a skill published here
+   that the library no longer has (`--prune` is how a deletion is meant, and `--prune-many` is
+   how a large one is);
+2. assembles the candidate — the library's `skills/ws-*`, selected **by glob, never by a list** —
+   inside a throwaway `git clone` of this repo, and runs
+   [`scripts/check.sh`](../../scripts/check.sh) **there**. So a leak is refused before a single
+   byte is written here: no commit, no staged change, no new file;
+3. asserts the copy is plain, with `diff -rq` of library against candidate having to be silent —
+   the property below, turned into an assertion;
+4. writes this tree and stages it, then **runs the guard and the assertion again on that staged
+   tree** — the bytes actually about to be committed, which until then nothing had checked — and
+   commits (the pre-commit hook runs the same guard once more on those bytes) and pushes.
+   Nothing to copy means "nothing to publish" and a clean exit. Any failure between the first
+   write and the commit restores this repo to the HEAD and the clean tree it was found with.
+
+Publish commits land on `main` directly rather than through a pull request. That carve-out, and
+its residual risk, are recorded in
+[ADR 0002](../decisions/0002-publishing-is-a-guarded-copy-from-the-library.md), which also holds
+the mechanism's rejected alternatives.
+
+**What a green publish does not mean.** The guard bounds the patterns listed in
+`scripts/leak-patterns.txt`. A private name nobody has added to that file passes every run, since
+they all use the same pattern list, and a secret is not a name at all. Green means "no known
+pattern", not "no private data" — which is why the script refuses unexpected files in a skill
+directory rather than trusting the scan to read them.
 
 ## Why this way round
 
