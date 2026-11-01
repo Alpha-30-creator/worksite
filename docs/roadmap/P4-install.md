@@ -31,17 +31,20 @@ reports honestly what happened.
         because `check.sh` §3 fails on a missing target. Without this criterion the links are
         never added by anyone.*
 
-## [r] p4.3 — Repo furniture · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/8
+## [x] p4.3 — Repo furniture · 2026-11-02 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/8
 
 - **Repos:** worksite
 - **Depends on:** p4.1
 - **Acceptance:**
-  - [ ] `CONTRIBUTING.md`, including `git config core.hooksPath .githooks` as step one
-  - [ ] `SECURITY.md` — what the pack does and does not protect, in the honest register the
+  - [x] `CONTRIBUTING.md`, including `git config core.hooksPath .githooks` as step one
+  - [x] `SECURITY.md` — what the pack does and does not protect, in the honest register the
         secrets docs already use
-  - [ ] `CODE_OF_CONDUCT.md`
-  - [ ] CI running `scripts/check.sh` on every PR
-  - [ ] **the link from `README.md` is added by this task.** *2026-11-02 re-scoped by
+  - [x] `CODE_OF_CONDUCT.md`
+  - [x] CI running `scripts/check.sh` on every PR
+  - [x] **the link from `README.md` is added by this task.** *2026-11-02 re-scoped by
         @Alpha-30-creator: p4.1 deliberately names these files in prose and never links them,
         because `check.sh` §3 fails on a missing target. Without this criterion the links are
         never added by anyone.*
+  - [x] *added during the batch:* `docs/engineering/layout.md` reflects the four new paths and
+        that CI now runs the suite — its own rule is that it changes in the same PR as what it
+        describes, and this change is what made it wrong
