@@ -3,7 +3,7 @@
 **Goal:** someone who has never seen this can write a cartridge, add a tracker and add a review
 pack without reading the skills' source.
 
-## [ ] p3.1 — Write the cartridge schema
+## [~] p3.1 — Write the cartridge schema · @Alpha-30-creator · 2026-11-01
 
 - **Repos:** worksite
 - **Depends on:** p2.2
@@ -38,7 +38,7 @@ pack without reading the skills' source.
 - **Notes:** the highest-value document in the repo and the one that does not exist in any form
   today. `ws-setup` generates cartridges by interview, so the format has never been written down.
 
-## [ ] p3.2 — Write the concepts page
+## [~] p3.2 — Write the concepts page · @Alpha-30-creator · 2026-11-01
 
 - **Repos:** worksite
 - **Depends on:** p2.2

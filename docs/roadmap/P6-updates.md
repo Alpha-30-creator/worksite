@@ -6,7 +6,7 @@ user who installed in January can take February's version safely.
 Shaped by [ADR 0001](../decisions/0001-library-is-the-source-of-truth.md): the library is the
 working copy, this repo is a published artifact.
 
-## [ ] p6.1 — Build publishing into ws-refine
+## [~] p6.1 — Build publishing into ws-refine · @Alpha-30-creator · 2026-11-01
 
 - **Repos:** worksite (pack)
 - **Depends on:** p2.2
