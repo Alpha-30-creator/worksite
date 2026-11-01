@@ -11,11 +11,16 @@ through that mechanism for the first time on 2026-11-01. The cartridge schema
 ([integration/cartridge-schema.md](integration/cartridge-schema.md)) and the concepts page
 ([product/overview.md](product/overview.md)) are written.
 
-**Still not installable, and no stranger has run it.** There is no `INSTALL.md` (p4.2), no
-contributing or security docs (p4.3), and no CI (p4.3) — so the pre-commit hook is the only thing
-between a private name and a public commit, and a contributor without it has nothing. The README
-is written (p4.1); it names `INSTALL.md`, `CONTRIBUTING.md` and `SECURITY.md` in prose without
-linking them, because `check.sh` §3 fails on a missing target — p4.2 and p4.3 add those links.
+**Still not installable, and no stranger has run it.** There is no `INSTALL.md` (p4.2), so there
+is nothing to point an agent at. **CI exists** since p4.3: `.github/workflows/check.yml` runs
+`bash scripts/check.sh` on every pull request and on pushes to `main`, so the pre-commit hook is no
+longer the only thing between a private name and a public commit — a contributor who never ran
+`git config core.hooksPath .githooks` is caught at the PR. Both read the same
+`scripts/leak-patterns.txt`, so the pattern list is still the limit of what either can catch, and
+a check that runs is not a check that blocks: requiring it before a merge is branch protection,
+which is p1.2. `CONTRIBUTING.md`, `SECURITY.md` and `CODE_OF_CONDUCT.md` are written and linked
+from the README; `INSTALL.md` stays unlinked prose until p4.2, because `check.sh` §3 fails on a
+missing target.
 
 **Decided:** [ADR 0001](decisions/0001-library-is-the-source-of-truth.md) — the agent-sync
 library stays the working copy, this repo is a published artifact, and publishing is a step
@@ -31,7 +36,6 @@ A two-track fanout batch, claimed 2026-11-02.
 | id | title | holder | where it is |
 |---|---|---|---|
 | p8.5 | `ws-fanout` cannot isolate work outside the project's repos | @Alpha-30-creator | claimed — the batch's one library track |
-| p4.3 | Repo furniture | @Alpha-30-creator | PR open: [#8](https://github.com/Alpha-30-creator/worksite/pull/8) |
 
 **Two tracks, not more, and the reason is p8.5 itself.** Every other open task on this board
 edits the agent-sync library, `agent-sync save` is a single global deploy-and-push, and worktrees
@@ -91,6 +95,7 @@ today, so they do not have to wait for P1–P7.
 | p3.5 | Stale pointers and the skill count in the cartridge | 2026-11-02 |
 | p4.1 | Write the README | 2026-11-02 |
 | p8.17 | `docs_home` doubles in four sites | 2026-11-02 |
+| p4.3 | Repo furniture: contributing, security, conduct and CI | 2026-11-02 |
 
 ## Phases
 
