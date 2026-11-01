@@ -72,7 +72,17 @@ in either direction. So two rules follow, and they are the only unusual thing ab
 this project:
 
 1. A workflow step that feels wrong while working here is **a finding about the product**, not a
-   nuisance. It goes through `ws-refine` or onto the roadmap, not into a workaround.
+   nuisance — and it is **recorded whatever its size**. Where it is recorded is the second
+   question, and `ws-task`'s *Where a finding belongs* answers it: `ws-refine` or a roadmap row
+   when it is work someone will do, and otherwise one line in
+   [records/known-limitations.md](../records/known-limitations.md) or the track's worklog entry,
+   which closes it. Working around it silently is still wrong — say so in the line.
+
+   **This rule had no threshold until 2026-11-02, and it cost the board nineteen rows in two
+   days.** On a repo where the product *is* the workflow, an agent running the loop meets friction
+   continuously, so an unqualified "it goes onto the roadmap" makes the agent's own experience the
+   board's primary input. The fix is not to record less; it is that a record and a task are
+   different things.
 2. The skills an agent loads come from the author's agent-sync library, not from this repo's
    `skills/` directory. The library is the working copy and this repo is a published artifact
    ([ADR 0001](../decisions/0001-library-is-the-source-of-truth.md)), so those are two copies and
@@ -106,6 +116,8 @@ The workspace root **is** the repo — a single-repo project. That matters twice
 | How a task is claimed | the `roadmap-files` adapter in the pack's `ws-shared/trackers/` |
 | The cartridge format | [../integration/cartridge-schema.md](../integration/cartridge-schema.md). The template in the pack's `ws-setup/templates/`, and this file, are worked examples of it |
 | Project-specific review risks | [risks/common.md](risks/common.md) |
+| **What each check actually covers, and what it misses** | [../engineering/layout.md](../engineering/layout.md) — the only page with the per-section blind spots, and it was unreachable from here until 2026-11-02 |
+| Limitations that are recorded rather than tracked | [../records/known-limitations.md](../records/known-limitations.md) |
 | What a shipped task left behind | [worklog/](worklog/) — one file per track, written by `ws-ship` at harvest |
 | An in-flight track's journal | `.worksite/tracks/<id>/journal.md` — **local only** here, not mirrored; see p8.8 |
 
