@@ -12,9 +12,8 @@ inside `ws-refine` rather than something anyone remembers to do.
 
 ## In progress
 
-| id | title | who | since | note |
-|---|---|---|---|---|
-| p8.1 | Make every skill model-invocable | @Alpha-30-creator | 2026-11-01 | 13 workflow skills invocable and deployed, no drift; `ws-env` gate, trigger narrowing and the `ws-refine` rules done. **Description tuning is all that remains** |
+Nothing claimed.
+
 
 ## Blocked
 
@@ -30,6 +29,8 @@ today, so they do not have to wait for P1–P7.
 | p8.3 | Close the `ws-setup` profile gap | found by using the pack on itself |
 | p8.5 | `ws-fanout` cannot isolate work outside the project's repos | found by invoking `ws-fanout` here; blocks safe parallel work on the pack |
 | p8.8 | The journal mirror leaks the device name into a public docs home | caught by the guard refusing a real commit |
+| p8.9 | The graph audit cannot see whether a referenced file reached each agent | the audit passed while a pack was missing from one agent |
+| p8.10 | Cleanup exists on exactly one path, and nothing ever sweeps | reported from real use: track files and worktrees survive a finished task, especially under fanout |
 | p1.2 | Prove the leak guard refuses a private name | now pickable; nothing else is safe until this is proven |
 | p2.2 | Translate the fourteen skills into the pack | the largest single piece of work |
 
@@ -38,6 +39,7 @@ today, so they do not have to wait for P1–P7.
 | id | title | date |
 |---|---|---|
 | p1.1 | Create the public repo and push the scaffold | 2026-11-01 |
+| p8.1 | Make every skill model-invocable | 2026-11-01 |
 | p8.2 | Teach review and planning where documentation belongs | 2026-11-01 |
 | p8.6 | worktrees defaulted to false | 2026-11-01 |
 | p8.7 | settings.json: the pack is not the cause | 2026-11-01 |

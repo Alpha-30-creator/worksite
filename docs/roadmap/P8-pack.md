@@ -6,7 +6,7 @@
 every project today, whether or not worksite ever ships. P8 can run before P2, and p8.2 probably
 should.
 
-## [~] p8.1 — Make every skill model-invocable @Alpha-30-creator · 2026-11-01
+## [x] p8.1 — Make every skill model-invocable · 2026-11-01 · @Alpha-30-creator
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -18,9 +18,17 @@ should.
         all three agents. `ws-shared` keeps the flag: it is a reference pack read by path, not
         invoked, so making it invocable would add a competitor to the trigger space with nothing
         behind it. `ws-refine` now says so, or the next agent strips it again
-  - [ ] descriptions tuned so they do not compete: `ws-plan`, `ws-task` and `ws-refine` all
-        plausibly match "this is wrong", and today only the typed command disambiguates them.
-        Each description names what it ends with, not just when to use it
+  - [x] all thirteen descriptions rewritten. **Not one of them said what the skill ends with** —
+        the audit confirmed zero before, thirteen after. Each now states its end state (`ws-plan`
+        "ends with an approved plan, never with code written"), and ten carry an explicit
+        disclaimer naming the sibling that owns the adjacent case
+  - [x] twelve collision-prone phrases checked, each now claimed by exactly one skill: "a workflow
+        step felt wrong" → `ws-refine`, "too big or unclear" → `ws-task`, "fails for an unknown
+        reason" → `ws-debug`, "whether something actually works" → `ws-verify`, "asked for a code
+        review" → `ws-review`, and so on
+  - [x] `ws-env`'s description named the author — a direct breach of the generic-means-generic
+        rule added hours earlier in this same session, caught by checking rather than by reading.
+        Now generic
   - [x] `ws-env` gains a gate: when it was **not** explicitly asked for, it runs `status` only —
         read-only, names and counts — and offers `pull`, `push` and `run` rather than performing
         them. Auto-decrypting credentials onto disk during an unrelated task is the one real
@@ -29,8 +37,12 @@ should.
         subagents and the cost is the user's
   - [x] `ws-ship` triggers only on explicit ship intent (description narrowed; the existing
         verify-passed and review-clean gates already read as refusals)
-  - [ ] tested by phrasing a request for each skill naturally, without the command, and checking
-        the right one loads and the wrong ones do not
+  - [~] **desk-verified, not live-verified.** The collision matrix proves each phrase is claimed
+        by one description, and all thirteen reached all three agents (checked per agent, applying
+        p8.9's lesson rather than trusting the library-only audit). What it does **not** prove is
+        real trigger behaviour: that needs requests phrased naturally across sessions, and the
+        author of the descriptions is the worst possible judge of whether they fire correctly.
+        Observable in ordinary use from here
   - [x] `ws-refine` no longer **mandates** the flag — its frontmatter rule required
         `disable-model-invocation: true` on every workflow skill, so without this the next skill
         it wrote would have re-added it. Replaced with the rule that a description must say what
@@ -237,3 +249,58 @@ should.
   in this session to resolve a conflict — is what made `agent-sync` treat the artifact as
   hand-edited and skip it thereafter. The real fix for that was deleting the deployed copy and
   letting it redeploy clean, which also re-recorded the hash correctly.
+
+## [ ] p8.10 — Cleanup exists on exactly one path, and nothing ever sweeps
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **The rule is not missing.** `ws-ship` section 5 is thorough: it removes `tracks/<id>`,
+  `tracks/current`, the journal mirror, and the worktree with `worktree remove` plus `prune`
+  rather than a bare folder delete. So the observed symptom — task files surviving a completed
+  task, especially under fanout — is not an absent rule. It is five ways the rule never runs.
+
+- **Gap 1 — the fanout hand-off has no channel for the track id.** This is the structural one and
+  it explains why fanout is where it shows. `ws-ship` learns which track it is on by reading
+  `tracks/current`. `ws-fanout` forbids the lead from writing it — "Do not write `tracks/current`"
+  in step 3, and "Never `tracks/current` from the lead" in its Rules — correctly, because the lead
+  holds several tracks and none is current. But step 8 then says "Ship with `ws-ship`, one track at
+  a time" **without saying how `ws-ship` is told which track**. So section 5's
+  `rm -rf <state_dir>/tracks/<id>` has no `<id>` to substitute, and the cleanup silently does
+  nothing or is skipped. The fix: `ws-ship` must accept an explicit track id, and `ws-fanout` must
+  pass it.
+
+- **Gap 2 — cleanup is late, and unverified.** It sits in section 5 of 6, after commit, PR and
+  merge. Any question or failure earlier ends the session before it. And nothing checks that the
+  deletion happened — a skipped `rm -rf` is silent, while the pack demands evidence for everything
+  else ("verify every command you report as done").
+
+- **Gap 3 — N tracks, one lead, no reconciliation.** A fanout batch leaves two to five track
+  directories. Shipping "one at a time" means five separate cleanups, and nothing at the end asks
+  whether any track directory remains for a task that is no longer open.
+
+- **Gap 4 — cleanup exists only on the ship path.** A track that is claimed and then dropped, a
+  batch abandoned, a task marked `[-]` by `ws-task` — none has a cleanup path at all. `ws-wrap`
+  keeps the track deliberately and correctly, so "paused" is not the hole; **"ended without
+  shipping" is**, and it has no owner.
+
+- **Gap 5 — worktree removal is per repo, written as one line.** `ws-start` creates a worktree
+  **per repo the task touches**; `ws-ship` shows a single `worktree remove`. A multi-repo track
+  under-removes, and an abandoned one removes nothing, leaving git metadata behind that makes the
+  next `worktree add` fail.
+
+- **Acceptance:**
+  - [ ] `ws-ship` takes the track id explicitly, falling back to `tracks/current` only when no id
+        is given; `ws-fanout` step 8 passes it per track
+  - [ ] cleanup is verified, not assumed: after deleting, confirm the path is gone and say so
+  - [ ] worktree removal loops over every repo the track touched, and `worktree prune` runs once
+  - [ ] a cleanup path for a track that ends **without** shipping — dropped, abandoned, or a task
+        marked `[-]` — owned by `ws-task` for a drop and `ws-fanout` for an abandoned batch
+  - [ ] a sweep that actually looks: `ws-start` or `ws-sync` reports track directories whose task
+        is no longer open, and stale worktrees, and offers to remove them. **Reports and asks** —
+        never discards, per the house rule
+  - [ ] `ws-fanout` step 8 reconciles at the end of a batch: no track directory left for a task
+        that is closed
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** fifth finding from using the pack, and the first reported from the author's own use
+  rather than found by a check. The shape is familiar by now: the rule is right, and the path that
+  would execute it does not exist. Gap 1 alone is a small change and worth doing first.
