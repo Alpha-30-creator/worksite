@@ -27,12 +27,8 @@ guarded plain copy, its commits land directly on `main`, with the residual risk 
 
 ## In progress
 
-| id | title | holder | where it is |
-|---|---|---|---|
-
-The critical path: the README names `INSTALL.md` as the gap, and a stranger currently has to read
-the README and then the 300-line concepts page before opening a skill. p4.2 absorbed p6.2's update
-criteria and p2.3's second example cartridge.
+Nothing claimed. p4.2 shipped 2026-11-02: the pack has an install path, and the entry point a stranger
+meets is `INSTALL.md` rather than the concepts page.
 
 ## Blocked
 
@@ -92,6 +88,7 @@ today, so they do not have to wait for P1–P7.
 | p8.17 | `docs_home` doubles in four sites | 2026-11-02 |
 | p4.3 | Repo furniture: contributing, security, conduct and CI | 2026-11-02 |
 | p8.5 | Shared external stores are declared in the cartridge | 2026-11-02 |
+| p4.2 | `INSTALL.md`, written for the agent that will run it | 2026-11-02 |
 
 ## Phases
 

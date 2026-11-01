@@ -15,7 +15,7 @@ reports honestly what happened.
   - [x] the thirteen skills in one table with what each ends with
   - [x] makes the case for the opinions; a reader should want them, not tolerate them
 
-## [r] p4.2 — Write INSTALL.md for an agent to execute · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/12
+## [x] p4.2 — Write INSTALL.md for an agent to execute · 2026-11-02 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/12
 
 - **Repos:** worksite
 - **Depends on:** p4.1
@@ -25,22 +25,22 @@ reports honestly what happened.
   tracker). Both of those tasks are dropped and their bodies kept. p6.2's remaining criterion —
   the README declining pull requests — shipped with p4.1.
 - **Acceptance:**
-  - [ ] addressed to the agent, in the same voice as agent-sync's `INSTALL.md`
-  - [ ] checks prerequisites and **stops** rather than installing runtimes itself
-  - [ ] installs or repairs agent-sync, then places the pack in the user's library and saves
-  - [ ] safe to re-run: converges instead of duplicating, and shows a diff **before** changing
+  - [x] addressed to the agent, in the same voice as agent-sync's `INSTALL.md`
+  - [x] checks prerequisites and **stops** rather than installing runtimes itself
+  - [x] installs or repairs agent-sync, then places the pack in the user's library and saves
+  - [x] safe to re-run: converges instead of duplicating, and shows a diff **before** changing
         anything *(absorbed from p6.2, 2026-11-02)*
-  - [ ] a skill the user edited locally either survives or is flagged before it is lost — never
+  - [x] a skill the user edited locally either survives or is flagged before it is lost — never
         silently overwritten *(absorbed from p6.2, 2026-11-02)*
-  - [ ] a **second** example cartridge covering a shape the first does not: a hosted tracker
+  - [x] a **second** example cartridge covering a shape the first does not: a hosted tracker
         (`github-projects` or `trello`), `artifacts: in-repo`, and a non-empty `machine:` — the
         install is the first thing that needs one, since a stranger's project is likelier to be
         the shape neither existing example tests *(absorbed from p2.3, 2026-11-02 — its one
         undelivered criterion; p3.1's blind readers wrote two such cartridges from the schema
         page alone and those are a usable starting point)*
-  - [ ] ends by pointing at `/ws-setup` for the user's first project
-  - [ ] tells the agent to report what actually happened, including failures
-  - [ ] **the link from `README.md` is added by this task.** *2026-11-02 re-scoped by
+  - [x] ends by pointing at `/ws-setup` for the user's first project
+  - [x] tells the agent to report what actually happened, including failures
+  - [x] **the link from `README.md` is added by this task.** *2026-11-02 re-scoped by
         @Alpha-30-creator: p4.1 deliberately names these files in prose and never links them,
         because `check.sh` §3 fails on a missing target. Without this criterion the links are
         never added by anyone.*
