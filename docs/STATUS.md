@@ -27,11 +27,12 @@ guarded plain copy, its commits land directly on `main`, with the residual risk 
 
 ## In progress
 
-**Nothing claimed.** The two-track batch of 2026-11-02 is closed: p4.3 and p8.5 both shipped, each
-harvested, each track retired and verified.
-
 | id | title | holder | where it is |
 |---|---|---|---|
+
+The critical path: the README names `INSTALL.md` as the gap, and a stranger currently has to read
+the README and then the 300-line concepts page before opening a skill. p4.2 absorbed p6.2's update
+criteria and p2.3's second example cartridge.
 
 ## Blocked
 
@@ -60,7 +61,6 @@ today, so they do not have to wait for P1–P7.
 | p8.31 | The leak surface has three uncovered edges | the repo is public and permanent, and the one guarantee that holds it rests on a bold reminder |
 | p8.13 | `for r in <repos>` survives in three skills | it prints success with the work still there, on a workspace whose path contains a space — this one |
 | p8.3 | Close the `ws-setup` profile gap | the first thing `INSTALL.md` will point a stranger's agent at |
-| p4.2 | Write `INSTALL.md` for an agent to execute | nothing can be installed today, which blocks every P7 task |
 | p1.2 | Prove the leak guard refuses a private name | it has refused four real commits and missed two whole classes; worth recording properly |
 | p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
 | p8.32 | A retired track leaves its parent directory behind | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |

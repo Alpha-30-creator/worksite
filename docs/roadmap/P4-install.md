@@ -15,7 +15,7 @@ reports honestly what happened.
   - [x] the thirteen skills in one table with what each ends with
   - [x] makes the case for the opinions; a reader should want them, not tolerate them
 
-## [ ] p4.2 — Write INSTALL.md for an agent to execute
+## [~] p4.2 — Write INSTALL.md for an agent to execute · @Alpha-30-creator · 2026-11-02
 
 - **Repos:** worksite
 - **Depends on:** p4.1
