@@ -25,21 +25,11 @@ risk recorded.
 
 ## In progress
 
-A four-track fanout batch, claimed 2026-11-01 by @Alpha-30-creator. p8.17 is the batch's only library
-track, deliberately: `agent-sync save` is a global deploy-and-push (p8.5), so a second one would
-publish the first's half-finished edits. Isolation was confirmed by reading `worktrees: true` out
-of the cartridge directly — **not** through `ws-fanout`'s grep, which is the very defect p8.17
-fixes.
-
-| id | title | repo | owns | stage |
-|---|---|---|---|---|
-| p4.1 | Write the README | worksite | `README.md` | claimed, planning |
-| p3.3 | Write the extension guides | worksite | `docs/engineering/{trackers,stacks,layout}.md` | claimed, planning |
-| p3.5 | Stale pointers and the skill count | worksite | `docs/agent/reference.md` | claimed, planning |
-| p8.17 | `docs_home` doubles in four sites | agent-library | `ws-fanout`, `ws-shared/tracks.md`, `docs/integration/cartridge-schema.md` | claimed, planning |
-
-Dropped from the batch: **p3.4** — its acceptance includes the root README's documentation list,
-which p4.1 rewrites wholesale. A file collision, so it runs after p4.1.
+Nothing claimed. The four-track fanout batch is closed: p4.1, p3.3, p3.5 and p8.17 all shipped,
+each harvested, each track retired and verified. **P3 is complete.** `ws-fanout`'s isolation gate
+now stops instead of guessing, and the library change reached this repo through
+[scripts/publish.sh](../scripts/publish.sh) on a real refinement — the first time that mechanism
+has run for its own sake rather than as a demonstration.
 
 ## Blocked
 
@@ -83,6 +73,10 @@ today, so they do not have to wait for P1–P7.
 | p3.1 | Write the cartridge schema | 2026-11-01 |
 | p3.2 | Write the concepts page | 2026-11-01 |
 | p6.1 | Build publishing into ws-refine | 2026-11-01 |
+| p3.3 | Write the extension guides | 2026-11-02 |
+| p3.5 | Stale pointers and the skill count in the cartridge | 2026-11-02 |
+| p4.1 | Write the README | 2026-11-02 |
+| p8.17 | `docs_home` doubles in four sites | 2026-11-02 |
 
 ## Phases
 

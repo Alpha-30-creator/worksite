@@ -57,16 +57,16 @@ pack without reading the skills' source.
         lead that never builds — because those are the reason to adopt it
   - [x] the track and journal state model is explained well enough to resume cold
 
-## [~] p3.3 — Write the extension guides · @Alpha-30-creator · 2026-11-01
+## [x] p3.3 — Write the extension guides · 2026-11-02 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/5
 
 - **Repos:** worksite
 - **Depends on:** p3.1
 - **Acceptance:**
-  - [ ] `docs/engineering/trackers.md` — the four questions an adapter answers, and a worked
+  - [x] `docs/engineering/trackers.md` — the four questions an adapter answers, and a worked
         example of adding one
-  - [ ] `docs/engineering/stacks.md` — how a review pack is selected and how to write one
-  - [ ] `docs/engineering/layout.md` — what lives where in this repo
-  - [ ] both guides state the rule that adding a tracker or stack never edits a skill
+  - [x] `docs/engineering/stacks.md` — how a review pack is selected and how to write one
+  - [x] `docs/engineering/layout.md` — what lives where in this repo
+  - [x] both guides state the rule that adding a tracker or stack never edits a skill
 
 ## [ ] p3.4 — The docs tree has no index
 
@@ -87,7 +87,7 @@ pack without reading the skills' source.
 - **Notes:** raised independently by both p3.1's and p3.2's builders. Worth doing before P3 adds
   p3.3's three extension guides.
 
-## [~] p3.5 — Stale pointers and the skill count in the cartridge · @Alpha-30-creator · 2026-11-01
+## [x] p3.5 — Stale pointers and the skill count in the cartridge · 2026-11-02 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/4
 
 - **Repos:** worksite
 - **Depends on:** p3.1
@@ -101,9 +101,9 @@ pack without reading the skills' source.
   - The cartridge's layout table has no row for `scripts/publish.sh`, which p6.1 added. The publish
     **target** must never appear there, only the script.
 - **Acceptance:**
-  - [ ] the cartridge format row points at the schema page
-  - [ ] the repo says one thing about how many skills there are
-  - [ ] `scripts/publish.sh` is in the layout table, and no publish target path is
-  - [ ] `check.sh` green, which for the first item means the link resolves
+  - [x] the cartridge format row points at the schema page
+  - [x] the repo says one thing about how many skills there are
+  - [x] `scripts/publish.sh` is in the layout table, and no publish target path is
+  - [x] `check.sh` green, which for the first item means the link resolves
 - **Notes:** each is one line. Filed rather than patched mid-batch because all three files were
   frozen for the p3.1/p3.2/p6.1 batch.

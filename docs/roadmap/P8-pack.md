@@ -585,7 +585,7 @@ a decision about its safety rules — but if a second safety-rule change comes u
   warning **is** the finding: the pack already knew the risk and wrote a reminder instead of a
   check.
 
-## [~] p8.17 — `docs_home` doubles in four sites, and `ws-fanout` silently takes the unsafe branch · @Alpha-30-creator · 2026-11-01
+## [x] p8.17 — `docs_home` doubles in four sites, and `ws-fanout` silently takes the unsafe branch · 2026-11-02 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/7
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -609,12 +609,12 @@ a decision about its safety rules — but if a second safety-rule change comes u
   harmless on the p3.1/p3.2/p6.1 batch because the lead read the cartridge directly instead of
   through that grep.
 - **Acceptance:**
-  - [ ] the four sites read the dominant form; `tracks.md` no longer contradicts itself
-  - [ ] `ws-fanout`'s isolation gate distinguishes "`worktrees` is absent or false" from "the
+  - [x] the four sites read the dominant form; `tracks.md` no longer contradicts itself
+  - [x] `ws-fanout`'s isolation gate distinguishes "`worktrees` is absent or false" from "the
         cartridge could not be read at all", and the second is a **stop**, not the `false` branch.
         A gate that cannot find its input must not silently choose the unsafe answer
-  - [ ] p3.1's gap 13 updated or closed to match what the pack then does
-  - [ ] changed through `ws-refine`, with its graph audit
+  - [x] p3.1's gap 13 updated or closed to match what the pack then does
+  - [x] changed through `ws-refine`, with its graph audit
 - **Notes:** found by p3.1's blind reader, which wrote `docs_home: docs/agent` from the page and
   produced a path that resolves nowhere. The documentation task surfaced a pack defect, which is the
   argument for writing schemas down.
