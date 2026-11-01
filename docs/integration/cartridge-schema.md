@@ -80,7 +80,10 @@ Read these before the tables, because every cell below depends on them.
 
 **R1 — Degrade, never fail.** A missing key means less capability, never an error
 (`ws-refine`:66-67). No skill refuses to run over an absent key, and `ws-env` and `ws-sync` must
-work with **no cartridge at all** (`ws-shared/reference.md`:190). The four skills that say
+work with **no cartridge at all** (`ws-shared/reference.md`:190). **One stated exception, and it
+is about the cartridge rather than a key:** `ws-fanout` stops when the cartridge cannot be *read*,
+because it cannot otherwise tell isolation-off from cannot-tell, and the branch it would fall to
+puts parallel builders in one working tree (`ws-fanout`:61-76). The four skills that say
 out loud what they do with no cartridge do different things, and the difference is deliberate:
 
 | Skill | With no cartridge | Cited |
@@ -88,7 +91,7 @@ out loud what they do with no cartridge do different things, and the difference 
 | `ws-review` | works without it; asks three questions — which repos changed, what the change should do, what the stack is — and never refuses | `ws-review`:16-18 |
 | `ws-start` | offers `ws-setup` in adopt mode, then continues as best it can | `ws-start`:16 |
 | `ws-sync` | skips the generated-instructions step and says nothing | `ws-sync`:101 |
-| `ws-fanout` | offers to set the key it needs via `ws-refine`, and refuses to invent a third option | `ws-fanout`:40-48 |
+| `ws-fanout` | **stops.** With no readable cartridge it cannot establish whether worktrees isolate the tracks, so it spawns nothing and asks for the right `docs_home` or offers `ws-setup`. With a cartridge that is merely *missing the key*, it offers to set it via `ws-refine` and refuses to invent a third option | `ws-fanout`:50-59, 61-76 |
 
 **R2 — `TODO:` is a valid value; an invented fact is not.** *"Never invent a fact to fill a
 field — a wrong fact in the cartridge is worse than a missing one, because every skill reads
@@ -195,19 +198,19 @@ worktrees: true
 | `docs_home` | path to the agent docs directory — **it ends `/agent`** | no | none | `ws-start`, `ws-plan`, `ws-verify`, `ws-wrap`, `ws-review`, `ws-ship`, `ws-setup`, `ws-refine`, `ws-fanout` | on a `lite` project, a local journal only, with no mirror and nothing on the other machine, said once when the track is created (`ws-shared/tracks.md`:77). What a **`full`** project without it does is *inferred*: the journal cannot be mirrored and `risks/`, `rules/` and `worklog/` have no location |
 | `artifacts` | `workspace-state` \| `in-repo` | no | `workspace-state` — stated (`ws-shared/tracks.md`:37) | `ws-plan`, `ws-review`, `ws-ship` | `workspace-state` — plans and journals in `<state_dir>`, never in a repo (`ws-plan`:52) |
 | `agents_file` | `copy` \| `include` \| `symlink` | no | none — *template ships* `copy` | `ws-sync` | the deployed `AGENTS.md` is not refreshed or drift-checked — *inferred* |
-| `worktrees` | boolean | no | none — *template ships* `true`, and an absent key is **not** `true` | `ws-start`, `ws-plan`, `ws-fanout` | `ws-fanout` greps `^worktrees:` (`ws-fanout`:32) and an absent key reads as not-`true`, so it takes the `false` branch and will not fan out without hard per-repo ownership — *inferred* |
+| `worktrees` | boolean | no | none — *template ships* `true`, and an absent key is **not** `true` | `ws-start`, `ws-plan`, `ws-fanout` | `ws-fanout` tests that the cartridge is **readable**, then greps `^worktrees:` (`ws-fanout`:31-48). Three outcomes, all stated rather than inferred: `true` proceeds; an **absent key reads as not-`true`**, so it takes the `false` branch and will not fan out without hard per-repo ownership; an **unreadable cartridge is a stop**, not that branch — spawn nothing, and the "different repos" option is disqualified by name because its own precondition is the unread `repos:` list (`ws-fanout`:61-76) |
 
 **`artifacts: in-repo` relocates the plan, and only the plan.** There is no key that puts the
 journal or the verify evidence in a repo: those stay ephemeral workspace state under
 `<state_dir>/tracks/<id>/` on every project, and `ws-ship` deletes them at ship whatever
-`artifacts` says (`ws-shared/tracks.md`:100-106, 185; `ws-ship`:146). If what you want is "the
+`artifacts` says (`ws-shared/tracks.md`:102-108, 187; `ws-ship`:146). If what you want is "the
 plan is a reviewable artefact in the repo", that is what this key gives you. If what you want is
 "the journal is in the repo too", the pack cannot express it.
 
 The plan goes to `<repo>/implementation_plans/<id>/plan.md`,
 committed on the task branch, and the branch itself is how it crosses machines — so no journal
 mirror is needed (`ws-shared/tracks.md`:37-38, 76; `ws-plan`:50-51). `ws-ship` keeps that plan and
-deletes only the journal and the verify scratch (`ws-ship`:146, `ws-shared/tracks.md`:104-106, 185).
+deletes only the journal and the verify scratch (`ws-ship`:146, `ws-shared/tracks.md`:106-108, 187).
 `ws-review` looks for the plan there rather than in `<state_dir>` (`ws-review`:20). It is a
 company convention on some projects: *"respect it; do not argue with it"*
 (`ws-shared/tracks.md`:40-41). **On a multi-repo project, nothing specifies which repo holds the
@@ -227,9 +230,17 @@ the project's own review risks (`ws-plan`:44, `ws-review`:32, `ws-refine`:32, `w
 `<docs_home>/worklog/<id>.md` the harvest (`ws-ship`:100, `ws-task`:67),
 `<docs_home>/workspace/AGENTS.md` the instruction source (`ws-sync`:90) and
 `<docs_home>/journal/<id>.md` the mirror (`ws-shared/tracks.md`:72). On a single-repo project
-that is `<repo>/docs/agent`; on a multi-repo project, `<docs repo>/agent`. **Four sites in the
-pack assume otherwise** and append a second `/agent` — see [gap 13](#known-gaps), which matters
-on any project that writes the dominant form.
+that is `<repo>/docs/agent`; on a multi-repo project, `<docs repo>/agent`. **The form is uniform
+across all 35 `<docs_home>` sites in the pack** — the four that appended a second `/agent` were
+fixed in p8.17 (see [gap 13](#known-gaps)).
+
+Two places settle the form independently of any count, because they **define** the key rather
+than read it: `ws-setup/templates/cartridge.md`:6 writes `docs_home: <project>-docs/agent`, and
+`ws-shared/examples/cartridge.md`:6 ships `northwind-docs/agent` — the `/agent` suffix is part of
+the value, so there was never a question of which form wins. A third corroborates it from the
+other direction: `ws-shared/stacks/hexagonal-nest.md`:7 reads the practices docs at
+`<docs_home>/../engineering/`, which resolves only if `docs_home` sits one level below the docs
+root.
 
 **`state_dir` is never committed.** On a multi-repo project the workspace root is not a git repo,
 which is what keeps it uncommittable. On a single-repo project the root *is* a repo, so
@@ -501,7 +512,7 @@ git_flow:
 | `git_flow.branch_pattern` | string; the placeholders are `<type>`, `<id>`, `<slug>` | no | none | `ws-plan`, which names the branches per repo from it (`ws-plan`:65) | `ws-plan` has no pattern to form branch names from and must ask or invent — *inferred* |
 | `git_flow.pr_into` | string — a branch name, or the literal `integration_branch` to mean each repo's own. **Prefer the literal** — see below | no | `integration_branch` — *inferred* | `ws-ship`, which opens the PR `--base <integration>` *(by concept, not by name)* | each repo's `integration_branch` — *inferred* from `ws-ship`:68-72, which speaks only of "the integration branch" |
 | `git_flow.release` | string, free prose — how a release happens | no | none | `ws-ship`, whose Releases section treats a release as a separate explicit act *(by concept, not by name)* | `ws-ship` has no release procedure to follow and must ask — *inferred* |
-| `git_flow.forbidden` | list of strings — actions never to take in this project | no | `[]` — *inferred* | `ws-fanout`, which carries the project's overriding rules into every build brief *(by concept, not by name)* | the pack's own universal bans still apply — never `--no-verify`, never `git add -A`, no force-push (`ws-ship`:64-65, `ws-fanout`:193) — but nothing project-specific is passed on — *inferred* |
+| `git_flow.forbidden` | list of strings — actions never to take in this project | no | `[]` — *inferred* | `ws-fanout`, which carries the project's overriding rules into every build brief *(by concept, not by name)* | the pack's own universal bans still apply — never `--no-verify`, never `git add -A`, no force-push (`ws-ship`:64-65, `ws-fanout`:220) — but nothing project-specific is passed on — *inferred* |
 
 **Prefer `pr_into: integration_branch` over naming a branch, even when every repo uses the same
 one.** `repos[].integration_branch` is read for more than the PR base: `ws-review`:71 diffs
@@ -746,7 +757,11 @@ Everything above is checkable against `skills/`. These are the places where the 
 schema do not line up. Each is a candidate for `ws-task`, and none should be closed by writing
 documentation for a key that does not exist.
 
-Recorded 2026-11-01 against `skills/` at commit `683a6ed`.
+Recorded 2026-11-01 against `skills/` at commit `683a6ed`. Row 13 and the `worktrees` row
+re-checked 2026-11-02 against the **library** at commit `63c6235`; this repo's own `skills/` copy
+is a published copy and does not carry that change until `scripts/publish.sh` runs. Between the
+library landing it and that publish, `check.sh` §4 reports parity drift — informational, never a
+failure, and the state every change passes through (`docs/engineering/layout.md`:73).
 
 | # | Gap | Evidence | Follow-up |
 |---|---|---|---|
@@ -762,7 +777,7 @@ Recorded 2026-11-01 against `skills/` at commit `683a6ed`.
 | 10 | **`artifacts: in-repo` does not say which repo.** The path is `<repo>/implementation_plans/<id>/`, and on a multi-repo project nothing names the repo | `ws-shared/tracks.md`:38, `ws-plan`:50-51 | either a key, or a stated rule such as "the repo the task's first step touches" |
 | 11 | **`tracker.statuses` has no schema.** The adapter names the key and never says what shape it takes, so two projects will write it differently and neither is wrong | `ws-shared/trackers/github-projects.md`:4 | the adapter should show the shape it expects |
 | 12 | **Degrade behaviour is stated globally and almost never per key.** R1 and four per-skill no-cartridge behaviours are written down; individual keys are not, which is why most "missing →" cells on this page are marked *inferred* | `ws-shared/reference.md`:190, `ws-refine`:66-67 vs. the tables above | each *inferred* cell is one line a skill could state about itself |
-| 13 | **Four sites append a second `/agent` to `docs_home`.** 27 sites across 13 skills treat `docs_home` as the agent directory itself; four treat it as the docs root and append `/agent`. `ws-shared/tracks.md` contradicts **itself** between :72 and :108. This is live, not theoretical: on a cartridge saying `docs_home: docs/agent`, `ws-fanout`:32 greps `docs/agent/agent/reference.md`, which does not exist — so its isolation check reads as `worktrees` absent and it takes the `false` branch | the dominant form: `ws-shared/reference.md`:187, `ws-start`:15, `ws-review`:15, `ws-setup`:111, `ws-ship`:100, `ws-plan`:44, `ws-verify`:52, `ws-debug`:13, `ws-task`:67, `ws-refine`:32, `ws-shared/tracks.md`:72. The four exceptions: `ws-fanout`:32, :136, :192 and `ws-shared/tracks.md`:108 | a pack defect, filed as its own task. The four sites should drop the extra `/agent` |
+| 13 | **Resolved in p8.17 — but kept, because the history is worth a cartridge author's time.** `docs_home` ends `/agent`, and **31 of the pack's 35 `<docs_home>` sites** (30 direct children plus one parent-relative read) across **12 skill directories / 16 files** always treated it as the agent directory itself; four treated it as the docs root and appended a second `/agent`, and `ws-shared/tracks.md` contradicted **itself** between :72 and :108 (now :110). *(The figures first recorded here — "27 sites across 13 skills" — were wrong in both numbers and are corrected above.)* It was live, not theoretical: on a cartridge saying `docs_home: docs/agent`, the gate's old single command (`ws-fanout`:32 as of `683a6ed`) grepped `docs/agent/agent/reference.md`, which does not exist, so the isolation gate read `worktrees` as absent and took the `false` branch — the one that shares a single working tree between parallel builders. The four sites now read the dominant form, and the gate was rewritten: it tests readability **before** content and an **unreadable cartridge is a stop**, not the `false` branch | the four former exceptions, now fixed: `ws-fanout`:36, :162, :218 and `ws-shared/tracks.md`:110. The dominant form: `ws-shared/reference.md`:187, `ws-start`:15, `ws-review`:15, `ws-setup`:111, `ws-ship`:100, `ws-plan`:44, `ws-verify`:52, `ws-debug`:13, `ws-task`:67, `ws-refine`:32, `ws-shared/tracks.md`:72. The gate's three outcomes and its stop: `ws-fanout`:31-48, 61-76 | **done** — fixed in p8.17, library commit `63c6235`. Two follow-ups it raised, neither in scope there: three other gates in the pack read an empty result as a negative answer (`ws-refine`'s own graph audit, `ws-shared/trackers/roadmap-files.md`:25-27, `ws-setup`:22-24), and the pattern — *a gate whose input is unreadable must not pick the unsafe default* — is worth a universal review risk |
 | 14 | **`tracker.lists` cannot name the done list.** The adapter defines `tracker.lists` as *"the names of the lists that mean open and in progress"* — two lists. It then instructs the agent to move a finished card *"where the team puts done cards"* and, for review, to **ask** where a finished card should go. So on every Trello project the two most common operations end in a question the cartridge is structurally unable to answer, once per card, forever. **This is the sharpest authoring gap on the page**: unlike `merge_style` it is not a missing key with an obvious shape — the key exists and its documented contract excludes the values a writer most wants to set | `ws-shared/trackers/trello.md`:3-4 vs. :48-53 | `tracker.lists` should take `done` and `review` alongside `open` and `in_progress`, or the adapter should say the asking is intended |
 
 ---
