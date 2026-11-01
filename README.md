@@ -90,6 +90,8 @@ on now.
 
 ## Documentation
 
+- [docs/README.md](docs/README.md) — the map of the docs tree: which page answers which
+  question, and which folders are living versus immutable. The index for everything below.
 - [INSTALL.md](INSTALL.md) — the install, addressed to an agent: prerequisites, the library, the
   comparison that runs before anything is written, and where to go for the first project.
 - [docs/product/overview.md](docs/product/overview.md) — the full argument: the loop, each
