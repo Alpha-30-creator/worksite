@@ -31,7 +31,7 @@ done
 Report any repo that is dirty, behind, diverged, `[gone]`, or not on its integration branch.
 **Do not discard anything** — report and ask. Pull the docs repo if the tracker lives there.
 
-## 2. Is something already yours?
+## 2. Is something already yours — and is anything stale?
 
 Check in this order, because the answer changes what you ask:
 
@@ -43,14 +43,125 @@ ls <state_dir>/tracks/ 2>/dev/null                  # every track on this machin
 - **`current` is set** → say which track, its stage from the last journal entry, and its "next"
   line. Ask: continue it, or switch? Continuing → re-read the journal and stop here.
 - **Other tracks exist** → list them with their last stage, so you can see what you have open.
+- **`current` names a directory that does not exist** → ask which track, and offer to clear the
+  file. One line.
 - **The tracker shows work claimed by you that has no local track** → you claimed it on the
   other machine. Say so, and offer to recreate the track from the journal mirror.
+
+### The stale sweep
+
+Nothing else in the loop ever looks at a track directory it did not create, so stale state
+accumulates silently until a `worktree add` fails at step 6 — a few lines below this one. This is
+the only sweep, and it runs here because step 3's board fetch gives it everything it needs for
+free.
+
+Gather the facts per directory under `<state_dir>/tracks/`, then print the table **with the board
+in step 3**, before the claim:
+
+| Looks at | How |
+|---|---|
+| is the task still open? | its id **absent** from the adapter's open + claimed + blocked ids |
+| what stage it reached | the last journal entry heading in `journal.md` |
+| does a worktree exist | `git -C <repo> worktree list --porcelain`, per repo, matched as in *Retiring a track* |
+| does that worktree hold work | `status --porcelain` non-empty, or `log --oneline @{u}..HEAD` non-empty |
+| age | mtime of the newest file in the track directory |
+
+Match the worktree path **one whole segment at a time**, as *Retiring a track* in
+[../ws-shared/tracks.md](../ws-shared/tracks.md) does — never with a `grep` on the id. A bare
+`grep` treats the dot in `p3.1` as a wildcard and matches a `p3.10` worktree; `grep -F "/<id>/"`
+fixes that and then misses the single-repo layout, where the path ends at the id. Both are wrong
+answers with no error.
+
+**How strong "absent from the list" is depends on the tracker, and you must say which you have.**
+On `roadmap-files` and `tasks-file` the list greps the status markers explicitly, so absence does
+mean closed — done, dropped, or never real. On `github-projects` and `trello` the list is
+**status-filtered** (github-projects defaults to the project's to-do equivalent), so an item
+merely moved to another status is absent too. There, absence is a weaker signal and the question
+says so: "no longer in the board's list — closed, or moved?" rather than "closed".
+
+**Orphan worktrees need a second pass, in the other direction.** The loop above walks the track
+directories, so a worktree whose directory is already gone is never enumerated by it — and that
+is precisely the residue of a folder deleted by hand, and the thing that breaks the next
+`worktree add`. List the worktrees per repo, take the id segment of each, and subtract the set of
+track directories:
+
+```bash
+# every worktree id under the project's track root, per repo
+while IFS= read -r r; do
+  [ -n "$r" ] || continue
+  git -C "$r" worktree list --porcelain | sed -n 's|^worktree ||p' \
+    | awk -F/ -v root="<project>-tracks" '
+        { for (i = 1; i < NF; i++) if ($i == root) { print $(i+1); next }
+          if ($NF == root) next }'
+done <<REPOS
+<repo paths, one per line>
+REPOS
+# then: any id printed here with no <state_dir>/tracks/<id>/ is an orphan worktree
+```
+
+Repo paths are read line by line, never `for r in $repos`: a workspace path with a space in it
+word-splits under `for` in bash, every `git -C` fails on a fragment, and the sweep then reports
+**nothing stale** while the stale state is still there. Report each orphan on one line, with the
+same asking rules as the table.
+
+### What it prints, and how it asks
+
+One table, **only when there is something in it**. Silent otherwise: a sweep that prints "nothing
+stale" on every `ws-start` is a sweep people stop reading.
+
+The `Tracker` column says only what **this** adapter can actually tell you, and the question is
+worded to match. With a marker-based adapter (`roadmap-files`, `tasks-file`) absence is exact:
+
+```markdown
+### Stale track state  ·  tracker: roadmap-files (status read directly)
+
+| Track | Tracker | Stage | Worktree | Holds work | Age |
+|---|---|---|---|---|---|
+| p3.2 | done | shipped | ../<project>-tracks/p3.2 | no | 6d |
+| p4.1 | dropped | planned | — | — | 11d |
+| p5.4 | claimed | step 3 | ../<project>-tracks/p5.4 | **2 uncommitted** | 2d |
+
+p3.2 and p4.1 are closed. Retire both? (removes the track directory and the worktree; branches,
+commits and PRs are untouched)
+p5.4 is still claimed and holds uncommitted work — left alone. `ws-wrap` pushes it and notes it.
+```
+
+With a status-filtered adapter (`github-projects`, `trello`) the same two rows can say no more
+than "absent", and the question must not launder that into "closed":
+
+```markdown
+### Stale track state  ·  tracker: github-projects (list is status-filtered — absence is not proof)
+
+| Track | Tracker | Stage | Worktree | Holds work | Age |
+|---|---|---|---|---|---|
+| p3.2 | not in the board's list | shipped | ../<project>-tracks/p3.2 | no | 6d |
+| p4.1 | not in the board's list | planned | — | — | 11d |
+
+p3.2 and p4.1 are no longer in the board's list — closed, or moved to another status? If they are
+finished, retire both (track directory and worktree only).
+```
+
+- **It reports and asks. It never removes anything on its own**, not even for a task the tracker
+  shows as done. Retiring is **Retiring a track** in
+  [../ws-shared/tracks.md](../ws-shared/tracks.md), run only after a yes, **per track and with
+  that track's id** — never once over a list, because the id guards the `rm -rf`.
+- **One question for the clearly-finished set** — closed task, no uncommitted and no unpushed
+  work — answerable in one word. Five separate prompts is how a sweep becomes an obstacle.
+- **A per-track question for anything that holds work** — and that question is never "remove
+  it?". A track holding uncommitted or unpushed work is reported and offered `ws-wrap`, which
+  pushes it and writes the note; offering removal is an invitation to lose it.
+- **A still-claimed track is never offered**, whatever its age. It is your open work.
+- **Declining is remembered for this session only.** No new state file; a second `ws-start` in
+  the same session does not re-ask.
 
 ## 3. Show the board
 
 Via the adapter: in progress first (and by whom), then blocked, then pickable now. Recommend one
 and say why in a line. **The user picks.** Flag anything that touches the same files as someone
 else's in-progress task.
+
+The adapter's lists are also what step 2's sweep needs, so print its table here, under the board
+and before the claim — once, and only if it has rows.
 
 ## 4. Claim it
 
@@ -75,6 +186,7 @@ Write `task.md`:
 - Claimed: <date> by <handle> on <device>
 - Repos: <which this touches>
 - Branches: none yet
+- Worktrees: none yet
 - Plan: none yet
 - PRs: none
 
@@ -97,6 +209,17 @@ Only when `worktrees: true`. Create one **per repo the task actually touches**, 
 git -C <repo> worktree add "../<project>-tracks/$id/<repo>" -b <branch-pattern-filled-in>
 ```
 
+**Write every path you create into `task.md`'s `- Worktrees:` line**, repo by repo:
+
+```markdown
+- Worktrees: <repo> → ../<project>-tracks/<id>/<repo>, <repo> → ../<project>-tracks/<id>/<repo>
+```
+
+That line is what later retires the track without guessing. It is one line now and a git sweep
+later: *Retiring a track* in [../ws-shared/tracks.md](../ws-shared/tracks.md) falls back to
+`git worktree list --porcelain` when it is missing, which is slower and only works while the repo
+list is still known.
+
 Then materialise env into it — a fresh worktree has **no** gitignored files, so nothing runs
 until you do:
 
@@ -118,6 +241,8 @@ applies, and anything unclear or blocked. **Do not plan. Do not write code.**
 - Never claim without the adapter's re-check-after-rejection step.
 - Never set `current` for a track you did not just claim or resume.
 - Never discard uncommitted work to make a clean start — ask.
+- **A stale track is reported and offered, never removed unasked** — and a track holding
+  uncommitted or unpushed work is never offered at all.
 - One track is current per session; several tracks may exist at once.
 
 ## What next?

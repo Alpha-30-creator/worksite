@@ -109,7 +109,11 @@ Then per track: create `<state_dir>/tracks/<id>/`, write `task.md`, append a `cl
 entry, and create the worktree if isolation is on.
 
 **Do not write `tracks/current`.** That file is for a single session working one track; the lead
-is working several and none of them is "current". Each subagent is told its own track explicitly.
+is working several and none of them is "current". Each subagent is told its own track explicitly,
+**and so is `ws-ship` at step 8** — you name the track id in the invocation. That is the
+replacement channel for the file you are not writing: omit it and `ws-ship` has no id to clean up
+with, which is a **stop**, not a harmless no-op — an unguarded cleanup with an empty id targets
+`<state_dir>/tracks/` itself, every other track included.
 
 ## 4. Plan every track, and get them approved — before any code
 
@@ -244,12 +248,50 @@ One table, then the decisions:
 1. …
 ```
 
-**Ship with `ws-ship`, one track at a time, in dependency order.** Never a batch merge: if
-something breaks you want to know which track did it, and a single merge of five tracks tells
-you nothing.
+**Ship with `ws-ship`, one track at a time, in dependency order, naming the track id in the
+invocation** — `/ws-ship p3.2`, then `/ws-ship p5.4`. The lead never writes `tracks/current`, so
+the id in the invocation is `ws-ship`'s **only** source for it. Omit it and `ws-ship` has to stop
+and ask which track it is shipping: that is the good outcome, and the reason it is written as a
+stop is that the alternative — a cleanup running with an empty id — targets `<state_dir>/tracks/`
+itself and takes every other track with it. Either way the batch does not finish itself, so pass
+the id.
+
+Never a batch merge: if something breaks you want to know which track did it, and a single merge
+of five tracks tells you nothing.
 
 Append a journal entry per track before handing off, so each one can be resumed cold by a normal
 single-track session — fanning out must not leave state only this lead understands.
+
+### An abandoned batch
+
+A batch does not always end in ships. The user stops it; a plan is rejected after its track
+directory was created; a claim is lost; a subagent fails. In every one of those the lead
+**reconciles every track it created** — there is no other owner, because no single-track session
+knows these tracks exist. Each one gets exactly one of three endings, by name:
+
+- **shipped** — `ws-ship`, with the id in the invocation.
+- **wrapped** — `ws-wrap`, which keeps the track deliberately. A subagent that failed leaves its
+  track **claimed and unfinished**: that is a wrap, not a retirement.
+- **retired** — session state removed, per **Retiring a track** in
+  [../ws-shared/tracks.md](../ws-shared/tracks.md): say what survives, show it, wait for a yes,
+  remove per repo, verify. Branches, commits and PRs are kept. A worktree holding uncommitted or
+  unpushed work is a refusal — wrap it instead.
+
+### Reconcile before you call the batch done
+
+The last thing step 8 does, after the report table and after the ships. For every track in the
+batch, check `<state_dir>/tracks/<id>/` and `git worktree list --porcelain` in each repo —
+matching the worktree path one whole segment at a time, as *Retiring a track* shows:
+
+- A directory or worktree still present for a task the tracker shows as **closed** means that
+  track's `ws-ship` did not finish its closing step. Say which, and retire it per *Retiring a
+  track*. You are finishing what `ws-ship` started, not running a second cleanup mechanism.
+- A directory for a task still in progress is a wrapped or unfinished track and is **kept**. Say
+  which, and why.
+
+Then end the batch with one line per track: **shipped, wrapped, or retired.** The failure to
+avoid is a lead reporting "batch done" with three track directories and three worktrees still on
+disk and not a word about them.
 
 ## Rules
 
@@ -260,7 +302,10 @@ single-track session — fanning out must not leave state only this lead underst
 - **No track that overlaps another's files.** Drop it and run it afterwards.
 - **Never the same agent for building and reviewing** a track.
 - **Subagents commit but never push, PR or merge.**
-- **Never `tracks/current`** from the lead.
+- **Never `tracks/current`** from the lead — pass the track id to `ws-ship` in the invocation
+  instead; that is the only channel it has.
+- **Never end a batch without saying what happened to every track directory it created** —
+  shipped, wrapped, or retired, one line each.
 - **Never report a subagent's claim as fact.** Check the diff before saying something is done —
   a returned report is a claim, not evidence.
 - If a subagent fails or returns nothing useful, say so plainly and leave that track claimed and
