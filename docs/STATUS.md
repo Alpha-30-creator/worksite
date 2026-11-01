@@ -14,7 +14,8 @@ through that mechanism for the first time on 2026-11-01. The cartridge schema
 **Still not installable, and no stranger has run it.** There is no `INSTALL.md` (p4.2), no
 contributing or security docs (p4.3), and no CI (p4.3) — so the pre-commit hook is the only thing
 between a private name and a public commit, and a contributor without it has nothing. The README
-is being rewritten now (p4.1).
+is written (p4.1); it names `INSTALL.md`, `CONTRIBUTING.md` and `SECURITY.md` in prose without
+linking them, because `check.sh` §3 fails on a missing target — p4.2 and p4.3 add those links.
 
 **Decided:** [ADR 0001](decisions/0001-library-is-the-source-of-truth.md) — the agent-sync
 library stays the working copy, this repo is a published artifact, and publishing is a step
@@ -25,11 +26,21 @@ risk recorded.
 
 ## In progress
 
-Nothing claimed. The four-track fanout batch is closed: p4.1, p3.3, p3.5 and p8.17 all shipped,
-each harvested, each track retired and verified. **P3 is complete.** `ws-fanout`'s isolation gate
-now stops instead of guessing, and the library change reached this repo through
-[scripts/publish.sh](../scripts/publish.sh) on a real refinement — the first time that mechanism
-has run for its own sake rather than as a demonstration.
+A two-track fanout batch, claimed 2026-11-02.
+
+| id | title | holder | where it is |
+|---|---|---|---|
+| p8.5 | `ws-fanout` cannot isolate work outside the project's repos | @Alpha-30-creator | claimed — the batch's one library track |
+| p4.3 | Repo furniture | @Alpha-30-creator | claimed |
+
+**Two tracks, not more, and the reason is p8.5 itself.** Every other open task on this board
+edits the agent-sync library, `agent-sync save` is a single global deploy-and-push, and worktrees
+isolate checkouts rather than the library — so at most one library track may run per batch until
+p8.5 lands. p3.4 was dropped from the batch because it owns `README.md`, which p4.3 owns; p1.2 was
+dropped because two of its criteria are p4.3's deliverables. Both run straight after.
+
+The previous four-track batch is closed: p4.1, p3.3, p3.5 and p8.17 all shipped, each harvested,
+each track retired and verified. **P3 is complete** apart from p3.4.
 
 ## Blocked
 
@@ -43,7 +54,6 @@ today, so they do not have to wait for P1–P7.
 | id | title | why now |
 |---|---|---|
 | p8.3 | Close the `ws-setup` profile gap | found by using the pack on itself |
-| p8.5 | `ws-fanout` cannot isolate work outside the project's repos | found by invoking `ws-fanout` here; blocks safe parallel work on the pack |
 | p8.8 | The journal mirror leaks the device name into a public docs home | caught by the guard refusing a real commit |
 | p8.9 | The graph audit cannot see whether a referenced file reached each agent | the audit passed while a pack was missing from one agent |
 | p1.2 | Prove the leak guard refuses a private name | it has now refused four real commits, and missed two whole classes; worth recording properly |

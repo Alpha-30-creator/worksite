@@ -130,7 +130,7 @@ should.
 - **Notes:** distinct from p7.1. That one asks whether a stranger can install it; this asks
   whether the pack is honest about the projects it claims to handle.
 
-## [ ] p8.5 — ws-fanout cannot isolate work that lives outside the project's repos
+## [~] p8.5 — ws-fanout cannot isolate work that lives outside the project's repos · @Alpha-30-creator · 2026-11-02
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
