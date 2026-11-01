@@ -35,6 +35,10 @@ This repo is a one-way mirror of one person's working setup: a merge here would 
 the next publish. That is not a judgement on the change — the mechanism simply has no place to
 keep it.
 
+The workflow is triggered by pull requests anyway, and that is not a contradiction: the
+maintainer's own tracks merge into `main` through pull requests, which is what the trigger is for.
+What has nowhere to be kept is a patch from outside.
+
 So there are two things to do instead:
 
 - **Fork it** if you want it different. That is the intended answer, and the licence allows it.
@@ -62,7 +66,8 @@ That is the **whole** suite. There is no typecheck, no linter, no test runner an
 those are absent on purpose rather than unfinished — a repo of Markdown and two shell scripts does
 not get an invented test runner. The script has four sections: private names, skill frontmatter,
 relative links, and library parity. Section 4 is informational and never fails. Sections 1 to 3
-fail with a file and a line.
+fail, and each says only as much as it knows: section 1 prints the file **and the line**, section 3
+prints the file and the link that did not resolve, and section 2 prints the skill's name.
 
 Two things worth knowing before you rely on it:
 

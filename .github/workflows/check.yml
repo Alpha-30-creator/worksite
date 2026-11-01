@@ -11,7 +11,9 @@ permissions:
 
 concurrency:
   group: check-${{ github.ref }}
-  cancel-in-progress: true
+  # A superseded PR run is noise. A superseded push-to-main run is not: it is the only
+  # after-the-fact leak signal for the commit it was started for, so it is left to finish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:

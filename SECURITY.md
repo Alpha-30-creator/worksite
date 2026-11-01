@@ -15,14 +15,17 @@ The guard below is about that boundary and nothing else.
 
 ## What the guard protects
 
-Section 1 of [`scripts/check.sh`](scripts/check.sh) matches every file it enumerates, tracked and
-untracked, case-insensitively against the extended regexes in
+Section 1 of [`scripts/check.sh`](scripts/check.sh) matches the files it enumerates
+case-insensitively against the extended regexes in
 [`scripts/leak-patterns.txt`](scripts/leak-patterns.txt), and exits non-zero with the file and line
-of every hit. It runs in four places:
+of every hit. **Which files it enumerates depends on the mode:** run with no arguments it reads the
+whole working tree, tracked and untracked alike; run with `--staged` it reads
+`git diff --cached --diff-filter=ACM`, so only staged additions and modifications — a file that is
+untracked, or tracked and unmodified, is not read at all in that mode. It runs in four places:
 
 - in a throwaway clone on the publish path, before a byte is written here;
-- again on this repo's staged tree, which is what is actually about to be committed;
-- once more in the pre-commit hook, on exactly those staged bytes;
+- again on this repo's staged tree, which is what is actually about to be committed (`--staged`);
+- once more in the pre-commit hook, on exactly those staged bytes (`--staged`);
 - and, since this file was written, in CI — [`.github/workflows/check.yml`](.github/workflows/check.yml)
   runs the whole suite on every pull request into `main` and on every push to `main`, the second
   of which exists because publish commits land on `main` directly
@@ -32,6 +35,13 @@ The one thing that is guaranteed, stated no wider than it holds: in a file that 
 excluded nor caught by the inline allowlist, a string matching a pattern in
 `scripts/leak-patterns.txt` cannot reach `main` through a pull request without CI going red, and
 cannot be committed on a clone where the hook is installed.
+
+**The push-to-`main` run reports after the fact.** The commit has already landed by the time it
+starts, so it cannot block anything — not even with branch protection, which gates merges rather
+than pushes. It is a signal, not a gate. The publish path that uses that route is not therefore
+unguarded: it keeps its own three runs of the guard, the first of them in a throwaway clone
+before a byte is written here, and the CI run is a fourth look at bytes those three have already
+passed.
 
 ## What it does not protect
 
