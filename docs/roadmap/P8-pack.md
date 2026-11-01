@@ -842,3 +842,83 @@ a decision about its safety rules — but if a second safety-rule change comes u
   - [ ] `docs/engineering/layout.md`'s coverage table stays true to whatever changes
 - **Notes:** the §3 case is the funniest and the least important; the flag check is the one with a
   silent blast radius across three documents.
+
+## [ ] p8.27 — `ws-start` never writes the `- Stores:` line the gate reads
+
+- **Repos:** worksite (pack)
+- **Depends on:** p8.5
+- **Why:** p8.5 gave `ws-fanout` a `- Stores:` line in `task.md`, written at claim time, and a
+  resumed or taken-over track is classified from it. But `ws-start` claims every single-session
+  track, and its `task.md` shape is `- Repos: <which this touches>` with no `- Stores:` line — so
+  no track claimed outside a fanout batch ever carries one. The gate still works, because the three
+  pre-claim inputs stand on their own and anything they cannot settle is `unknown`, which is a drop.
+  The cost is that the safe answer is reached by having no evidence rather than by reading it.
+- **Deliberately not fixed in p8.5**, and the reason is worth keeping: adding a line to
+  `ws-start/SKILL.md` shifts every `file:line` citation below it, and
+  `docs/integration/cartridge-schema.md` carries four `ws-start` citations. p8.5's own review found
+  exactly that defect in p8.5 — a deferral paragraph that named three files and omitted the fourth,
+  `ws-setup`, whose sixteen citations had moved. Repeating it in the same batch to save one line was
+  not worth it.
+- **Acceptance:**
+  - [ ] `ws-start` writes `- Stores:` into `task.md`, for the same classification `ws-fanout` does
+  - [ ] every `ws-start` citation on the schema page is re-derived in the same change, or the
+        deferral paragraph names `ws-start` too — **not neither**
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** the first task to inherit p8.5's own lesson about its own mechanism.
+
+## [ ] p8.28 — The schema page's sixteen `ws-setup` citations moved, and the page says so instead of being right
+
+- **Repos:** worksite (pack)
+- **Depends on:** p8.5
+- **Why:** p8.5 inserted ten lines into `ws-setup/SKILL.md`'s *Repos* interview question, so every
+  `ws-setup` citation on `docs/integration/cartridge-schema.md` below that point is off by ten in
+  the library — the symlink rule cited as `ws-setup`:126-127 now sits at 136-137, and 126-127 there
+  is a table row. The page's deferral paragraph was corrected to name `ws-setup` and to say its
+  sixteen citations are the largest affected group, which is honest but is not the same as correct.
+  The citations anchor to the published copy, which moved when p8.5 published.
+- **Acceptance:**
+  - [ ] the sixteen `ws-setup` numbers re-derived against a named commit of the published copy
+  - [ ] the same pass covers the `ws-fanout`, `ws-shared/tracks.md` and `ws-shared/reference.md`
+        citations the paragraph defers — the known shifts were recorded in p8.5's review
+  - [ ] the deferral paragraph shrinks to whatever is genuinely still deferred, or goes
+  - [ ] no new citation added by this task that is not re-derived in it
+- **Notes:** this is the fifth time in one day that a `file:line` citation drifted, and the third
+  where the wrong fact was inside the sentence written to manage the drift. Worth asking in this
+  task whether the page should cite line numbers at all, rather than quoting the line.
+
+## [ ] p8.29 — `ws-fanout`'s description no longer says what it refuses
+
+- **Repos:** worksite (pack)
+- **Depends on:** p8.5
+- **Why:** the frontmatter says *"Refuses tracks that would touch the same files"*. Since p8.5 it
+  also refuses a second track touching a declared shared store, and drops a track whose store usage
+  cannot be determined. p8.5's builder flagged this twice and deliberately did not take it, which
+  was right: a description edit changes the pack's trigger space, and p8.1 made description
+  accuracy a rule of its own — every description must say what the skill **ends with**, and the
+  expensive skills narrow their own trigger on purpose.
+- **Acceptance:**
+  - [ ] the description names both refusals without widening the trigger
+  - [ ] checked against the collision matrix p8.1 built, so no phrase moves to a second owner
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** small, and the only reason it is a task rather than a line in p8.5 is that trigger
+  space is shared by thirteen skills and is not a thing to edit in passing.
+
+## [ ] p8.30 — Two skills give opposite instructions about pushing the library
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Why:** `ws-refine` ends by running `agent-sync save`, which validates, deploys to every agent
+  and pushes the whole library. `ws-fanout` tells every subagent it briefs to commit and **never**
+  push. A library track inside a fanout batch is therefore instructed both ways, and nothing in
+  either file acknowledges the other. It is not theoretical: it came up in the p8.5/p4.3 batch, and
+  the lead resolved it by hand — the builder edited library files and stopped, the lead ran `save`
+  and the graph audit before review. That resolution is nowhere in the pack.
+- **Acceptance:**
+  - [ ] one of the two skills states the rule for a library change run by a subagent, and the other
+        points at it — not two independent answers
+  - [ ] the rule covers who runs the graph audit, since the audit cannot see per-agent deployment
+        until `save` has run (p8.9)
+  - [ ] `ws-fanout`'s builder-brief bullet and `ws-refine`'s closing step agree in writing
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** the generic version of p8.5. p8.5 taught the gate that a shared store exists; this
+  teaches the two skills who is allowed to publish one.

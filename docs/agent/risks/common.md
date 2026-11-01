@@ -52,6 +52,16 @@ was.
   "Nothing else depends on X", "the other four Y", "file trackers give a lock": each was true of the
   common case and false at an edge the pack documents elsewhere. Grep the subject of the claim rather
   than a proxy for it, and treat a number appearing twice in one file as a claim about arithmetic.
+- A sentence describing what a check covers that is true of **one mode** of that check and reads as
+  true of all of them. `scripts/check.sh` enumerates the whole working tree with no arguments and
+  only staged additions with `--staged`, and it runs in four places, two of them staged — so
+  "section 1 reads tracked and untracked files" is right about one run and wrong about two. Four of
+  the five findings on p4.3 were this shape. Name the mode in the clause, not in a later paragraph.
+- A paragraph written to manage citation drift that is **itself incomplete**, which reads exactly
+  like a complete one. p8.5 deferred re-deriving the numbers its own insertions moved, named
+  `ws-fanout`, `ws-shared/tracks.md` and `ws-shared/reference.md`, and omitted `ws-setup` — the file
+  it had edited most invasively, with sixteen citations on the page. A deferral is a coverage claim;
+  grep the set it enumerates against the files the change actually touched.
 - A doc attributing a configuration-driven path to the wrong half of a mechanism. `publish.sh`'s
   destination is the repo it sits in; the configured target list belongs to `ws-refine`. The guard
   checks for leaked names, never for a true-sounding claim about which component holds the private

@@ -75,6 +75,10 @@ today, so they do not have to wait for P1–P7.
 | p8.25 | Shipping does not refresh the cartridge it invalidates | nine stale statements in the file every agent reads first |
 | p8.26 | Three things the guard does not cover | one of them makes three documents wrong at once if it ever breaks |
 | p3.4 | The docs tree has no index | three reference pages landed and two are unreachable except from the root README |
+| p8.27 | `ws-start` never writes the `- Stores:` line the gate reads | p8.5's own lesson, inherited |
+| p8.28 | The schema page's sixteen `ws-setup` citations moved | fifth citation drift in a day |
+| p8.29 | `ws-fanout`'s description no longer says what it refuses | flagged twice and deliberately not taken |
+| p8.30 | Two skills give opposite instructions about pushing the library | resolved by hand in this batch, written down nowhere |
 
 ## Shipped
 
