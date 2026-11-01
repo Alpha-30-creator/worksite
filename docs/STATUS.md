@@ -68,7 +68,7 @@ today, so they do not have to wait for P1–P7.
 | p8.30 | One rule for who may push the library | resolved by hand in the last batch, written down nowhere |
 | p3.4 | The docs tree has no index | two reference pages are reachable only from the root README — write it after the documentation trim |
 | p7.1 | Dry-run the install as a stranger | the install is unproven by anyone who is not the author; needs p4.2 |
-| p7.2 | Verify the README's claims against the tagged tree | the last thing before a tag, and the one that can fail silently |
+| p7.2 | Tag and announce | cut to one criterion — the README's claims verified against the tagged tree, the part that can fail silently |
 
 ## Shipped
 
