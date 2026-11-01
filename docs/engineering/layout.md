@@ -20,6 +20,7 @@ the pack. Editing them here does not change the pack, and the next publish overw
 | Path | What it is | Provenance | Checked by |
 |---|---|---|---|
 | `README.md` | what the pack is, for a reader arriving cold | authored here | names, links |
+| `INSTALL.md` | the install path, addressed to an agent | authored here | names, links |
 | `AGENTS.md` | the agent-facing workspace brief at the repo root | **generated** here, from `docs/agent/workspace/AGENTS.md` — edit the source | names, links |
 | `CLAUDE.md` | a pointer at `AGENTS.md`, so one file serves both | authored here | names, links |
 | `LICENSE` | the licence | authored here | **excluded from the name scan** — the copyright holder's name belongs there |

@@ -80,15 +80,18 @@ The roadmap carries each remaining gap as a task:
 
 | Gap | Task |
 |---|---|
-| no install path — `INSTALL.md` is not written, so there is nothing to point an agent at | p4.2 |
 | no stranger has run the loop end to end from these instructions | p7.1 |
 
-Until p4.2 lands, the way in is to read [docs/product/overview.md](docs/product/overview.md) and
-decide whether you want the opinions. [docs/STATUS.md](docs/STATUS.md) says what is being worked
+**To install it**, point your agent at [INSTALL.md](INSTALL.md) — it is written for the agent
+rather than for you, and it stops rather than guessing whenever only you can answer. If you would
+rather decide before installing, [docs/product/overview.md](docs/product/overview.md) is the
+argument with its objections answered. [docs/STATUS.md](docs/STATUS.md) says what is being worked
 on now.
 
 ## Documentation
 
+- [INSTALL.md](INSTALL.md) — the install, addressed to an agent: prerequisites, the library, the
+  comparison that runs before anything is written, and where to go for the first project.
 - [docs/product/overview.md](docs/product/overview.md) — the full argument: the loop, each
   opinion with its objection and its honest limit, the state model, and what this is not. Start
   here.
