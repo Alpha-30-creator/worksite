@@ -289,18 +289,145 @@ should.
   next `worktree add` fail.
 
 - **Acceptance:**
-  - [ ] `ws-ship` takes the track id explicitly, falling back to `tracks/current` only when no id
-        is given; `ws-fanout` step 8 passes it per track
-  - [ ] cleanup is verified, not assumed: after deleting, confirm the path is gone and say so
-  - [ ] worktree removal loops over every repo the track touched, and `worktree prune` runs once
-  - [ ] a cleanup path for a track that ends **without** shipping — dropped, abandoned, or a task
-        marked `[-]` — owned by `ws-task` for a drop and `ws-fanout` for an abandoned batch
-  - [ ] a sweep that actually looks: `ws-start` or `ws-sync` reports track directories whose task
+  - [x] `ws-ship` takes the track id explicitly, falling back to `tracks/current` only when no id
+        is given; `ws-fanout` step 8 passes it per track. Written as a four-step resolution — id
+        in the invocation → `current` → sole track dir, confirmed → ask — that **echoes what it
+        resolved** and binds one `$id` for all eight `<id>` substitutions in the file
+  - [x] cleanup is verified, not assumed: after deleting, confirm the path is gone and say so.
+        One block, **silent on success** (`clean: track <id> removed`) and loud on failure
+        (`NOT REMOVED: …` naming each survivor), plus a closing one-line ship report. The
+        verification is only trustworthy because of two fixes the review round forced: the id
+        guard, and newline-separated repo iteration (see Notes)
+  - [x] worktree removal loops over every repo the track touched, and `worktree prune` runs once
+        — **once per repo**, written as a second loop, because a single global prune leaves every
+        other repo's metadata stale, which is the bug
+  - [x] a cleanup path for a track that ends **without** shipping — dropped, abandoned, or a task
+        marked `[-]` — owned by `ws-task` for a drop and `ws-fanout` for an abandoned batch. The
+        drop path harvests a three-line worklog stub **before** retiring, so a dropped track's
+        `rejected:` lines survive it
+  - [x] a sweep that actually looks: `ws-start` or `ws-sync` reports track directories whose task
         is no longer open, and stale worktrees, and offers to remove them. **Reports and asks** —
-        never discards, per the house rule
-  - [ ] `ws-fanout` step 8 reconciles at the end of a batch: no track directory left for a task
-        that is closed
-  - [ ] changed through `ws-refine`, with its graph audit
+        never discards, per the house rule. Hosted in `ws-start` steps 2/3, where the board fetch
+        already has the ids; prints only when non-empty, one grouped question for the
+        clearly-finished, never offers a track that is claimed or holds work
+  - [x] `ws-fanout` step 8 reconciles at the end of a batch: no track directory left for a task
+        that is closed, and one line per track saying shipped, wrapped or retired
+  - [ ] changed through `ws-refine`, with its graph audit — **not done in the build**: the library
+        edits are deployed once by the lead after review, so the audit runs there, per agent
 - **Notes:** fifth finding from using the pack, and the first reported from the author's own use
   rather than found by a check. The shape is familiar by now: the rule is right, and the path that
   would execute it does not exist. Gap 1 alone is a small change and worth doing first.
+
+  Two corrections the build made to the diagnosis, both deliberate:
+
+  - **Gap 1 is not fanout-specific.** `ws-wrap` clears `tracks/current` on all three of its paths
+    while keeping the track, so a track wrapped on Monday and shipped on Tuesday reaches `ws-ship`
+    with no id source either; a compacted or restarted session is a third case. The resolution
+    order in `ws-ship` is written for the general case, not the fanout one, and names the three.
+  - **Gap 2's "cleanup is late" half was not fixed by reordering, on purpose.** Cleanup was
+    already section 5 and marking done was 6, so cleanup was *already* a precondition in the
+    written order; moving it before the merge would destroy the only cold-resume path if the merge
+    failed. The real defect was entirely the unverified half. Instead the section was split into
+    **5 Harvest / 6 Retire the track / 7 Mark it done**, with the tracker transition gated on
+    retirement's verified line.
+
+  **How the fix was verified the second time.** Composition and empty variables, not blocks in
+  isolation: a two-repo fixture under a path containing a space, with bare remotes. Unset `$id`
+  under `set -u`, empty `$id`, a worktree with an unpushed commit on a branch with **no**
+  upstream, a worktree with an upstream and one unpushed commit, an uncommitted file, the
+  multi-repo layout, the single-repo layout whose path ends at the id, and a neighbouring `p3.10`
+  track that had to survive a `p3.1` retirement. Every block was extracted verbatim from the
+  skill file and run under **bash**, not the zsh that hid the word-splitting bug.
+
+  **The recurring shape, now six instances.** p8.3, p8.5, p8.8, p8.9, p8.10 and p8.10's own first
+  build are all the same
+  failure: a rule that is correct and a path that never executes it. The durable lesson, worth
+  carrying into every review of this pack: **a rule with no executing path is indistinguishable
+  from a missing rule — name the caller, and verify the call.** Recorded here rather than in a
+  project's `risks/` because it is a pack-level pattern, not a project risk.
+
+  **The review round, and what it caught.** The first build passed its checks and was still
+  unsafe. Five blocking findings, all verified against the file text and all fixed:
+
+  - **An `rm -rf "$state_dir/tracks/$id"` with no guard.** The retirement procedure was written as
+    three fenced blocks; only the first assigned `id`, and an agent runs each fence in its own
+    shell. Run alone, the removal block's target was `<state_dir>/tracks/` — every track on the
+    machine, including claimed ones holding uncommitted work, which this very change exists to
+    protect. Fixed by one composed block whose first line is
+    `[ -n "$id" ] || { … exit 1; }`, and by saying in the section that it must be run whole.
+  - **The task's own justification was false, and that is why the guard was missing.** Three
+    sentences across `ws-ship` and `ws-fanout` said a missing id "silently removes nothing". It
+    removes *everything*. All three now say an unresolved id is a **stop**.
+  - **The "unpushed work is a refusal" check could not fire for the case it names.**
+    `git log @{u}..HEAD 2>/dev/null` discards `fatal: no upstream configured`, so a branch whose
+    commits exist nowhere else was indistinguishable from clean-and-pushed — and `worktree remove`
+    does not refuse it either. Replaced with a separate, unsuppressed
+    `rev-parse --symbolic-full-name '@{u}'` plus `rev-list --count`. **This was the p8.10 shape —
+    a rule with no executing path — occurring inside the fix for p8.10**, which makes it the sixth
+    instance of the pattern and the clearest evidence yet that the pattern is real.
+  - **`for r in $repos` printed a false `clean`.** A workspace path containing a space splits in
+    bash, every `git -C` fails on a fragment, no worktree is found, and the block reports success
+    with the worktrees still present. Demonstrated: the same script prints `clean` under bash and
+    `NOT REMOVED` under zsh. All four loops now read repo paths line by line. This is the mirror
+    image of the zsh trap already recorded in the cartridge, and the more dangerous direction,
+    because it reports success rather than failing.
+  - **Variables consumed but never assigned** (`$wt`, `$wt_for_r`), and `| head` masking git's
+    exit status throughout. Both gone: one composed block, explicit assignments, no `head`.
+
+  Also fixed: a self-contradiction in the shared section (a step-5 survivor cannot "stop and ask",
+  being found after removal), the orphan-worktree report that had no enumerating pass (it now has
+  its own reverse pass: worktree ids minus track directories), and a sweep example whose table
+  asserted `done`/`dropped` on a tracker that cannot prove either.
+
+  One defect found while testing the written commands rather than reading them: matching a
+  worktree by `grep` on the track id is wrong twice over — the dot in `p3.1` is a regex wildcard
+  that matches a `p3.10` worktree, and `grep -F "/<id>/"` then misses the **single-repo** layout
+  where the worktree path ends at the id with no `/<repo>` after it. Both give a wrong answer with
+  no error. The procedure compares whole `/`-separated segments instead.
+
+  The retirement sequence is written **once**, as *Retiring a track* in `ws-shared/tracks.md`;
+  `ws-ship`, `ws-task`, `ws-fanout` and `ws-start` reference it by path rather than carrying four
+  copies that would drift.
+
+## [ ] p8.11 — `ws-wrap` clears `tracks/current` and says nothing about the id
+
+- **Repos:** worksite (pack)
+- **Depends on:** p8.10
+- **Why:** found while building p8.10, and it is the non-fanout half of that task's gap 1.
+  `ws-wrap` step 3 clears `tracks/current` on **all three** paths — keep, hand over and release —
+  while deliberately keeping the track directory. So the next `ws-ship` on that track has no
+  `current` to read. p8.10 made `ws-ship` resolve that case gracefully (it asks rather than
+  cleaning up nothing), but `ws-wrap` still hands the user a track with no statement of how to
+  ship it, and `ws-wrap` was outside p8.10's owned files.
+- **Acceptance:**
+  - [ ] `ws-wrap`'s Keep / Hand over / Release table says, once: a later `ws-ship` must be given
+        the track id in the invocation, because `current` has been cleared
+  - [ ] the resume note it writes carries the id in a form that can be pasted into `/ws-ship`
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** one sentence and a line in a template. Small, and it closes the last channel where a
+  track is left with no id source.
+
+## [ ] p8.12 — The tracker adapters cannot answer "what is the status of id X?"
+
+- **Repos:** worksite (pack)
+- **Depends on:** p8.10
+- **Why:** `ws-start`'s stale sweep (p8.10) decides whether a track is finished by a set
+  difference: an id **absent** from the adapter's open + claimed + blocked lists is treated as
+  closed. That is exact for `roadmap-files` and `tasks-file`, which grep the status markers
+  explicitly. It is **not** exact for `github-projects` and `trello`, whose list is
+  status-filtered — `github-projects` defaults to the project's to-do equivalent — so an item
+  merely moved to another status is absent too, and absence cannot distinguish done from dropped
+  from "moved somewhere else" from "never existed". The sweep ships with that limitation stated in
+  its own text and the question phrased as the weaker signal it is, which is correct but is
+  wording standing in for a capability.
+- **Acceptance:**
+  - [ ] a fifth adapter question — `status <id>` — answered by all four adapters, returning the
+        item's current state or "not found", distinguishing done from dropped
+  - [ ] `ws-start`'s sweep prefers it where the adapter answers it, and keeps the set-difference
+        approximation (with its stated caveat) only as the fallback
+  - [ ] `ws-shared/trackers/README.md`'s four questions become five, and the adapter contract in
+        the cartridge schema says so
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** deliberately **not** built with p8.10 — the adapters were outside that track's owned
+  files, and keeping the sweep to data the skill had already fetched is what kept p8.10 inside its
+  own file set. This is the follow-up that turns an approximation into a contract.
