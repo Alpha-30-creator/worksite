@@ -12,7 +12,12 @@ pack without reading the skills' source.
         required, the default, and **which skills read it**
   - [x] the degrade behaviour is stated per key — what happens when it is missing
   - [x] `machine:` overrides and `TODO:` values are explained
-  - [~] a reader can write a working cartridge from this page alone, verified by doing it —
+  - [~] **kept partial 2026-11-02: met to the limit of the pack, and the residue now has one
+        home.** The pack-side residue this criterion names is **p8.33** (cartridge honesty) and,
+        where it is a boundary rather than work, the limitations record at
+        [`records/known-limitations.md`](../records/known-limitations.md) — the three-list board,
+        and there being no way to say a command exists but must not be run. Original text follows.
+        A reader can write a working cartridge from this page alone, verified by doing it —
         **met to the limit of what the pack can express.** Two blind readers wrote cartridges from
         the page alone: round one raised 14 gaps (9 page defects, all fixed), round two raised 5
         more (all page defects, all fixed) and confirmed the first round held. The residue is
@@ -86,6 +91,9 @@ pack without reading the skills' source.
   - [ ] it says which folders are living and which are immutable, matching `ws-shared/reference.md`
 - **Notes:** raised independently by both p3.1's and p3.2's builders. Worth doing before P3 adds
   p3.3's three extension guides.
+  **Write it after the documentation trim (added 2026-11-02):** an index built now would enshrine
+  pages that are being deleted or halved, and every link it added to one of them would then fail
+  `check.sh` §3.
 
 ## [x] p3.5 — Stale pointers and the skill count in the cartridge · 2026-11-02 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/4
 
