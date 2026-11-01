@@ -206,7 +206,7 @@ tell "read it, the answer is no" from "could not read it", is **p8.24**.
 
 ## [-] p8.8 — The journal mirror leaks the device name into a public docs home — absorbed into p8.31, the merged leak-surface task
 
-**Dropped 2026-11-02**, body kept: the device name in the journal mirror is one of p8.31's items.
+**Dropped 2026-11-02** (reasoning in git history at `9c973ee`): the device name in the journal mirror is one of p8.31's items.
 
 ## [-] p8.9 — The graph audit cannot see whether a referenced file reached each agent — absorbed into p8.24 as its per-agent instance
 
@@ -428,12 +428,12 @@ do it.
 
 ## [-] p8.15 — The worktree root is a relative path with no defined base — absorbed into p8.32, the merged worktree-hygiene task
 
-**Dropped 2026-11-02**, body kept: resolving the root once instead of seven literals is p8.32's
+**Dropped 2026-11-02** (reasoning in git history at `9c973ee`): resolving the root once instead of seven literals is p8.32's
 other half.
 
 ## [-] p8.16 — Inside a git repo, the state dir rests on one gitignore line nothing re-asserts — absorbed into p8.31, the merged leak-surface task
 
-**Dropped 2026-11-02**, body kept: the `git check-ignore` assertion is p8.31's first item.
+**Dropped 2026-11-02** (reasoning in git history at `9c973ee`): the `git check-ignore` assertion is p8.31's first item.
 
 ## [x] p8.17 — `docs_home` doubles in four sites, and `ws-fanout` silently takes the unsafe branch · 2026-11-02 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/7
 
@@ -480,19 +480,19 @@ defect by this phase's new goal line.
 
 ## [-] p8.19 — The cartridge cannot hold what the pack already asks for — absorbed into p8.33, the merged cartridge-honesty task
 
-**Dropped 2026-11-02**, body kept: `merge_style` and the rule-skill prefix are p8.33's first two items.
+**Dropped 2026-11-02** (reasoning in git history at `9c973ee`): `merge_style` and the rule-skill prefix are p8.33's first two items.
 
 ## [-] p8.20 — Keys that exist but cannot express the ordinary shape — absorbed into p8.33, the merged cartridge-honesty task
 
-**Dropped 2026-11-02**, body kept: `owned_by`'s permissive degrade and the `lite` disagreement carry over; the rest is recorded as a boundary.
+**Dropped 2026-11-02** (reasoning in git history at `9c973ee`): `owned_by`'s permissive degrade and the `lite` disagreement carry over; the rest is recorded as a boundary.
 
 ## [-] p8.21 — `machine:` has no merge semantics and no reader — absorbed into p8.33, the merged cartridge-honesty task
 
-**Dropped 2026-11-02**, body kept: `machine:` being notes-only is stated in the schema by p8.33.
+**Dropped 2026-11-02** (reasoning in git history at `9c973ee`): `machine:` being notes-only is stated in the schema by p8.33.
 
 ## [-] p8.22 — `lite` and the tracker: two files disagree — absorbed into p8.33, the merged cartridge-honesty task
 
-**Dropped 2026-11-02**, body kept: the `lite` contradiction is p8.33's last item.
+**Dropped 2026-11-02** (reasoning in git history at `9c973ee`): the `lite` contradiction is p8.33's last item.
 
 ## [-] p8.23 — The pack's rule numbers are cited everywhere and defined nowhere, and `R3` means two things — label and citation hygiene, and the citation practice itself is being removed, which ends the class
 
