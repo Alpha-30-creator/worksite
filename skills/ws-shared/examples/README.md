@@ -13,10 +13,17 @@ stack tags.
 None of them is real. Where a pack needs a concrete example — a path, a command, a file name — it
 uses one of these rather than a real repository.
 
+**Two of the three have a cartridge written out**, and they were chosen to be opposites: northwind
+is several repos you own with a file tracker and plans in workspace state; atlas is a company's
+project with a hosted board, plans in the repo, and house rules you follow rather than author.
+Between them they cover the two halves of almost every key. kestrel is described here and in the
+stack packs but has no cartridge of its own — a third would repeat what these two already show.
+
 | File | What it shows |
 |---|---|
 | [device.yaml](device.yaml) | the agent-sync device file: where projects live **on one machine** |
 | [cartridge.md](cartridge.md) | a filled-in cartridge for northwind, frontmatter and prose |
+| [cartridge-atlas.md](cartridge-atlas.md) | a second filled-in cartridge, for atlas: a hosted tracker, `artifacts: in-repo`, `owned_by: company`, and a `machine:` block with its inertness stated |
 | [manifest.tsv](manifest.tsv) | the secrets store manifest |
 | [tasks-file.md](tasks-file.md) | the `tasks-file` tracker, which `lite` projects default to |
 
