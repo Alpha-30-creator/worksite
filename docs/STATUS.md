@@ -17,8 +17,8 @@ Two tracks, run as a batch. The lead holds `STATUS.md`; neither builder writes i
 
 | id | title | who | since | note |
 |---|---|---|---|---|
-| p3.1 | Write the cartridge schema | @Alpha-30-creator | 2026-11-01 | worktree `../worksite-tracks/p3.1` |
-| p8.10 | Cleanup exists on exactly one path | @Alpha-30-creator | 2026-11-01 | worktree `../worksite-tracks/p8.10`; the only library writer in this batch |
+| p3.1 | Write the cartridge schema | @Alpha-30-creator | 2026-11-01 | plan approved; **queued behind p8.10**, which changes behaviour this page documents |
+| p8.10 | Cleanup exists on exactly one path | @Alpha-30-creator | 2026-11-01 | plan approved; building |
 
 
 ## Blocked
