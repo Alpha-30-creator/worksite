@@ -130,7 +130,7 @@ should.
 - **Notes:** distinct from p7.1. That one asks whether a stranger can install it; this asks
   whether the pack is honest about the projects it claims to handle.
 
-## [r] p8.5 — ws-fanout cannot isolate work that lives outside the project's repos · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/9
+## [x] p8.5 — ws-fanout cannot isolate work that lives outside the project's repos · 2026-11-02 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/9
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -146,13 +146,13 @@ should.
   every agent and pushes them. That is not a file collision, so worktrees would not catch it, and
   the shared-resource table in `ws-fanout` has no row for it.
 - **Acceptance:**
-  - [ ] `ws-fanout`'s gate gains a shared-store case: when a track edits anything outside the
+  - [x] `ws-fanout`'s gate gains a shared-store case: when a track edits anything outside the
         cartridge's `repos:`, worktrees do not isolate it and at most **one** such track may run
         per batch
-  - [ ] the shared-resource table gains a row for a global deploy or publish command
-  - [ ] the cartridge schema gets a way to declare a shared external store, so the gate can
+  - [x] the shared-resource table gains a row for a global deploy or publish command
+  - [x] the cartridge schema gets a way to declare a shared external store, so the gate can
         reason about it instead of a skill hardcoding the knowledge
-  - [ ] changed through `ws-refine`, with its graph audit
+  - [x] changed through `ws-refine`, with its graph audit
 - **Notes:** the second finding produced by using the pack on itself, after p8.3. Both are the
   same shape — a rule that is right for the projects it was written against and silent for a
   project of a different shape.

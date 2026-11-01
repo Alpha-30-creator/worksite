@@ -31,17 +31,19 @@ risk recorded.
 
 ## In progress
 
-A two-track fanout batch, claimed 2026-11-02.
+Nothing claimed. The two-track batch of 2026-11-02 is closed: p4.3 and p8.5 both shipped, each harvested, each track retired and verified.
 
 | id | title | holder | where it is |
 |---|---|---|---|
-| p8.5 | `ws-fanout` cannot isolate work outside the project's repos | @Alpha-30-creator | PR open: [#9](https://github.com/Alpha-30-creator/worksite/pull/9); library saved and deployed |
 
-**Two tracks, not more, and the reason is p8.5 itself.** Every other open task on this board
+**That batch was two tracks, not more, and p8.5 is why.** Every other open task on this board
 edits the agent-sync library, `agent-sync save` is a single global deploy-and-push, and worktrees
-isolate checkouts rather than the library — so at most one library track may run per batch until
-p8.5 lands. p3.4 was dropped from the batch because it owns `README.md`, which p4.3 owns; p1.2 was
-dropped because two of its criteria are p4.3's deliverables. Both run straight after.
+isolate checkouts rather than the library — so at most one library track could run per batch.
+**That rule is now a declared cartridge key rather than something to remember**: the library is in
+`shared_stores:`, and the gate drops the second track that touches it instead of waving the batch
+through. p3.4 was dropped from the batch because it owns `README.md`, which p4.3 owns; p1.2 was
+dropped because two of its criteria were p4.3's deliverables — and p4.3 has now shipped, so p1.2 is
+unblocked.
 
 The previous four-track batch is closed: p4.1, p3.3, p3.5 and p8.17 all shipped, each harvested,
 each track retired and verified. **P3 is complete** apart from p3.4.
@@ -100,6 +102,7 @@ today, so they do not have to wait for P1–P7.
 | p4.1 | Write the README | 2026-11-02 |
 | p8.17 | `docs_home` doubles in four sites | 2026-11-02 |
 | p4.3 | Repo furniture: contributing, security, conduct and CI | 2026-11-02 |
+| p8.5 | Shared external stores are declared in the cartridge | 2026-11-02 |
 
 ## Phases
 
