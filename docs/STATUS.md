@@ -2,8 +2,9 @@
 
 **Updated:** 2026-11-01
 
-**Where it is:** pre-release. The repo exists locally and is not yet published; the pack itself
-has not been moved in, so there is nothing installable.
+**Where it is:** pre-release and public at
+[github.com/Alpha-30-creator/worksite](https://github.com/Alpha-30-creator/worksite). The pack
+itself has not been moved in, so there is nothing installable yet.
 
 **Decided:** [ADR 0001](decisions/0001-library-is-the-source-of-truth.md) — the agent-sync
 library stays the working copy, this repo is a published artifact, and publishing is a step
@@ -13,7 +14,6 @@ inside `ws-refine` rather than something anyone remembers to do.
 
 | id | title | who | since | note |
 |---|---|---|---|---|
-| p1.1 | Create the public repo and push the scaffold | @Alpha-30-creator | 2026-11-01 | trimmed to 22 files; repo not created yet |
 | p8.1 | Make every skill model-invocable | @Alpha-30-creator | 2026-11-01 | 13 workflow skills invocable and deployed, no drift; `ws-env` gate, trigger narrowing and the `ws-refine` rules done. **Description tuning is all that remains** |
 
 ## Blocked
@@ -29,8 +29,15 @@ today, so they do not have to wait for P1–P7.
 |---|---|---|
 | p8.2 | Teach review and planning where documentation belongs | improves every project immediately; the rule exists but is filed under a severity that never blocks |
 | p8.3 | Close the `ws-setup` profile gap | found by using the pack on itself |
-| p1.2 | Prove the leak guard refuses a private name | nothing else is safe until this is proven |
+| p8.5 | `ws-fanout` cannot isolate work outside the project's repos | found by invoking `ws-fanout` here; blocks safe parallel work on the pack |
+| p1.2 | Prove the leak guard refuses a private name | now pickable; nothing else is safe until this is proven |
 | p2.2 | Translate the fourteen skills into the pack | the largest single piece of work |
+
+## Shipped
+
+| id | title | date |
+|---|---|---|
+| p1.1 | Create the public repo and push the scaffold | 2026-11-01 |
 
 ## Phases
 

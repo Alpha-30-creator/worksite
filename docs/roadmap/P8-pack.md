@@ -119,3 +119,30 @@ should.
         to self does not count
 - **Notes:** distinct from p7.1. That one asks whether a stranger can install it; this asks
   whether the pack is honest about the projects it claims to handle.
+
+## [ ] p8.5 — ws-fanout cannot isolate work that lives outside the project's repos
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Why:** found by invoking `ws-fanout` on this project. Its safety gate offers exactly two
+  options when `worktrees: false` — turn worktrees on, or fan out across **provably different
+  repos** — and forbids inventing a third. Neither fits here, for a reason the gate does not
+  model: most of worksite's open work edits the **agent-sync library**, which is not in the
+  cartridge's `repos:` at all. So `worktrees: true` would isolate checkouts of this repo and do
+  nothing whatsoever for the files actually being changed.
+- **The sharper half:** `agent-sync save` is a single global operation — it validates, deploys to
+  three agents, then commits and pushes the **whole** library. Two tracks editing the library
+  cannot save independently: whichever saves first publishes the other's half-finished edits to
+  every agent and pushes them. That is not a file collision, so worktrees would not catch it, and
+  the shared-resource table in `ws-fanout` has no row for it.
+- **Acceptance:**
+  - [ ] `ws-fanout`'s gate gains a shared-store case: when a track edits anything outside the
+        cartridge's `repos:`, worktrees do not isolate it and at most **one** such track may run
+        per batch
+  - [ ] the shared-resource table gains a row for a global deploy or publish command
+  - [ ] the cartridge schema gets a way to declare a shared external store, so the gate can
+        reason about it instead of a skill hardcoding the knowledge
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** the second finding produced by using the pack on itself, after p8.3. Both are the
+  same shape — a rule that is right for the projects it was written against and silent for a
+  project of a different shape.
