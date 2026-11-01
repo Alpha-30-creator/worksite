@@ -13,7 +13,12 @@ inside `ws-refine` rather than something anyone remembers to do.
 
 ## In progress
 
-Nothing claimed.
+Two tracks, run as a batch. The lead holds `STATUS.md`; neither builder writes it.
+
+| id | title | who | since | note |
+|---|---|---|---|---|
+| p3.1 | Write the cartridge schema | @Alpha-30-creator | 2026-11-01 | worktree `../worksite-tracks/p3.1` |
+| p8.10 | Cleanup exists on exactly one path | @Alpha-30-creator | 2026-11-01 | worktree `../worksite-tracks/p8.10`; the only library writer in this batch |
 
 
 ## Blocked
