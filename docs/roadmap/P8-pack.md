@@ -1,6 +1,15 @@
-# P8 — Pack improvements
+# P8 — Pack defects
 
-**Goal:** fix what dogfooding and daily use have exposed in the pack itself.
+**Goal:** fix the defects dogfooding has exposed in the pack itself — specifically the ones where
+something **reports success while doing the wrong thing**: a gate that reads silence as a pass, a
+loop that prints `clean` with the work still there, a key that is read and never written. Not
+improvements. A change that would merely be nicer does not belong here; it belongs in the pack's
+own backlog or nowhere.
+
+**Retitled and trimmed 2026-11-02** by the owner after an independent audit: 23 open tasks here
+became seven, the rest merged, dropped, or replaced by one sentence in
+[`records/known-limitations.md`](../records/known-limitations.md). Every dropped body is kept —
+the reasoning is the value and it cost real sessions to find.
 
 **These are independent of publishing.** Every task here improves the author's own setup across
 every project today, whether or not worksite ever ships. P8 can run before P2, and p8.2 probably
@@ -37,7 +46,10 @@ should.
         subagents and the cost is the user's
   - [x] `ws-ship` triggers only on explicit ship intent (description narrowed; the existing
         verify-passed and review-clean gates already read as refusals)
-  - [~] **desk-verified, not live-verified.** The collision matrix proves each phrase is claimed
+  - [~] **kept partial 2026-11-02: this is a boundary, not work**, and it is recorded as the last
+        of the eleven entries in [`records/known-limitations.md`](../records/known-limitations.md)
+        — the pack's gates are desk-verified, not live-verified. Original text follows.
+        **Desk-verified, not live-verified.** The collision matrix proves each phrase is claimed
         by one description, and all thirteen reached all three agents (checked per agent, applying
         p8.9's lesson rather than trusting the library-only audit). What it does **not** prove is
         real trigger behaviour: that needs requests phrased naturally across sessions, and the
@@ -83,10 +95,14 @@ should.
         **discrimination**: flag both offenders, leave a usage block alone, and not touch two
         exemplary docstrings. All three correct
   - [x] deployed to all three agents, `ws-refine` graph audit clean
-  - [ ] **asserted, not verified:** the Go and Rust rows of the language table. No specimen
-        existed in these projects to test against
-  - [ ] **observable later:** whether step 11 actually changes planning behaviour. That needs a
-        real task planned after this change, not an inspection
+  - [~] **kept partial 2026-11-02:** asserted, not verified — the Go and Rust rows of the
+        language table. No specimen existed in these projects to test against, and none has
+        appeared since, so this is a stated boundary of the pack rather than an open item: the
+        rows are usable and unproven
+  - [~] **kept partial 2026-11-02:** observable later — whether step 11 actually changes planning
+        behaviour. That needs a real task planned after this change, not an inspection, which is
+        the desk-verified-not-live-verified boundary in
+        [`records/known-limitations.md`](../records/known-limitations.md)
 - **Notes:** the survey is what made this work. Planned from two files it would have become "write
   shorter comments", which the evidence disproves — the same two repos hold the two worst
   offenders *and* 682 exemplary docstrings, so any length or density rule would have destroyed the
@@ -110,7 +126,12 @@ should.
   - [ ] changed through `ws-refine`, with the graph audit it requires
 - **Notes:** found by using the pack on itself. Worth recording as the first such finding.
 
-## [ ] p8.4 — Prove the pack copes with setups it was not written against
+## [-] p8.4 — Prove the pack copes with setups it was not written against — absorbed into p7.1 and p8.24
+
+**Dropped 2026-11-02**, body kept. Its two cheapest cases — run with no cartridge, and run
+against a tracker kind with no adapter — are now criteria of **p7.1**, which stands up the
+throwaway project they need. The class the rest of it was really testing, a check that cannot
+tell "read it, the answer is no" from "could not read it", is **p8.24**.
 
 - **Repos:** worksite (pack)
 - **Depends on:** p8.1
@@ -191,13 +212,19 @@ should.
         write an agent's settings or permission files, in any project. Permission level is the
         user's own control, switched per task; a committed allowlist overrides that choice and
         rots
-  - [ ] **remains to do:** delete the one committed `.claude/settings.json` from the frontend repo
-        that carries it. That is a change to a product repo, so it ships through that project's
-        own tracker — `ws-setup`'s rule is that setup never touches a repo's own files
+  - [ ] **remains to do, and deliberately not tracked here (noted 2026-11-02):** delete the one
+        committed `.claude/settings.json` from the frontend repo that carries it. That is a change
+        to a product repo, so it ships through that project's own tracker — `ws-setup`'s rule is
+        that setup never touches a repo's own files. **This criterion stays unticked on purpose**:
+        it is real outstanding work, it is out of this repo's scope, and it belongs on that
+        project's own tracker, where it must be filed so it is not lost. Nothing in this repo will
+        ever tick it, and no agent settings file is written here to close it
 - **Notes:** the useful half of this finding is the correction. Changing `ws-setup` would have
   fixed nothing; the house rule is prevention, not a cure.
 
-## [ ] p8.8 — The journal mirror leaks the device name into a public docs home
+## [-] p8.8 — The journal mirror leaks the device name into a public docs home — absorbed into p8.31, the merged leak-surface task
+
+**Dropped 2026-11-02**, body kept: the device name in the journal mirror is one of p8.31's items.
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -223,7 +250,11 @@ should.
   rather than by reading. Mitigated here by gitignoring the mirror, which costs this project
   cross-machine resume — acceptable for a solo repo, not a fix.
 
-## [ ] p8.9 — The graph audit cannot see whether a referenced file reached each agent
+## [-] p8.9 — The graph audit cannot see whether a referenced file reached each agent — absorbed into p8.24 as its per-agent instance
+
+**Dropped 2026-11-02**, body kept. It is the same defect as p8.24 one layer down — an audit that
+reports clean about something it did not read — so it is fixed in the same change, and p8.24
+carries its per-agent criteria.
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -312,7 +343,12 @@ should.
         clearly-finished, never offers a track that is claimed or holds work
   - [x] `ws-fanout` step 8 reconciles at the end of a batch: no track directory left for a task
         that is closed, and one line per track saying shipped, wrapped or retired
-  - [ ] changed through `ws-refine`, with its graph audit — **not done in the build**: the library
+  - [~] **kept partial 2026-11-02: deployed, audit unprovable.** The deployment is evidenced —
+        `skills/ws-shared/tracks.md` carries *Retiring a track*, and that content reached this
+        repo through the publish path, which copies from the library. That the graph audit itself
+        reported anything meaningful is what cannot be shown, and **p8.24** is exactly why: the
+        audit reports clean about a change it may never have read. Original text follows.
+        Changed through `ws-refine`, with its graph audit — **not done in the build**: the library
         edits are deployed once by the lead after review, so the audit runs there, per agent
 - **Notes:** fifth finding from using the pack, and the first reported from the author's own use
   rather than found by a check. The shape is familiar by now: the rule is right, and the path that
@@ -389,7 +425,10 @@ should.
   `ws-ship`, `ws-task`, `ws-fanout` and `ws-start` reference it by path rather than carrying four
   copies that would drift.
 
-## [ ] p8.11 — `ws-wrap` clears `tracks/current` and says nothing about the id
+## [-] p8.11 — `ws-wrap` clears `tracks/current` and says nothing about the id — the consumer is already fail-safe; filed because p8.10 shipped, not because anything misbehaves
+
+**Dropped 2026-11-02**, body kept. p8.10 made `ws-ship` ask rather than clean up nothing, so the
+missing line costs a question, not a wrong answer.
 
 - **Repos:** worksite (pack)
 - **Depends on:** p8.10
@@ -407,7 +446,11 @@ should.
 - **Notes:** one sentence and a line in a template. Small, and it closes the last channel where a
   track is left with no id source.
 
-## [ ] p8.12 — The tracker adapters cannot answer "what is the status of id X?"
+## [-] p8.12 — The tracker adapters cannot answer "what is the status of id X?" — a stated limitation with an asking gate
+
+**Dropped 2026-11-02**, body kept. Recorded instead as a boundary in
+[`records/known-limitations.md`](../records/known-limitations.md): the sweep uses set difference
+and asks rather than removing.
 
 - **Repos:** worksite (pack)
 - **Depends on:** p8.10
@@ -472,11 +515,22 @@ a decision about its safety rules — but if a second safety-rule change comes u
   - [ ] the mirror-image warning added to the cross-platform table in `ws-shared`'s reference,
         which today documents only the zsh under-splitting trap and not this one
   - [ ] changed through `ws-refine`, with its graph audit
+- **Where the three sites are (2026-11-02):** `ws-start`, `ws-plan` and `ws-review` — and
+  `ws-start` itself warns against the idiom, which is the instance that proves the point. **It is
+  live on this workspace**, whose own path contains a space, so the failure is reproducible here
+  rather than hypothetical.
 - **Notes:** the **seventh** instance of the pack's recurring shape — a rule that exists with no
   path that executes it. Found by the lead's own grep after the review, which had declared it
   skimmed `ws-start` outside the diff hunks. A coverage gap honestly declared, not a miss.
 
-## [ ] p8.14 — Nothing ever enumerates the track root, so a forgotten worktree is invisible
+## [-] p8.14 — Nothing ever enumerates the track root, so a forgotten worktree is invisible — its cheap half is absorbed into p8.32; the third sweep pass is dropped
+
+**Dropped 2026-11-02**, body kept. **p8.32** takes the half that stops the residue being created
+at all: retirement removes the parent `<id>/` directory it currently leaves behind. The third
+sweep pass — enumerate the track root, subtract live worktrees and track directories, report
+disk-only orphans with their size — is **dropped explicitly**: it reports residue that the cheap
+half stops producing, and it needs a resolved root, a size calculation and its own asking gate to
+do it.
 
 - **Repos:** worksite (pack)
 - **Depends on:** p8.10
@@ -524,7 +578,10 @@ a decision about its safety rules — but if a second safety-rule change comes u
   residue git has forgotten is the precise failure. Second finding produced by explaining the
   pack's own layout rather than by running a check.
 
-## [ ] p8.15 — The worktree root is a relative path with no defined base
+## [-] p8.15 — The worktree root is a relative path with no defined base — absorbed into p8.32, the merged worktree-hygiene task
+
+**Dropped 2026-11-02**, body kept: resolving the root once instead of seven literals is p8.32's
+other half.
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -556,7 +613,9 @@ a decision about its safety rules — but if a second safety-rule change comes u
   value rather than a rule with no executor — the pack never decided the thing, and git's absolute
   paths hid the consequence. The defects dogfooding finds are not all one kind.
 
-## [ ] p8.16 — Inside a git repo, the state dir rests on one gitignore line nothing re-asserts
+## [-] p8.16 — Inside a git repo, the state dir rests on one gitignore line nothing re-asserts — absorbed into p8.31, the merged leak-surface task
+
+**Dropped 2026-11-02**, body kept: the `git check-ignore` assertion is p8.31's first item.
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -619,7 +678,14 @@ a decision about its safety rules — but if a second safety-rule change comes u
   produced a path that resolves nowhere. The documentation task surfaced a pack defect, which is the
   argument for writing schemas down.
 
-## [ ] p8.18 — Two rules in `tracks.md` rest on wrong premises
+## [-] p8.18 — Two rules in `tracks.md` rest on wrong premises — both are recorded as boundaries in the limitations record instead
+
+**Dropped 2026-11-02**, body kept. Not named either way in the approved target shape; dropped
+rather than left open because both of its items are among the eleven sentences in
+[`records/known-limitations.md`](../records/known-limitations.md) — the no-upstream refusal is
+deliberately conservative, and an `in-repo` project's journal does not travel. Each refuses or
+costs something knowingly, neither reports success while doing the wrong thing, so neither is a
+defect by this phase's new goal line.
 
 - **Repos:** worksite (pack)
 - **Depends on:** p8.10
@@ -648,7 +714,9 @@ a decision about its safety rules — but if a second safety-rule change comes u
   documented the mechanism faithfully, and only the two together show the pack wrong. Neither
   reviewer could have seen it from one track.
 
-## [ ] p8.19 — The cartridge cannot hold what the pack already asks for
+## [-] p8.19 — The cartridge cannot hold what the pack already asks for — absorbed into p8.33, the merged cartridge-honesty task
+
+**Dropped 2026-11-02**, body kept: `merge_style` and the rule-skill prefix are p8.33's first two items.
 
 - **Repos:** worksite (pack)
 - **Depends on:** p3.1
@@ -670,7 +738,9 @@ a decision about its safety rules — but if a second safety-rule change comes u
   - [ ] p3.1's affected gap rows updated or closed to match
   - [ ] changed through `ws-refine`, with its graph audit
 
-## [ ] p8.20 — Keys that exist but cannot express the ordinary shape
+## [-] p8.20 — Keys that exist but cannot express the ordinary shape — absorbed into p8.33, the merged cartridge-honesty task
+
+**Dropped 2026-11-02**, body kept: `owned_by`'s permissive degrade and the `lite` disagreement carry over; the rest is recorded as a boundary.
 
 - **Repos:** worksite (pack)
 - **Depends on:** p3.1
@@ -697,7 +767,9 @@ a decision about its safety rules — but if a second safety-rule change comes u
   - [ ] `tracker.statuses` gets a shape or is removed
   - [ ] changed through `ws-refine`, with its graph audit
 
-## [ ] p8.21 — `machine:` has no merge semantics and no reader
+## [-] p8.21 — `machine:` has no merge semantics and no reader — absorbed into p8.33, the merged cartridge-honesty task
+
+**Dropped 2026-11-02**, body kept: `machine:` being notes-only is stated in the schema by p8.33.
 
 - **Repos:** worksite (pack)
 - **Depends on:** p3.1
@@ -717,7 +789,9 @@ a decision about its safety rules — but if a second safety-rule change comes u
   writing one**, correctly, because workspace paths resolve from `device.yaml`. That is the page
   working; the key still promises more than it does.
 
-## [ ] p8.22 — `lite` and the tracker: two files disagree
+## [-] p8.22 — `lite` and the tracker: two files disagree — absorbed into p8.33, the merged cartridge-honesty task
+
+**Dropped 2026-11-02**, body kept: the `lite` contradiction is p8.33's last item.
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -731,7 +805,9 @@ a decision about its safety rules — but if a second safety-rule change comes u
   - [ ] changed through `ws-refine`, with its graph audit
 - **Notes:** small, and the kind of thing that costs an agent a wrong decision rather than an error.
 
-## [ ] p8.23 — The pack's rule numbers are cited everywhere and defined nowhere, and `R3` means two things
+## [-] p8.23 — The pack's rule numbers are cited everywhere and defined nowhere, and `R3` means two things — label and citation hygiene, and the citation practice itself is being removed, which ends the class
+
+**Dropped 2026-11-02**, body kept.
 
 - **Repos:** worksite (pack)
 - **Depends on:** p3.1
@@ -757,10 +833,16 @@ a decision about its safety rules — but if a second safety-rule change comes u
   The guides it then wrote cite `R4` by label only, define nothing, and never cite `R3` — so they do
   not deepen it, and they are the model for what any page may do until this lands.
 
-## [ ] p8.24 — Three gates read an empty result as a negative answer, and the graph audit has two of them
+## [ ] p8.24 — Gates that read an empty result as a pass, and the graph audit has two of them
 
 - **Repos:** worksite (pack)
 - **Depends on:** p8.17
+- **Absorbed 2026-11-02: p8.9**, as this task's per-agent instance. p8.9 is the same defect one
+  layer down — the audit resolves links inside the library and reports clean about a deployment
+  it never read — so it is the same change, not a second one. Its criteria are below.
+- **This is the first task in P8, and the reason is not its size.** Every other change to the
+  pack is required to end with the graph audit, and until the audit proves it read something,
+  every one of those changes is certified by a check that may not have run.
 - **Why:** p8.17 fixed one instance of a class and named three more. The class: **a check whose
   silence reads as a pass.** Where a skill greps, parses or queries for a condition, an empty result
   from a missing file, an unreadable file or a failed call is indistinguishable from a real negative
@@ -784,10 +866,17 @@ a decision about its safety rules — but if a second safety-rule change comes u
   - [ ] the class is written down once, in `ws-shared/review/tier1-universal.md`, as a universal
         rather than per-site: **a gate whose input is unreadable must not fall to the unsafe
         default** — establish that the input was read before branching on what it said
+  - [ ] *(from p8.9)* the audit checks the **deployed** copies, not only the library: for every
+        file a skill references, confirm it exists under each agent this project deploys to, and
+        report **per agent**, since a file can reach two of three
+  - [ ] *(from p8.9)* the audit fails loudly when `agent-sync status` shows any `ws-*` artifact
+        conflicted or pending, rather than auditing a library that was never deployed
   - [ ] changed through `ws-refine`, with its graph audit — **after** that audit is the thing fixed
 - **Notes:** one task and three sub-items deliberately, decided when p8.17 was planned. The graph
   audit first, because until it is fixed every other pack change is certified by a check that may
-  not have run.
+  not have run. p8.9's own trigger is worth keeping: a deployment skipped because the artifact was
+  `conflicted`, which `agent-sync save` reports and the audit does not read — and the cause of
+  that conflict was a manual `cp` into a deployed copy.
 
 ## [ ] p8.25 — Shipping a task does not refresh the cartridge rows it invalidates
 
@@ -812,11 +901,17 @@ a decision about its safety rules — but if a second safety-rule change comes u
   - [ ] a project's cartridge prefers a link to a decision record over a task id where one exists,
         since a closed task survives only as long as its roadmap entry
   - [ ] changed through `ws-refine`, with its graph audit
+- **Kept open 2026-11-02** as the thirteenth task, past the twelve the trim targeted: it defends
+  the first file every agent reads, and this session hit it three times in one day.
 - **Notes:** *rejected* while planning p3.5: adding a "last reviewed" date to the cartridge. It would
   have caught all nine, and it is a claim nobody enforces — the pack's own argument against anything
   depending on memory. This is the version with an executing path.
 
-## [ ] p8.26 — Three things the guard does not cover, and nothing says so
+## [-] p8.26 — Three things the guard does not cover, and nothing says so — its two real items are absorbed into p8.31; the §3 fence case is recorded as a limitation
+
+**Dropped 2026-11-02**, body kept. **p8.31** takes the `disable-model-invocation` check and §1's
+inline allowlist. The §3 fence case is documented rather than fixed, in
+[`records/known-limitations.md`](../records/known-limitations.md).
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -843,7 +938,11 @@ a decision about its safety rules — but if a second safety-rule change comes u
 - **Notes:** the §3 case is the funniest and the least important; the flag check is the one with a
   silent blast radius across three documents.
 
-## [ ] p8.27 — `ws-start` never writes the `- Stores:` line the gate reads
+## [-] p8.27 — `ws-start` never writes the `- Stores:` line the gate reads — the consumer is already fail-safe; filed because p8.5 shipped, not because anything misbehaves
+
+**Dropped 2026-11-02**, body kept. The gate's three pre-claim inputs stand on their own and
+anything they cannot settle is `unknown`, which is a drop — the safe answer, reached by having no
+evidence rather than by reading it, which is a cost in elegance and not in correctness.
 
 - **Repos:** worksite (pack)
 - **Depends on:** p8.5
@@ -866,7 +965,12 @@ a decision about its safety rules — but if a second safety-rule change comes u
   - [ ] changed through `ws-refine`, with its graph audit
 - **Notes:** the first task to inherit p8.5's own lesson about its own mechanism.
 
-## [ ] p8.28 — The schema page's sixteen `ws-setup` citations moved, and the page says so instead of being right
+## [-] p8.28 — The schema page's sixteen `ws-setup` citations moved, and the page says so instead of being right — label and citation hygiene, and the citation practice itself is being removed, which ends the class
+
+**Dropped 2026-11-02**, body kept. Its own closing question — whether the page should cite line
+numbers at all — is the answer: it should not, and
+[`records/known-limitations.md`](../records/known-limitations.md) records that a `file:line`
+citation is advisory and the quote is the durable half.
 
 - **Repos:** worksite (pack)
 - **Depends on:** p8.5
@@ -886,7 +990,10 @@ a decision about its safety rules — but if a second safety-rule change comes u
   where the wrong fact was inside the sentence written to manage the drift. Worth asking in this
   task whether the page should cite line numbers at all, rather than quoting the line.
 
-## [ ] p8.29 — `ws-fanout`'s description no longer says what it refuses
+## [-] p8.29 — `ws-fanout`'s description no longer says what it refuses — label and citation hygiene, and the citation practice itself is being removed, which ends the class
+
+**Dropped 2026-11-02**, body kept. Flagged twice and deliberately not taken twice, which is the
+third signal that it is not worth a track.
 
 - **Repos:** worksite (pack)
 - **Depends on:** p8.5
@@ -922,3 +1029,94 @@ a decision about its safety rules — but if a second safety-rule change comes u
   - [ ] changed through `ws-refine`, with its graph audit
 - **Notes:** the generic version of p8.5. p8.5 taught the gate that a shared store exists; this
   teaches the two skills who is allowed to publish one.
+
+## [ ] p8.31 — The leak surface has three uncovered edges and nothing asserts any of them
+
+- **Repos:** worksite (pack), worksite
+- **Depends on:** —
+- **Merged 2026-11-02** from **p8.16** (the `git check-ignore` assertion), **p8.8** (the device
+  name in the journal mirror) and the two real items of **p8.26**. One task because all four are
+  the same question — what stops a private name reaching a public commit, and what asserts that
+  the stop is still there — and because they touch the same two files. The bodies of the three
+  absorbed tasks are kept above; this is the shipping unit.
+- **Acceptance:**
+  - [ ] when `state_dir` is inside a git repo, something asserts the ignore rule instead of
+        trusting it. `git check-ignore -q <state_dir>` is the whole test; it runs where it is
+        seen before damage — the project's own `verify` where there is one, `ws-start` otherwise
+        — and `scripts/check.sh` in this repo gains it as the first consumer *(from p8.16)*
+  - [ ] proven by deleting the ignore line and watching the check fail, not by reading it
+        *(from p8.16)*
+  - [ ] the journal entry header carries a device **alias** rather than the raw device id, so a
+        device named after its owner cannot reach a public repo through the mirror or through any
+        other path *(from p8.8)*
+  - [ ] `tracks.md` states the consequence where it describes the mirror, next to the existing
+        note about `lite` projects with no `docs_home` *(from p8.8)*
+  - [ ] a check that `ws-shared` still carries `disable-model-invocation: true` — if it ever
+        loses the flag the pack silently becomes fourteen invocable skills, and the README, the
+        concepts page and the cartridge all become wrong about the count in the same moment
+        *(from p8.26)*
+  - [ ] §1's inline allowlisted string is visible where coverage is **defined**, not only in the
+        script body, so an auditor reading the pattern file alone sees the whole of it
+        *(from p8.26)*
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** p8.16's observation is the argument for the whole task: the cartridge already said
+  *"Do not remove that line"* in bold — the pack knew the risk and wrote a reminder instead of a
+  check. **Deliberately not included:** the cartridge key for "this docs home is public", and
+  `ws-setup` warning when it generates one. Both are schema work with no behaviour yet behind
+  them, and the alias makes the leak harmless whatever the key says.
+
+## [ ] p8.32 — A retired track leaves its parent directory behind, and the root it lives under is undefined
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Merged 2026-11-02** from **p8.14**'s cheap half and **p8.15**. One task because the fix to the
+  first needs the second: removing the parent `<id>/` directory means naming it, and the root has
+  no defined base. p8.14's third sweep pass is **dropped explicitly** — see its body above.
+- **Acceptance:**
+  - [ ] *Retiring a track* removes the parent `<id>/` directory when removing its last worktree
+        leaves it empty, so the residue is never created rather than reported afterwards. A
+        directory that still contains a working `.git` is not touched *(from p8.14)*
+  - [ ] the worktree root becomes a cartridge key with a stated default, resolved to an absolute
+        path once per session — one definition, not the seven literals across `ws-start` and
+        `ws-shared/tracks.md` *(from p8.15)*
+  - [ ] `task.md`'s `- Worktrees:` line records absolute paths, since its reader is a cold
+        session with no cwd *(from p8.15)*
+  - [ ] `ws-setup` writes the key, and states where the root lands in the **single-repo** case,
+        where it is necessarily outside the workspace *(from p8.15)*
+  - [ ] a project with an existing root under the other reading of `../` is detected and
+        reported, rather than a second root being created beside it *(from p8.15)*
+  - [ ] proven by execution against a fixture, not by reading: retire a track and confirm the
+        parent is gone, and confirm the resolved root is the same absolute path from a repo
+        directory and from the workspace root
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** 9.6M of orphaned build output on a real project, invisible to both sweep passes, is
+  what this costs when the shell left behind is later filled.
+
+## [ ] p8.33 — The cartridge promises five things it does not deliver
+
+- **Repos:** worksite (pack)
+- **Depends on:** p3.1
+- **Merged 2026-11-02** from **p8.19**, **p8.20**, **p8.21** and **p8.22**, keeping only the items
+  with behaviour behind them. The four bodies are kept above; what was left out was left out
+  deliberately: `repos[].role`'s six unconsumed values, the unrecordable collaborator list,
+  `tracker.statuses`' absent shape, `tracker.lists`' third list, and "this command exists, do not
+  run it" — the last two are recorded as boundaries in
+  [`records/known-limitations.md`](../records/known-limitations.md) instead, since both are
+  honest asks rather than wrong answers.
+- **Acceptance:**
+  - [ ] `merge_style` is given a value in `ws-setup`'s cartridge template, or `ws-ship` stops
+        reading it — a key whose only behaviour is its fallback is worse than no key *(p8.19)*
+  - [ ] the rule-skill prefix gets a cartridge key, because `ws-fanout` briefs builders to read
+        `<prefix>-<area>` skills and so is load-bearing on a value it cannot look up *(p8.19)*
+  - [ ] `house_rules.owned_by`'s degrade to `me` — the **permissive** branch — is reversed, or
+        warned about where it is read, so `ws-refine` cannot propose rule changes it may not be
+        entitled to with no error and no prompt *(p8.20)*
+  - [ ] the schema states that `machine:` carries **notes only**, so nobody writes
+        `machine.<device>.repos[].dir` and gets silence *(p8.21)*
+  - [ ] one of the two disagreeing `lite` sentences changes — `ws-setup`:54 says a `lite` profile
+        gets no tracker, `ws-shared/trackers/tasks-file.md`:3 calls itself the `lite` default — so
+        the pack says one thing *(p8.22)*
+  - [ ] p3.1's affected gap rows updated or closed to match what the pack then does
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** every item here is a place where an author writes something reasonable and is never
+  told it was ignored, which is this phase's goal line applied to a data format.
