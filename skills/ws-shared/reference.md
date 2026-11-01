@@ -8,10 +8,13 @@ Worked examples of every file named here are in [examples/](examples/).
 
 | Store | Path | Git remote | Holds |
 |---|---|---|---|
-| **Library** | `~/.agent-sync/store` | `<you>/agent-library` (private) | skills, MCP definitions, routing |
-| **Secrets** | `~/.agent-secrets` | `<you>/agent-secrets` (private) | sops-encrypted credentials, `manifest.tsv` |
+| **Library** | `~/.agent-sync/store` | a private repo you own, e.g. `<you>/agent-library` | skills, MCP definitions, routing |
+| **Secrets** | `~/.agent-secrets` | a second private repo you own, e.g. `<you>/agent-secrets` | sops-encrypted credentials, `manifest.tsv` |
 
-Both are git repos, both private. Neither ever holds a decrypted secret.
+**Both are repos you create yourself.** `agent-sync setup --create-remote` makes the library;
+the secrets store is created by `ws-env init`. Both are private, and neither ever holds a
+decrypted secret. There is no shared or central store — the pack never points you at someone
+else's.
 
 ## Where a project's docs live
 
@@ -60,9 +63,10 @@ a whole docs tree feel untrustworthy.
 
 ### What stays in the brain
 
-`~/brain` (`<you>/notes`) keeps only what matters **beyond** the project: business and
-commercial decisions, people, meetings, contracts and the delivery relationship, plus a short
-note per project pointing at its docs. Anything describing the system itself belongs in the docs.
+If you keep a personal knowledge base — a private notes repo, wherever it lives — it holds only
+what matters **beyond** the project: business and commercial decisions, people, meetings,
+contracts and the delivery relationship, plus a short note per project pointing at its docs.
+This is optional; nothing in the pack requires it. Anything describing the system itself belongs in the docs.
 Decisions about code go in `decisions/`; decisions about the business go in the brain.
 
 ## This device, and its projects

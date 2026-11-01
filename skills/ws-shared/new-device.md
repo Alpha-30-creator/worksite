@@ -46,18 +46,20 @@ Any out-of-band channel. Then:
 
 ```bash
 mkdir -p ~/.config/sops/age          # Git Bash understands this path on Windows
-git clone <your secrets repo url> ~/.agent-secrets
+git clone <your secrets repo url> ~/.agent-secrets   # or `ws-env init` on a first machine
 git -C ~/.agent-secrets config core.hooksPath .githooks
 ```
 
 `chmod 600` is a **no-op on Windows** — say so rather than implying the file is protected there.
 The protection is NTFS permissions on the user profile.
 
-### 4. The brain
+### 4. A personal knowledge base, if you keep one
 
 ```bash
-git clone <your notes repo url> ~/brain
+git clone <your notes repo url> ~/<folder>
 ```
+
+Optional. Nothing in the pack requires it.
 
 ---
 

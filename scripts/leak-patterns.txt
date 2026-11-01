@@ -31,3 +31,11 @@ Side Quests
 \bvp-[a-z]
 \bttl-[a-z]
 \bms-[a-z]
+# GitHub org / account names, and any URL pointing at a repo the reader cannot access.
+# Added 2026-11-01 after the second miss: the pack told anyone installing it to
+# `git clone` the author's PRIVATE secrets repo. Worse than a name — a broken instruction
+# that also advertises the store's existence. Alpha-30-creator is allowed in the repo's own
+# docs (it is the pack's public home) but never inside skills/.
+TheTrustLoop
+AETEA-Org
+MakerSpark-Edu-Tech
