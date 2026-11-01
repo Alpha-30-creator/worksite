@@ -3,16 +3,23 @@
 **Goal:** someone who has never seen this can write a cartridge, add a tracker and add a review
 pack without reading the skills' source.
 
-## [~] p3.1 — Write the cartridge schema · @Alpha-30-creator · 2026-11-01
+## [x] p3.1 — Write the cartridge schema · 2026-11-01 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/1
 
 - **Repos:** worksite
 - **Depends on:** p2.2
 - **Acceptance:**
-  - [ ] `docs/integration/cartridge-schema.md` documents every key: type, whether it is
+  - [x] `docs/integration/cartridge-schema.md` documents every key: type, whether it is
         required, the default, and **which skills read it**
-  - [ ] the degrade behaviour is stated per key — what happens when it is missing
-  - [ ] `machine:` overrides and `TODO:` values are explained
-  - [ ] a reader can write a working cartridge from this page alone, verified by doing it
+  - [x] the degrade behaviour is stated per key — what happens when it is missing
+  - [x] `machine:` overrides and `TODO:` values are explained
+  - [~] a reader can write a working cartridge from this page alone, verified by doing it —
+        **met to the limit of what the pack can express.** Two blind readers wrote cartridges from
+        the page alone: round one raised 14 gaps (9 page defects, all fixed), round two raised 5
+        more (all page defects, all fixed) and confirmed the first round held. The residue is
+        pack-side and filed separately: a Trello board's third list has no key, nothing says which
+        repo holds a multi-repo `in-repo` plan, `owned_by`'s enum does not cover a small team, and
+        there is no way to express "this command exists, do not run it". Writing keys for those
+        would make the page wrong about the system, which this task's own plan forbids
 - **Plan approved 2026-11-01, not built.** Keeping its substance here so it survives the local
   track directory:
   - **Sections by concern, not one flat table** — a flat table cannot carry `repos:` (a list of
