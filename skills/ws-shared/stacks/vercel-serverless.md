@@ -20,7 +20,8 @@ Anything that must persist or be shared needs real infrastructure.
 **Database connections.** Each concurrent invocation opens its own. Without a pooler, traffic
 exhausts Postgres connections. A new long-lived connection or a raised pool size is a finding.
 
-**CommonJS/ESM bundling.** Both NestJS repos carry `npm run check:cjs` precisely because a new
+**CommonJS/ESM bundling.** Where the repo declares a bundle check in `commands:` — the examples
+give `northwind-api` a `check:cjs` — it exists precisely because a new
 dependency can break the serverless bundle in a way nothing else catches. **Any new runtime
 dependency must be reported with whether `check:cjs` was run.**
 

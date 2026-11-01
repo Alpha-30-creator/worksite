@@ -30,6 +30,7 @@ repos:
       test: npm test
       build: npm run build
       migration: npm run migration:run
+      check:cjs: npm run check:cjs   # the serverless bundle check the vercel pack asks about
       verify: npm run verify
 
   - dir: northwind-web
@@ -111,13 +112,15 @@ outlives any one engagement.
 | What is open, and whose | `northwind-docs/STATUS.md`, then `northwind-docs/roadmap/` |
 | The API contract for a feature | `northwind-docs/integration/<feature>.md` |
 | Layer rules, API conventions | `northwind-docs/engineering/backend-practices.md` |
+| The same, for the web layers that mirror them | `northwind-docs/engineering/frontend-practices.md` |
 | Why something is the way it is | `northwind-docs/decisions/` |
 | Known traps in this project | `northwind-docs/agent/risks/` |
 
 ## Rules that override defaults
 
-- **Money is involved.** Totals are derived, never stored and trusted; every amount is minor
-  units as an integer. The `money` stack pack applies to both repos.
+- **Money is involved.** Prices are in HKD. Totals are derived, never stored and trusted; every
+  amount is minor units as an integer, and a formatted string is never a value. The `money` stack
+  pack applies to both code repos.
 - **The API ships before the web work that consumes it.** A task touching both orders the repos
   accordingly, and the contract in `integration/` may be committed right after plan approval so
   frontend work marked "(contract)" can start in parallel.

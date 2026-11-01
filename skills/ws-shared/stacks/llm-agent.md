@@ -48,7 +48,8 @@ reading the diff. Run it, and save the transcripts. Where a repo has no test net
 transcripts you actually produced are the entire record — and whether that is the case is a fact
 about that project, so it belongs in its `risks/`, not here.
 
-**A sync `before_model` hook runs on the event loop, not in an executor.** LangChain passes
+**LangChain/LangGraph specifically — a sync `before_model` hook runs on the event loop, not in
+an executor.** LangChain passes
 an async form to LangGraph only when `abefore_model` is overridden; otherwise
 `RunnableCallable.ainvoke` calls the sync function directly. Any middleware that touches the
 network, a database or a file store must implement `abefore_model` and push its I/O through

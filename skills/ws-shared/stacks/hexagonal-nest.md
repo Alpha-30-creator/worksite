@@ -4,9 +4,12 @@ Selected by `stack: [hexagonal]`. A house architecture rather than a framework c
 **the project's own practices doc is the rulebook** and this pack is only the review lens over
 it:
 
-- Find it from the cartridge: the backend and frontend practices docs under the project's
-  `engineering/`. They own the layer rules, the API conventions and the auth rules; where they
-  disagree with this pack, they win.
+- Find it from the cartridge: the practices docs under `<docs_home>/../engineering/` — which is
+  inside the docs repo on a multi-repo project and `<repo>/docs/engineering/` on a single-repo
+  one. There is one per side that exists: a backend practices doc, and a frontend one where the
+  project has a frontend that mirrors the architecture. They own the layer rules, the API
+  conventions and the auth rules; where they disagree with this pack, they win.
+- In the examples, `northwind-api` and the `northwind-web` layers that mirror it.
 - Read the layer rules section **and the lint config that enforces them** before reviewing.
   A rule the linter already enforces does not need your attention; a rule it cannot enforce
   does.

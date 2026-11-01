@@ -31,7 +31,7 @@ Base `https://api.trello.com/1`.
 | comments | `GET /cards/<cardId>/actions?filter=commentCard` |
 
 Resolve list ids by name, **case-insensitively** (note the space in "To Do"). **Skip placeholder
-cards whose title is exactly the list name** — they are header stubs on this board.
+cards whose title is exactly the list name** — some boards carry header stubs like that.
 Checklist items that read like acceptance criteria **are** the acceptance criteria; there is no
 other structured field for them.
 
@@ -48,7 +48,8 @@ afterwards, and if someone else is on it, stop and say so.
 ## Mark
 
 In review: comment the PR url on the card and move it to the board's review list if one exists
-(this board has only `To Do` and `Doing`, so **ask** where a finished card should go rather than
+(where the board has no review list — the examples give atlas only `To Do` and `Doing` — **ask**
+where a finished card should go rather than
 inventing a list). Done: move it where the team puts done cards; never create a new list.
 
 ## Note

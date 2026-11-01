@@ -20,13 +20,15 @@ written by older code: missing fields, wrong types, a field that used to be a st
 an array. New code that assumes a field exists on every document is a defect.
 
 **Env read at import time.** `os.environ["X"]` at module scope crashes on import if unset, and
-pins the value. `setup_env.sh` sources into the shell and `load_dotenv` is **not** called here,
+pins the value. Where the repo sources env through a shell script rather than calling
+`load_dotenv` — `atlas-api` in the examples does — a bare `.env` does **not** feed local runs,
 so a bare `.env` does not feed local runs — a change that assumes dotenv works locally is wrong.
 
 **Mutable default arguments and globals.** `def f(x=[])` and module-level mutable state are
 shared across requests under a threaded server.
 
-**Destructive scripts.** `--nuke_db` wipes and reseeds. Any change that calls a destructive
+**Destructive scripts.** Where the repo has a reset-and-reseed flag — `--nuke_db` in the
+examples — it wipes the database. Any change that calls a destructive
 path from somewhere reachable in normal operation is a Must fix.
 
 **Secrets.** Never commit `setup_env.sh` values, `.env`, or `.cursor/mcp.env`.

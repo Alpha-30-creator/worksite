@@ -1,7 +1,9 @@
 # Stack: Terraform + AWS (multi-tenant)
 
 Selected by `stack: [terraform, aws]`. In the examples, `atlas-infra`.
-Flow is **recon → plan → approve → apply**; see that repo's `docs/INFRA_AGENT_HANDOFF.md`.
+Flow is **recon → plan → approve → apply**. Where the repo has an infrastructure runbook of its
+own — named by the cartridge, usually under `runbooks/` — it owns the detail and wins over this
+pack.
 
 **Read the plan output, every line.** The review *is* the plan. The words to search for are
 `destroy`, `replace`, and `forces replacement`. A resource being replaced rather than updated

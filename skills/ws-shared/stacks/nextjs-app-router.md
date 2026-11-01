@@ -26,9 +26,10 @@ render. Any of these in a component that also renders on the server is a defect.
 **The four forgotten states.** Empty, loading, error, and long text. Plus logged-out, and
 keyboard focus. A new screen without them is a Should fix at minimum.
 
-**Responsive and accessible.** Check the project's narrow breakpoint (360 or 390). `div` used
+**Responsive and accessible.** Check the project's narrowest supported breakpoint — 360 or 390
+are the common ones. `div` used
 as a button; an icon button with no accessible label; a removed focus ring; a hard-coded string
-where the project uses i18n (`next-intl`) — including `aria-label` and `placeholder`.
+where the project uses i18n (`next-intl`, say) — including `aria-label` and `placeholder`.
 
 **Optimistic updates.** Fine for likes, saves, cart quantity. **Never** for money, stock, or
 anything capped. If the project's practices doc lists what is allowed, that list is the rule.
