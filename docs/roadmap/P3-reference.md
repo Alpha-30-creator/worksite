@@ -3,7 +3,7 @@
 **Goal:** someone who has never seen this can write a cartridge, add a tracker and add a review
 pack without reading the skills' source.
 
-## [~] p3.1 — Write the cartridge schema @Alpha-30-creator · 2026-11-01
+## [ ] p3.1 — Write the cartridge schema
 
 - **Repos:** worksite
 - **Depends on:** p2.2
@@ -13,6 +13,28 @@ pack without reading the skills' source.
   - [ ] the degrade behaviour is stated per key — what happens when it is missing
   - [ ] `machine:` overrides and `TODO:` values are explained
   - [ ] a reader can write a working cartridge from this page alone, verified by doing it
+- **Plan approved 2026-11-01, not built.** Keeping its substance here so it survives the local
+  track directory:
+  - **Sections by concern, not one flat table** — a flat table cannot carry `repos:` (a list of
+    maps) or `tracker.*` (four disjoint key sets conditional on `kind`).
+  - Every key table carries six columns — key · type · required · default · **read by** ·
+    **missing →** — so the two hardest acceptance criteria are structural rather than prose.
+  - The "read by" mapping comes from an exhaustive grep ledger over `skills/`, in three passes
+    (backticked literal, dotted form, then English concept for keys with no literal hit), with
+    `examples/` and `templates/` excluded as data rather than readers.
+  - **Degrade behaviour is not documented per key anywhere**, so each "missing →" cell is marked
+    *stated* (cited) or *inferred*. That provenance convention doubles as a punch-list.
+  - Document the schema **as it is, with gaps named** — do not specify the missing keys, which
+    would quietly turn this into a `ws-refine` change to `ws-setup`.
+- **Three findings already banked from the planning pass:**
+  - **`merge_style` is a ghost key.** `ws-ship` reads "the project's merge style (`merge_style` in
+    the cartridge)" and nothing in the pack defines it. Verified.
+  - **Five keys have no literal reader:** `schema_version`, `git_flow`, `integration_branch`,
+    `pr_into`, `commit_convention`. Four are pulled in wholesale by a template line;
+    `schema_version` has no reader at all.
+  - `ws-setup`'s interview collects a one-line description and a rule-skill prefix that have **no
+    cartridge key to land in**, and `github-projects` says to "record them in the cartridge"
+    without naming a key.
 - **Notes:** the highest-value document in the repo and the one that does not exist in any form
   today. `ws-setup` generates cartridges by interview, so the format has never been written down.
 

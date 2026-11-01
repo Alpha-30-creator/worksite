@@ -13,13 +13,8 @@ inside `ws-refine` rather than something anyone remembers to do.
 
 ## In progress
 
-Two tracks, run as a batch. The lead holds `STATUS.md`; neither builder writes it.
-
-| id | title | who | since | note |
-|---|---|---|---|---|
-| p3.1 | Write the cartridge schema | @Alpha-30-creator | 2026-11-01 | plan approved; **queued behind p8.10**, which changes behaviour this page documents |
-| p8.10 | Cleanup exists on exactly one path | @Alpha-30-creator | 2026-11-01 | plan approved; building |
-
+Nothing claimed. The two-track batch is closed: p8.10 shipped, p3.1 released with its plan
+preserved on the task itself.
 
 ## Blocked
 
@@ -39,7 +34,8 @@ today, so they do not have to wait for P1–P7.
 | p8.10 | Cleanup exists on exactly one path, and nothing ever sweeps | reported from real use: track files and worktrees survive a finished task, especially under fanout |
 | p1.2 | Prove the leak guard refuses a private name | now pickable; nothing else is safe until this is proven |
 | p3.1 | Write the cartridge schema | the highest-value doc, and it does not exist in any form |
-| p1.2 | Prove the leak guard refuses a private name | it has now refused three real commits; worth recording properly |
+| p1.2 | Prove the leak guard refuses a private name | it has now refused four real commits, and missed two whole classes; worth recording properly |
+| p8.13 | `for r in <repos>` survives in three skills, one of which warns against it | reports false success, which is worse than crashing |
 
 ## Shipped
 
@@ -48,6 +44,7 @@ today, so they do not have to wait for P1–P7.
 | p1.1 | Create the public repo and push the scaffold | 2026-11-01 |
 | p2.1 | Apply the source-of-truth decision | 2026-11-01 |
 | p2.2 | Translate the fourteen skills, do not strip them | 2026-11-01 |
+| p8.10 | Cleanup exists on exactly one path, and nothing ever sweeps | 2026-11-01 |
 | p8.1 | Make every skill model-invocable | 2026-11-01 |
 | p8.2 | Teach review and planning where documentation belongs | 2026-11-01 |
 | p8.6 | worktrees defaulted to false | 2026-11-01 |

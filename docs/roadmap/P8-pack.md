@@ -250,7 +250,7 @@ should.
   hand-edited and skip it thereafter. The real fix for that was deleting the deployed copy and
   letting it redeploy clean, which also re-recorded the hash correctly.
 
-## [~] p8.10 — Cleanup exists on exactly one path, and nothing ever sweeps @Alpha-30-creator · 2026-11-01
+## [x] p8.10 — Cleanup exists on exactly one path, and nothing ever sweeps · 2026-11-01 · @Alpha-30-creator
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
