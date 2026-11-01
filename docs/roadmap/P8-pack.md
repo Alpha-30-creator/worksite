@@ -730,3 +730,115 @@ a decision about its safety rules — but if a second safety-rule change comes u
   - [ ] p3.1's gap updated or closed
   - [ ] changed through `ws-refine`, with its graph audit
 - **Notes:** small, and the kind of thing that costs an agent a wrong decision rather than an error.
+
+## [ ] p8.23 — The pack's rule numbers are cited everywhere and defined nowhere, and `R3` means two things
+
+- **Repos:** worksite (pack)
+- **Depends on:** p3.1
+- **Why:** `R1`–`R5` are cited in five library files — `ws-refine`:38/67/69, `ws-setup`:89/182/190,
+  `ws-shared/trackers/README.md`:10/12, `ws-start`:16 — and **nothing in the library defines them.**
+  The only definitions anywhere are on `docs/integration/cartridge-schema.md`, which the skills
+  cannot read and which postdates them.
+- **And the numbers already collide.** `ws-shared/trackers/README.md`:10 uses **R3** for "an unknown
+  *kind* is not an error"; the schema page defines **R3** as "unknown *keys* are ignored". Two rules,
+  one label, both published. **p3.1 introduced the collision** — it invented definitions for labels
+  the library was already using informally, which was a reasonable thing to do when the alternative
+  was citing undefined labels, but `R3` was taken. Nobody caught it: not the builder, not two review
+  rounds, not two blind readers, because there was no definition site to check a new definition
+  against.
+- **Acceptance:**
+  - [ ] one definition site in `ws-shared/`, listing every rule the pack cites by number
+  - [ ] the `R3` collision resolved by renumbering whichever meaning loses, in **both** the library
+        and the schema page, so no number carries two rules
+  - [ ] every existing citation checked against the new definitions — a citation that was already
+        pointing at the wrong rule is the thing to find here
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** found by p3.3's planner, which needed to cite `R4` and went looking for what `R4` *is*.
+  The guides it then wrote cite `R4` by label only, define nothing, and never cite `R3` — so they do
+  not deepen it, and they are the model for what any page may do until this lands.
+
+## [ ] p8.24 — Three gates read an empty result as a negative answer, and the graph audit has two of them
+
+- **Repos:** worksite (pack)
+- **Depends on:** p8.17
+- **Why:** p8.17 fixed one instance of a class and named three more. The class: **a check whose
+  silence reads as a pass.** Where a skill greps, parses or queries for a condition, an empty result
+  from a missing file, an unreadable file or a failed call is indistinguishable from a real negative
+  answer — and the branch it falls to is the permissive one.
+- **`ws-refine`'s own graph audit has it twice**, which makes it the sharpest and the first to fix,
+  because it is the block every pack change is required to run:
+  - its block opens by `cd`-ing into the library; if the `cd` fails or the glob does not expand,
+    every loop runs zero times and prints nothing, so it **reports a clean audit of a change it
+    never audited**, defeating the skill's own line that an unaudited change is not finished;
+  - its coverage is **forward only** — it verifies that every skill *named* in a `What next?` exists,
+    with no reverse check that every exit the *prose* offers is listed. p8.17 added a `ws-setup`
+    exit and the audit stayed clean. **The audit cannot catch the kind of gap the change introduced.**
+- **The other two:** `ws-shared/trackers/roadmap-files.md`:25-27, where an empty list means "nothing
+  open" or "wrong path / never pulled" — so `ws-start` shows an empty board, or claims a task someone
+  else holds; and `ws-setup`:22-24, where an empty `find` means "no cartridge" or "could not
+  descend", picking **new** over **upgrade**. The second is mitigated by its show-and-wait gate.
+- **Acceptance:**
+  - [ ] the graph audit establishes it actually read something before reporting clean, and gains the
+        reverse check: every skill a `What next?` section's prose sends the agent to is listed
+  - [ ] the two adapter/setup sites distinguish "read it, the answer is no" from "could not read it"
+  - [ ] the class is written down once, in `ws-shared/review/tier1-universal.md`, as a universal
+        rather than per-site: **a gate whose input is unreadable must not fall to the unsafe
+        default** — establish that the input was read before branching on what it said
+  - [ ] changed through `ws-refine`, with its graph audit — **after** that audit is the thing fixed
+- **Notes:** one task and three sub-items deliberately, decided when p8.17 was planned. The graph
+  audit first, because until it is fixed every other pack change is certified by a check that may
+  not have run.
+
+## [ ] p8.25 — Shipping a task does not refresh the cartridge rows it invalidates
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Why:** p3.5 found the project cartridge — the first file every agent reads — stale in **nine**
+  places after five tasks shipped around it. `ws-ship`'s harvest writes a worklog entry and updates
+  the docs the change touched, and never looks at the cartridge, so every row naming a task id or a
+  phase rots silently. The cartridge is the highest-leverage file in a project and the only one with
+  no owner.
+- **The test is not the obvious one, and that is the finding.** "Is this statement still true?" misses
+  most of it: two of p3.5's nine defects were **tense and completeness** while every clause stayed
+  technically accurate — a row describing an empty directory that held eight files, and a list that
+  read as exhaustive after two directories were added. Both survived a deliberate full re-read
+  looking for false statements. The check wants to be **"does this row still read correctly"**.
+- **Acceptance:**
+  - [ ] `ws-ship` names the cartridge among the docs a shipped task may invalidate, with the rows
+        most likely to rot called out — anything naming a task id, a phase, or a path that does not
+        exist yet
+  - [ ] the prompt asks whether each such row still *reads* correctly, not merely whether it is
+        accurate, with the tense-and-completeness failure named
+  - [ ] a project's cartridge prefers a link to a decision record over a task id where one exists,
+        since a closed task survives only as long as its roadmap entry
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** *rejected* while planning p3.5: adding a "last reviewed" date to the cartridge. It would
+  have caught all nine, and it is a claim nobody enforces — the pack's own argument against anything
+  depending on memory. This is the version with an executing path.
+
+## [ ] p8.26 — Three things the guard does not cover, and nothing says so
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Why:** `scripts/check.sh` is the whole test suite, so its blind spots are the project's blind
+  spots. Three were found by using it, and only the third is documented anywhere.
+- **§3 has no fence awareness.** Its extraction greps the whole file, so a bracket-paren link written
+  **inside prose or a fenced block** is resolved as a real target and fails the build. It bit p3.3
+  while that page was documenting the link checker, and then bit the worklog entry describing p3.3.
+  Either make the extraction fence-aware or document it as intended behaviour — it is currently
+  neither.
+- **Nothing asserts `disable-model-invocation: true` survives a publish.** If `ws-shared` ever loses
+  that flag the pack silently becomes fourteen invocable skills, and the README, the concepts page and
+  the cartridge all become wrong about the count in the same moment. One line of check.
+- **§1 carries an inline allowlisted string** that is not in `scripts/leak-patterns.txt`, so coverage
+  is "the listed patterns, minus the excluded files, minus one string hardcoded in the script". An
+  auditor reading the pattern file alone would not find it. `docs/engineering/layout.md` now records
+  this; the script does not.
+- **Acceptance:**
+  - [ ] §3's behaviour on a bracket-paren link in prose is either fixed or documented in the script
+        itself, not only in a guide
+  - [ ] a check that `ws-shared` still carries `disable-model-invocation: true`
+  - [ ] §1's inline allowlist is visible where coverage is defined, not only in the script body
+  - [ ] `docs/engineering/layout.md`'s coverage table stays true to whatever changes
+- **Notes:** the §3 case is the funniest and the least important; the flag check is the one with a
+  silent blast radius across three documents.

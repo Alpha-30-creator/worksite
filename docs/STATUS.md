@@ -56,6 +56,10 @@ today, so they do not have to wait for P1–P7.
 | p8.20 | Keys that exist but cannot express the ordinary shape | a three-list Trello board, a two-person team; an author invents schema and is never told it was ignored |
 | p8.21 | `machine:` has no merge semantics and no reader | the cartridge advertises per-device config and delivers a comment field |
 | p8.22 | `lite` and the tracker: two files disagree | costs an agent a wrong decision rather than an error |
+| p8.23 | Rule numbers cited everywhere, defined nowhere | `R3` already means two different things in two published files |
+| p8.24 | Three gates read silence as a pass | the graph audit has two of them, so every pack change is certified by a check that may not have run |
+| p8.25 | Shipping does not refresh the cartridge it invalidates | nine stale statements in the file every agent reads first |
+| p8.26 | Three things the guard does not cover | one of them makes three documents wrong at once if it ever breaks |
 | p3.4 | The docs tree has no index | three reference pages landed and two are unreachable except from the root README |
 
 ## Shipped

@@ -26,6 +26,10 @@ reports honestly what happened.
   - [ ] safe to re-run: converges instead of duplicating
   - [ ] ends by pointing at `/ws-setup` for the user's first project
   - [ ] tells the agent to report what actually happened, including failures
+  - [ ] **the link from `README.md` is added by this task.** *2026-11-02 re-scoped by
+        @Alpha-30-creator: p4.1 deliberately names these files in prose and never links them,
+        because `check.sh` §3 fails on a missing target. Without this criterion the links are
+        never added by anyone.*
 
 ## [ ] p4.3 — Repo furniture
 
@@ -37,3 +41,7 @@ reports honestly what happened.
         secrets docs already use
   - [ ] `CODE_OF_CONDUCT.md`
   - [ ] CI running `scripts/check.sh` on every PR
+  - [ ] **the link from `README.md` is added by this task.** *2026-11-02 re-scoped by
+        @Alpha-30-creator: p4.1 deliberately names these files in prose and never links them,
+        because `check.sh` §3 fails on a missing target. Without this criterion the links are
+        never added by anyone.*

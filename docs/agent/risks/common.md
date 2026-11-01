@@ -16,7 +16,8 @@ was.
 - A new allowlist entry in `check.sh` widened further than the one case that needed it, silently
   un-guarding a pattern everywhere.
 - A skill edited in this repo while the agent is loading the same skill from the author's
-  library — the change appears to do nothing, or the opposite of nothing. See p2.1.
+  library — the change appears to do nothing, or the opposite of nothing. The library is the
+  working copy and this repo is a published artifact ([ADR 0001](../../decisions/0001-library-is-the-source-of-truth.md)).
 - An instruction written in the author's own voice — a possessive first name, "my laptop", "my
   machines" — surviving the strip because it names no project. The leak scan catches names, not
   voice, so this one needs a human read.
@@ -41,8 +42,17 @@ was.
   the way out. `publish.sh` asserts `diff -rq` library-against-candidate is silent, so this fails
   loudly; when it does, the de-personalisation in P2 is incomplete and the fix belongs there, not
   in the publish.
-- A doc citing `skills/` by `file:line` — the numbers drift the moment a skill gains a line, and
-  `scripts/check.sh` resolves relative links but never line numbers, so a wrong citation reads
-  exactly like a right one. Re-derive every number against the commit the doc names. Found on
+- A doc citing `skills/` by `file:line`, **or claiming what a check covers** — line numbers drift
+  the moment a skill gains a line, including citations nobody edited that sat two lines below an
+  insertion; and `scripts/check.sh` resolves relative links but never line numbers and never its own
+  coverage, so both read exactly like a right one. Re-derive every number against the commit the doc names. Found on
   p3.1, where three of six wrong numbers originated in the source ledger and were transcribed
   faithfully onto the page.
+- An **absolute** asserted where the tree has an asymmetry — the mirror image of the entry above.
+  "Nothing else depends on X", "the other four Y", "file trackers give a lock": each was true of the
+  common case and false at an edge the pack documents elsewhere. Grep the subject of the claim rather
+  than a proxy for it, and treat a number appearing twice in one file as a claim about arithmetic.
+- A doc attributing a configuration-driven path to the wrong half of a mechanism. `publish.sh`'s
+  destination is the repo it sits in; the configured target list belongs to `ws-refine`. The guard
+  checks for leaked names, never for a true-sounding claim about which component holds the private
+  path.
