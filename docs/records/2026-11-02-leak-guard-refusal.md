@@ -53,12 +53,20 @@ is therefore a result about these bytes, not about a lookalike.
 Section 1 is reached from six places in this tree — five automated invocations and one documented
 manual run — in two modes. Two of the six were exercised directly.
 
+**One borderline case, counted deliberately.** `scripts/publish.sh`:184 is a seventh literal
+`bash scripts/check.sh`, inside :181's own failure branch, run only to print the output that :181
+discarded to `/dev/null`. It is counted as part of site 181 rather than as a site of its own,
+because it cannot be reached except by :181 having already failed and it gates nothing. That is a
+judgement, not an arithmetic fact, and it is stated here because this record faults another
+document for omitting an invocation from its count — a count whose rule is unstated is the thing
+being criticised.
+
 | Site | Mode | Exercised |
 |---|---|---|
 | `scripts/publish.sh`:181 — preflight, refuse to publish onto an already-red target | working tree | no |
 | `scripts/publish.sh`:277 — the guard inside the throwaway candidate clone | working tree | no |
 | `scripts/publish.sh`:321 — the guard on the target's staged tree | `--staged` | no |
-| `.githooks/pre-commit`:6 | `--staged` | **yes** — A2, A3, B1 |
+| `.githooks/pre-commit`:6 | `--staged` | **yes** — A3, B1 |
 | `.github/workflows/check.yml`:24 — CI, every PR into `main` and every push to `main` | working tree | no |
 | documented manual run — `CONTRIBUTING.md`:62, and the cartridge's `verify` | working tree | **yes** — A1, B2, B3, B4 |
 
@@ -74,7 +82,11 @@ Why the four were not:
 
 **The claim this record makes, and no wider:** both of section 1's modes were exercised against the
 real script and the real pattern file; two of six invocation sites were exercised directly; the
-three publish-path sites and CI were not. Nothing here proves "the guard is proven everywhere".
+three publish-path sites and CI were not. **A2 appears in no row of that table on purpose.** It was
+a direct `bash scripts/check.sh --staged` run to open the gate before the commit was attempted, so
+it exercised the `--staged` **mode** without passing through any of the six **sites**; the hook
+site is carried by A3 and B1, which went through it. Nothing here proves "the guard is proven
+everywhere".
 
 ## Probe A — the real worktree, nothing committed
 
@@ -245,11 +257,20 @@ the whole output line, at `scripts/check.sh`:46.
 remote this one would have succeeded.
 
 This is **not** recorded as a standing limitation, because it is being fixed: it is an acceptance
-criterion on **p8.31** in [P8-pack.md](../roadmap/P8-pack.md), the merged leak-surface task, added
-on 2026-11-02. Narrowing the allowlisted string would not close it — the fix is to strip the
+criterion on **p8.31**, the merged leak-surface task, in
+[P8-pack.md](../roadmap/P8-pack.md) — **added in commit `d34ab8c` on 2026-11-02**, at that file's
+line 654 on `main`. Narrowing the allowlisted string would not close it; the fix is to strip the
 allowlisted substring from the line before matching, rather than dropping the line. p8.31 also
 carries the correction to `SECURITY.md`'s run-site count, which says four and lists four, omitting
-the `publish.sh`:181 preflight. Both were measured here; neither is this track's to fix.
+the `publish.sh`:181 preflight — **the same commit `d34ab8c`**, line 675 on `main`. Both were
+measured here; neither is this track's to fix.
+
+**Where to look if neither criterion is there.** The branch this record was written on is cut from
+`81311dc`, which predates `d34ab8c`, so on this branch's own copy of `P8-pack.md` neither criterion
+exists and a reader checking the claim against the tree in front of them will not find it. Read
+them at the commit named, or on `main`. An independent review of this record raised exactly that as
+a finding, and it was the citation that was at fault rather than the claim: a record that cannot be
+resolved from the tree it ships in is asking to be trusted instead of checked.
 
 ## What this does not prove
 
@@ -280,18 +301,26 @@ apart. Re-run it when `scripts/check.sh` or `scripts/leak-patterns.txt` changes.
    guard — that is a debug and a tracker row, not something to work around.
 5. **A3.** Only after A2 exited 1: `git commit` with **no** `--no-verify`. Expect non-zero, the
    same `file:line`, and `HEAD` unchanged.
-6. **Tear down and assert.** `git restore --staged --` the path, `rm -f` it, then re-assert all
-   five baseline values. Then compute the staged blob's hash with `git hash-object` and remove that
-   one loose object by its exact hash — not with `git gc`, which would sweep other worktrees'
-   unreachable objects. Confirm `git cat-file -t` on that hash now fails and `git fsck` reports no
-   corruption.
-7. **Probe B.** A fresh empty directory outside every real repo, `git init`, **no remote, ever**.
+6. **Capture the blob's hash while the file still exists, then tear down.** The order matters:
+   after `rm -f` there is nothing left to hash, so take it first —
+   `git rev-parse ":<probe path>"`, or `git hash-object <probe path>`, while the file is still
+   staged. Then `git restore --staged --` the path, `rm -f` it, and re-assert all five baseline
+   values.
+7. **Remove the blob the refused commit left behind.** It is a loose object at
+   `<git-common-dir>/objects/<first two characters of the hash>/<remaining thirty-eight>`, where
+   the common dir is `git rev-parse --path-format=absolute --git-common-dir` — in a worktree that
+   is the main checkout's `.git`, not the worktree's own git dir. Delete that one file. **Not
+   `git gc` or `git prune`**, which sweep every unreachable object in a store that sibling
+   worktrees share and may still want. Then confirm `git cat-file -t <hash>` fails and
+   `git fsck --no-reflogs` reports no corruption. Deleting a file inside `.git` is the most
+   dangerous step here, which is why it is spelled out rather than left to be guessed at.
+8. **Probe B.** A fresh empty directory outside every real repo, `git init`, **no remote, ever**.
    Copy the four files and verify each sha256 against step 1, aborting on mismatch. Run
    `git config core.hooksPath .githooks`, commit the harness, then run B1 (commit refused), B2
    (pattern appended to `LICENSE`, staged, exit 0), B3 (the npm scope alone, exit 0) and B4 (both
    on one line, exit 0). Reset the working tree between cases. **`check.sh` only for B2 to B4 — no
    commit, because they pass.** Then `rm -rf` the directory and assert it is gone.
-8. **Keep raw transcripts out of the repo.** They carry the unredacted pattern. The track's
+9. **Keep raw transcripts out of the repo.** They carry the unredacted pattern. The track's
    `verify/` directory is inside the gitignored state directory, which is where they belong;
    anything that reaches `docs/records/` is redacted first, including absolute paths, since the
    author's home path is itself a pattern.
