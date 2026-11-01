@@ -41,3 +41,8 @@ was.
   the way out. `publish.sh` asserts `diff -rq` library-against-candidate is silent, so this fails
   loudly; when it does, the de-personalisation in P2 is incomplete and the fix belongs there, not
   in the publish.
+- A doc citing `skills/` by `file:line` — the numbers drift the moment a skill gains a line, and
+  `scripts/check.sh` resolves relative links but never line numbers, so a wrong citation reads
+  exactly like a right one. Re-derive every number against the commit the doc names. Found on
+  p3.1, where three of six wrong numbers originated in the source ledger and were transcribed
+  faithfully onto the page.
