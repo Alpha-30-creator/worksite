@@ -295,7 +295,9 @@ should.
         resolved** and binds one `$id` for all eight `<id>` substitutions in the file
   - [x] cleanup is verified, not assumed: after deleting, confirm the path is gone and say so.
         One block, **silent on success** (`clean: track <id> removed`) and loud on failure
-        (`NOT REMOVED: …` naming each survivor), plus a closing one-line ship report
+        (`NOT REMOVED: …` naming each survivor), plus a closing one-line ship report. The
+        verification is only trustworthy because of two fixes the review round forced: the id
+        guard, and newline-separated repo iteration (see Notes)
   - [x] worktree removal loops over every repo the track touched, and `worktree prune` runs once
         — **once per repo**, written as a second loop, because a single global prune leaves every
         other repo's metadata stale, which is the bug
@@ -329,11 +331,53 @@ should.
     **5 Harvest / 6 Retire the track / 7 Mark it done**, with the tracker transition gated on
     retirement's verified line.
 
-  **The recurring shape, now five instances.** p8.3, p8.5, p8.8, p8.9 and p8.10 are all the same
+  **How the fix was verified the second time.** Composition and empty variables, not blocks in
+  isolation: a two-repo fixture under a path containing a space, with bare remotes. Unset `$id`
+  under `set -u`, empty `$id`, a worktree with an unpushed commit on a branch with **no**
+  upstream, a worktree with an upstream and one unpushed commit, an uncommitted file, the
+  multi-repo layout, the single-repo layout whose path ends at the id, and a neighbouring `p3.10`
+  track that had to survive a `p3.1` retirement. Every block was extracted verbatim from the
+  skill file and run under **bash**, not the zsh that hid the word-splitting bug.
+
+  **The recurring shape, now six instances.** p8.3, p8.5, p8.8, p8.9, p8.10 and p8.10's own first
+  build are all the same
   failure: a rule that is correct and a path that never executes it. The durable lesson, worth
   carrying into every review of this pack: **a rule with no executing path is indistinguishable
   from a missing rule — name the caller, and verify the call.** Recorded here rather than in a
   project's `risks/` because it is a pack-level pattern, not a project risk.
+
+  **The review round, and what it caught.** The first build passed its checks and was still
+  unsafe. Five blocking findings, all verified against the file text and all fixed:
+
+  - **An `rm -rf "$state_dir/tracks/$id"` with no guard.** The retirement procedure was written as
+    three fenced blocks; only the first assigned `id`, and an agent runs each fence in its own
+    shell. Run alone, the removal block's target was `<state_dir>/tracks/` — every track on the
+    machine, including claimed ones holding uncommitted work, which this very change exists to
+    protect. Fixed by one composed block whose first line is
+    `[ -n "$id" ] || { … exit 1; }`, and by saying in the section that it must be run whole.
+  - **The task's own justification was false, and that is why the guard was missing.** Three
+    sentences across `ws-ship` and `ws-fanout` said a missing id "silently removes nothing". It
+    removes *everything*. All three now say an unresolved id is a **stop**.
+  - **The "unpushed work is a refusal" check could not fire for the case it names.**
+    `git log @{u}..HEAD 2>/dev/null` discards `fatal: no upstream configured`, so a branch whose
+    commits exist nowhere else was indistinguishable from clean-and-pushed — and `worktree remove`
+    does not refuse it either. Replaced with a separate, unsuppressed
+    `rev-parse --symbolic-full-name '@{u}'` plus `rev-list --count`. **This was the p8.10 shape —
+    a rule with no executing path — occurring inside the fix for p8.10**, which makes it the sixth
+    instance of the pattern and the clearest evidence yet that the pattern is real.
+  - **`for r in $repos` printed a false `clean`.** A workspace path containing a space splits in
+    bash, every `git -C` fails on a fragment, no worktree is found, and the block reports success
+    with the worktrees still present. Demonstrated: the same script prints `clean` under bash and
+    `NOT REMOVED` under zsh. All four loops now read repo paths line by line. This is the mirror
+    image of the zsh trap already recorded in the cartridge, and the more dangerous direction,
+    because it reports success rather than failing.
+  - **Variables consumed but never assigned** (`$wt`, `$wt_for_r`), and `| head` masking git's
+    exit status throughout. Both gone: one composed block, explicit assignments, no `head`.
+
+  Also fixed: a self-contradiction in the shared section (a step-5 survivor cannot "stop and ask",
+  being found after removal), the orphan-worktree report that had no enumerating pass (it now has
+  its own reverse pass: worktree ids minus track directories), and a sweep example whose table
+  asserted `done`/`dropped` on a tracker that cannot prove either.
 
   One defect found while testing the written commands rather than reading them: matching a
   worktree by `grep` on the track id is wrong twice over — the dot in `p3.1` is a regex wildcard
