@@ -1,5 +1,8 @@
 # P6 — Publishing, and how users take updates
 
+**This phase is closed (2026-11-02).** p6.1 shipped; p6.2 is dropped, two of its criteria
+absorbed into p4.2 and one already delivered by the README. Nothing here is open.
+
 **Goal:** every refinement reaches the public repo without anyone remembering to send it, and a
 user who installed in January can take February's version safely.
 
@@ -28,7 +31,10 @@ working copy, this repo is a published artifact.
 - **Notes:** the friction budget for this is zero. If refining a skill becomes more steps than it
   is today, the design in ADR 0001 has failed and should be revisited rather than endured.
 
-## [ ] p6.2 — Document how a user takes an update
+## [-] p6.2 — Document how a user takes an update — absorbed into p4.2; its pull-request criterion already shipped in the README
+
+**Dropped 2026-11-02**, body kept. The convergence criterion and the locally-edited-skill
+criterion are now p4.2's; the README already declines pull requests, shipped in p4.1.
 
 - **Repos:** worksite
 - **Depends on:** p6.1, p4.2

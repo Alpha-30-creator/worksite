@@ -1,5 +1,9 @@
 # P2 — The pack in the repo, generic
 
+**This phase is closed (2026-11-02).** p2.1 and p2.2 shipped; p2.3 is dropped because most of it
+is already on disk and its one undelivered criterion moved into p4.2. Nothing here is open, and a
+later defect in the pack's genericness is filed in P8 rather than reopening this phase.
+
 **Goal:** all fourteen skill directories live here and mention no private project, repo, person
 or path. The author's own facts become examples a stranger can read.
 
@@ -15,12 +19,14 @@ or path. The author's own facts become examples a stranger can read.
   - [x] `ws-refine`'s "edit the library, never a deployed copy" instruction gained its third
         clause: the public repo is a published artifact, never edited directly, and a fix goes in
         the library so the publish carries it
-  - [x] the sync direction written up in
-        [`engineering/sync-direction.md`](../engineering/sync-direction.md), including the
-        load-bearing property — publishing is a plain copy, never a transformation — and the two
+  - [x] the sync direction written up in `docs/engineering/sync-direction.md` (named here rather
+        than linked: that page is being reorganised, and `check.sh` §3 fails on a missing
+        target), including the load-bearing property — publishing is a plain copy, never a transformation — and the two
         consequences: drift is prevented by automation rather than architecture, and the leak
         guard must run on the publish path
-  - [ ] the publish step itself is **p6.1**, and depends on p2.2 being finished — until the
+  - [x] **ticked 2026-11-02:** p6.1 shipped on 2026-11-01 (PR 3) and p2.2 shipped before it, so
+        the dependency this criterion records was satisfied in the stated order. The publish step
+        itself is **p6.1**, and depends on p2.2 being finished — until the
         library holds the generic content, publishing would be a transformation rather than a
         copy, which ADR 0001 rules out
 
@@ -54,8 +60,12 @@ or path. The author's own facts become examples a stranger can read.
   - [x] reviewed independently, in a context that had not done the translation. **8 findings, all
         8 verified against the files, none overturned.** Three were rules this session wrote
         hours earlier being broken by this session
-  - [~] `scripts/check.sh` zero on all three sections, and **section 2 ran for the first time
-        ever**. **But the claim "zero private names" was false twice, and both misses reached the
+  - [~] **kept partial 2026-11-02: the check passes, the claim it was asked to support cannot be
+        bounded by it.** `scripts/check.sh` is zero on all three sections today, verified again on
+        2026-11-02. What stays open is not work but a boundary: a name-matching scan bounds only
+        the classes someone thought of, which is a stated limitation rather than a task. Original
+        text follows. `scripts/check.sh` zero on all three sections, and **section 2 ran for the
+        first time ever**. **But the claim "zero private names" was false twice, and both misses reached the
         public repo** — found later the same day while verifying a planner's report, not by the
         scan:
         - **Abbreviations.** The two- and three-letter initials of four private project names
@@ -76,7 +86,14 @@ or path. The author's own facts become examples a stranger can read.
   Budget a day, not an afternoon. The library improves on its own merits, independently of
   publishing — which is the point of ADR 0001.
 
-## [ ] p2.3 — Turn the author's own facts into examples
+## [-] p2.3 — Turn the author's own facts into examples — three of six criteria are already on disk from p2.2 (`skills/ws-shared/examples/` holds device.yaml, cartridge.md and manifest.tsv); the remainder moves into p4.2
+
+**Dropped 2026-11-02** on the owner's instruction after an independent audit. The body is kept
+because the reasoning is the value: the second example cartridge — a hosted tracker, `in-repo`
+artifacts, a non-empty `machine:` — is now a criterion of **p4.2**, and the two remaining
+criteria describe `ws-shared/reference.md` and the private store URLs, both of which p2.2 already
+delivered.
+
 
 - **Repos:** worksite
 - **Depends on:** p2.2
