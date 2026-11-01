@@ -67,3 +67,43 @@ pack without reading the skills' source.
   - [ ] `docs/engineering/stacks.md` — how a review pack is selected and how to write one
   - [ ] `docs/engineering/layout.md` — what lives where in this repo
   - [ ] both guides state the rule that adding a tracker or stack never edits a skill
+
+## [ ] p3.4 — The docs tree has no index
+
+- **Repos:** worksite
+- **Depends on:** p3.2
+- **Why:** `ws-shared/reference.md` specifies a docs root with `README.md` and `00-START-HERE.md`;
+  `docs/` has neither. Three reference pages landed on 2026-11-01 (the cartridge schema, the
+  concepts page, ADR 0002) and the only way to any of them is the root `README.md`, which does not
+  link two of them. A docs tree whose own structure the pack documents and this repo does not follow
+  is the weakest possible advertisement for the pack.
+- **Acceptance:**
+  - [ ] `docs/README.md` or `docs/00-START-HERE.md`, per the pack's own structure, linking every
+        reference page that exists — and nothing that does not, since `check.sh` §3 fails on a
+        missing target
+  - [ ] the root `README.md`'s documentation list reaches `product/overview.md` and
+        `integration/cartridge-schema.md`
+  - [ ] it says which folders are living and which are immutable, matching `ws-shared/reference.md`
+- **Notes:** raised independently by both p3.1's and p3.2's builders. Worth doing before P3 adds
+  p3.3's three extension guides.
+
+## [ ] p3.5 — Stale pointers and the skill count in the cartridge
+
+- **Repos:** worksite
+- **Depends on:** p3.1
+- **Why:** three small factual defects, all in files that were frozen while the batch ran:
+  - `docs/agent/reference.md` says `The cartridge format | not written yet — task p3.1`. It is
+    written; the row should point at `integration/cartridge-schema.md`.
+  - The same file says "the fourteen `ws-*` skills" twice, while `README.md`:18 and :48 say
+    thirteen. There are 14 directories and `ws-shared` carries `disable-model-invocation: true` —
+    shipped task p8.1 decided that deliberately. `product/overview.md` already resolves it as
+    "thirteen skills plus a shared reference they all read"; the cartridge is the loose file.
+  - The cartridge's layout table has no row for `scripts/publish.sh`, which p6.1 added. The publish
+    **target** must never appear there, only the script.
+- **Acceptance:**
+  - [ ] the cartridge format row points at the schema page
+  - [ ] the repo says one thing about how many skills there are
+  - [ ] `scripts/publish.sh` is in the layout table, and no publish target path is
+  - [ ] `check.sh` green, which for the first item means the link resolves
+- **Notes:** each is one line. Filed rather than patched mid-batch because all three files were
+  frozen for the p3.1/p3.2/p6.1 batch.

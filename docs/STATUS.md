@@ -29,6 +29,7 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
+| p8.17 | `docs_home` doubles in four sites | **live**: `ws-fanout`'s isolation gate reads the cartridge at a path that does not exist, finds nothing, and takes the shared-working-tree branch |
 | p8.3 | Close the `ws-setup` profile gap | found by using the pack on itself |
 | p8.5 | `ws-fanout` cannot isolate work outside the project's repos | found by invoking `ws-fanout` here; blocks safe parallel work on the pack |
 | p8.8 | The journal mirror leaks the device name into a public docs home | caught by the guard refusing a real commit |
@@ -38,6 +39,13 @@ today, so they do not have to wait for P1–P7.
 | p8.14 | Nothing ever enumerates the track root | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |
 | p8.15 | The worktree root has no defined base | two defensible readings of one `../`, and two roots on one project |
 | p8.16 | State dir inside a repo rests on one gitignore line | a public repo, a device name in the journal, and nothing asserting the line |
+| p8.18 | Two rules in `tracks.md` rest on wrong premises | both found by using the retirement path; one refuses safe work, one exempts a mirror on a false reason |
+| p8.19 | The cartridge cannot hold what the pack already asks for | five things read, collected or named with no key to land in |
+| p8.20 | Keys that exist but cannot express the ordinary shape | a three-list Trello board, a two-person team; an author invents schema and is never told it was ignored |
+| p8.21 | `machine:` has no merge semantics and no reader | the cartridge advertises per-device config and delivers a comment field |
+| p8.22 | `lite` and the tracker: two files disagree | costs an agent a wrong decision rather than an error |
+| p3.4 | The docs tree has no index | three reference pages landed and two are unreachable except from the root README |
+| p3.5 | Stale pointers and the skill count in the cartridge | three one-line fixes in files that were frozen during the batch |
 
 ## Shipped
 

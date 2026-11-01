@@ -584,3 +584,140 @@ a decision about its safety rules — but if a second safety-rule change comes u
 - **Notes:** smallest of the three and the only one with a one-line test. The cartridge's bold
   warning **is** the finding: the pack already knew the risk and wrote a reminder instead of a
   check.
+
+## [ ] p8.17 — `docs_home` doubles in four sites, and `ws-fanout` silently takes the unsafe branch
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Why:** 27 sites across 13 skills read `docs_home` as the agent directory itself — so it ends
+  `/agent`. Four read `<docs_home>/agent/...`, so it does not: `ws-fanout`:32, :136, :192 and
+  `ws-shared/tracks.md`:108, which contradicts **itself** against `tracks.md`:72. p3.1's schema page
+  states the dominant form and names the contradiction; this task fixes the four.
+- **It is live, not theoretical, and the failure direction is the bad one.** On this project's own
+  `docs_home: docs/agent`, `ws-fanout`:32 greps `docs/agent/agent/reference.md`, which does not
+  exist. The grep finds nothing, so the isolation gate reads `worktrees` as **absent** and takes the
+  `false` branch — the one that shares a single working tree between parallel builders. It was only
+  harmless on the p3.1/p3.2/p6.1 batch because the lead read the cartridge directly instead of
+  through that grep.
+- **Acceptance:**
+  - [ ] the four sites read the dominant form; `tracks.md` no longer contradicts itself
+  - [ ] `ws-fanout`'s isolation gate distinguishes "`worktrees` is absent or false" from "the
+        cartridge could not be read at all", and the second is a **stop**, not the `false` branch.
+        A gate that cannot find its input must not silently choose the unsafe answer
+  - [ ] p3.1's gap 13 updated or closed to match what the pack then does
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** found by p3.1's blind reader, which wrote `docs_home: docs/agent` from the page and
+  produced a path that resolves nowhere. The documentation task surfaced a pack defect, which is the
+  argument for writing schemas down.
+
+## [ ] p8.18 — Two rules in `tracks.md` rest on wrong premises
+
+- **Repos:** worksite (pack)
+- **Depends on:** p8.10
+- **Why:** both were found by *using* the retirement path, not by reading it, and both state a
+  reason that is not true.
+- **The no-upstream refusal tests a proxy.** *Retiring a track* refuses a worktree whose branch has
+  no upstream, on the stated grounds that "those commits exist nowhere else". p6.1's library branch
+  was merged locally into `main` and pushed via `main`, so it had no upstream of its own while both
+  its commits were reachable from `origin/main`. The guard therefore refuses safe work, and the
+  operator's only escape is to override a safety check — which is how a check becomes routinely
+  bypassed. The property it wants is reachability from any remote-tracking ref.
+- **The `in-repo` mirror exemption rests on a false premise.** `tracks.md`:76 exempts
+  `artifacts: in-repo` projects from the journal mirror because "the task branch already carries the
+  files". p3.1 established that `in-repo` relocates **the plan, and only the plan** — the journal
+  stays ephemeral workspace state and is deleted at ship whatever `artifacts` says. So the branch
+  carries the plan, not the journal, and an `in-repo` project is exempted from the mirror while
+  having no way at all to carry its journal between machines.
+- **Acceptance:**
+  - [ ] the refusal tests whether HEAD is reachable from a remote-tracking ref, and still refuses
+        when it is not; the message says which ref proved it
+  - [ ] the `in-repo` exemption is either corrected (mirror the journal anyway) or kept with the
+        real consequence stated — an `in-repo` project's journal does not travel
+  - [ ] every caller of *Retiring a track* still reads one definition, not a copy
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** the second item is a **cross-track** finding: p3.2 quoted the pack faithfully and p3.1
+  documented the mechanism faithfully, and only the two together show the pack wrong. Neither
+  reviewer could have seen it from one track.
+
+## [ ] p8.19 — The cartridge cannot hold what the pack already asks for
+
+- **Repos:** worksite (pack)
+- **Depends on:** p3.1
+- **Why:** p3.1's ledger found five things the pack reads, collects or names with **no key to land
+  in**. Each one is a question an agent asks every time, or a value nobody can record.
+- `ws-setup`:58-59 interviews for a one-line project description and a rule-skill prefix, and
+  neither has a key. `ws-fanout`:192 then briefs builders to read `<prefix>-<area>` skills — so the
+  prefix is load-bearing for a skill that cannot look it up.
+- `merge_style` is read at `ws-ship`:85 and written by no template, so **every project is in the
+  missing case** and the fallback is the key's only behaviour.
+- `repos[].role` enumerates six values at `ws-setup`:60-61 and is consumed nowhere.
+- Collaborators live in `<state_dir>/me`, which is local and uncommitted, so "two people work on
+  this project" is unrecordable — confirmed by a blind reader who had to put it in prose.
+- **Acceptance:**
+  - [ ] each of the five is resolved **in one direction and stated**: given a key, or removed, or
+        documented as deliberately out of scope with the reason. No silent third option
+  - [ ] `merge_style` specifically: added to `ws-setup`'s template with a value set, or `ws-ship`
+        stops naming it — a key that only ever falls back is worse than no key
+  - [ ] p3.1's affected gap rows updated or closed to match
+  - [ ] changed through `ws-refine`, with its graph audit
+
+## [ ] p8.20 — Keys that exist but cannot express the ordinary shape
+
+- **Repos:** worksite (pack)
+- **Depends on:** p3.1
+- **Why:** distinct from p8.19 and worse. These keys exist and their documented contract **excludes
+  the values a writer most wants to set**, so an author invents schema and is never told it was
+  ignored.
+- **`tracker.lists` holds two lists and only two** — open and in progress. A three-list Trello board
+  is the ordinary shape, and the adapter asks where a finished card goes **every task, forever**,
+  with no way to pre-answer it. A blind reader invented `done:` relying on unknown-keys-are-ignored
+  and expected it to do nothing. Called the sharpest authoring gap on the schema page.
+- **`tracker.statuses` has no documented shape** — the page declares it schema-less.
+- **`house_rules.owned_by` is `me | company`**, which does not cover a small team that collectively
+  authors its own rules; and an absent or `TODO:` value degrades to `me`, the **permissive** branch,
+  so `ws-refine` proposes rule changes it may not be entitled to, with no error and no prompt.
+- **There is no way to say "this command exists, do not run it"** — `null` means the repo does not
+  have it, which is a different claim.
+- **Acceptance:**
+  - [ ] `tracker.lists` accepts the finished-card list, or the trello adapter states in its own text
+        that it cannot and will ask every time
+  - [ ] `owned_by` covers the small-team case, and its permissive degrade is either reversed or
+        warned about where it is read
+  - [ ] a documented way to express a command that exists and must not be run, or a stated decision
+        that the pack will not model it
+  - [ ] `tracker.statuses` gets a shape or is removed
+  - [ ] changed through `ws-refine`, with its graph audit
+
+## [ ] p8.21 — `machine:` has no merge semantics and no reader
+
+- **Repos:** worksite (pack)
+- **Depends on:** p3.1
+- **Why:** the key is named and keyed off `device.yaml`'s `device:` id
+  (`ws-shared/reference.md`:77, 188), but **no skill is documented as applying a device block over
+  the top-level keys**. p3.1 refused to invent a merge rule and documented the only dependable use
+  as a free-text `note:`. So the cartridge advertises per-device configuration and delivers a
+  comment field.
+- **Acceptance:**
+  - [ ] decided either way and written down: `machine:` merges over the top-level keys, with the
+        rule stated and a skill that applies it — or it carries notes only, and says so where it is
+        documented so nobody writes `machine.<device>.repos[].dir` and gets silence
+  - [ ] if it merges: which keys may be overridden, and what happens to a list or a map
+  - [ ] p3.1's gap updated or closed
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** a blind reader's brief asked for a per-device repo path and the schema page **stopped it
+  writing one**, correctly, because workspace paths resolve from `device.yaml`. That is the page
+  working; the key still promises more than it does.
+
+## [ ] p8.22 — `lite` and the tracker: two files disagree
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Why:** `ws-setup`:54 says a `lite` profile gets no tracker; `ws-shared/trackers/tasks-file.md`:3
+  calls itself the `lite` default. An outright contradiction, found by p3.1's ledger. The schema page
+  resolves it in favour of "a tracker key on a `lite` cartridge is read exactly like any other" and
+  records the disagreement as a gap.
+- **Acceptance:**
+  - [ ] one of the two sentences changes; the pack says one thing about `lite` and trackers
+  - [ ] p3.1's gap updated or closed
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** small, and the kind of thing that costs an agent a wrong decision rather than an error.

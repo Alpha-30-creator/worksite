@@ -83,6 +83,12 @@ or path. The author's own facts become examples a stranger can read.
 - **Acceptance:**
   - [ ] `examples/device.yaml` — the agent-sync device file, with invented project ids
   - [ ] `examples/cartridge.md` — a filled-in cartridge for a plausible two-repo project
+  - [ ] a **second** example cartridge covering a shape the first does not: `github-projects` or
+        `trello`, `artifacts: in-repo`, and a non-empty `machine:`. *2026-11-01 re-scoped by
+        @Alpha-30-creator: p3.1's blind tests wrote two such cartridges from the schema page alone
+        and showed that both existing examples are weak tests — neither exercises a hosted tracker,
+        `in-repo` artifacts, `profile: lite` or a device override. The written cartridges are in
+        p3.1's worklog trail and are a usable starting point.*
   - [ ] `examples/manifest.tsv` — the secrets manifest, with invented destinations
   - [ ] `ws-shared/reference.md` keeps the rules and loses the author's device, stores and
         project list, pointing at `examples/` instead
