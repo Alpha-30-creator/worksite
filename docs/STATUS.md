@@ -27,8 +27,14 @@ guarded plain copy, its commits land directly on `main`, with the residual risk 
 
 ## In progress
 
-Nothing claimed. p4.2 shipped 2026-11-02: the pack has an install path, and the entry point a stranger
-meets is `INSTALL.md` rather than the concepts page.
+A three-track fanout batch claimed 2026-11-02 by @Alpha-30-creator. One library task only, because
+all five remaining pack defects publish through the single declared store `agent-library`.
+
+| id | what it is doing | where |
+|---|---|---|
+| p1.2 | recording a real refusal, and the two false-positive cases | `.githooks/`, `scripts/`, `docs/records/` |
+| p3.4 | the docs index, written after the trim rather than before it | `docs/README.md`, root `README.md` |
+| p8.24 | the graph audit's two silent-pass gates, and the class written down once | library: `ws-refine`, `ws-setup`, `ws-shared/review/`, `ws-shared/trackers/` |
 
 ## Blocked
 
@@ -53,16 +59,13 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
-| p8.24 | Gates that read an empty result as a pass | until the graph audit proves it read something, every other pack change is certified by a check that may not have run |
 | p8.31 | The leak surface has three uncovered edges | the repo is public and permanent, and the one guarantee that holds it rests on a bold reminder |
 | p8.13 | `for r in <repos>` survives in three skills | it prints success with the work still there, on a workspace whose path contains a space — this one |
 | p8.3 | Close the `ws-setup` profile gap | the first thing `INSTALL.md` will point a stranger's agent at |
-| p1.2 | Prove the leak guard refuses a private name | it has refused four real commits and missed two whole classes; worth recording properly |
 | p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
 | p8.32 | A retired track leaves its parent directory behind | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |
 | p8.33 | The cartridge promises five things it does not deliver | an author writes something reasonable and is never told it was ignored |
 | p8.30 | One rule for who may push the library | resolved by hand in the last batch, written down nowhere |
-| p3.4 | The docs tree has no index | two reference pages are reachable only from the root README — write it after the documentation trim |
 | p7.1 | Dry-run the install as a stranger | the install is unproven by anyone who is not the author; needs p4.2 |
 | p7.2 | Tag and announce | cut to one criterion — the README's claims verified against the tagged tree, the part that can fail silently |
 
