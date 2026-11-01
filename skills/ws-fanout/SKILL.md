@@ -28,14 +28,24 @@ Two things decide whether fanning out is safe, and both are refusals rather than
 
 ### Is isolation on?
 
+The cartridge is the only source for this. Establish **that you read it** before reading what it
+says — `grep` prints nothing both when the key is absent and when the file is not there, and those
+two must not reach the same branch.
+
 ```bash
-grep '^worktrees:' <docs_home>/agent/reference.md
+cartridge="<docs_home>/reference.md"   # quoted: a workspace path may contain a space
+if [ ! -r "$cartridge" ]; then
+  echo "UNREADABLE: $cartridge — isolation is UNKNOWN"
+else
+  grep '^worktrees:' "$cartridge" || echo "read, and no worktrees: key"
+fi
 ```
 
-| `worktrees:` | What it means |
-|---|---|
-| `true` | Each track gets its own checkout. Two agents cannot touch the same file. Proceed |
-| `false` | **All tracks share one working tree.** Two agents editing it will overwrite each other silently — no error, no warning, both reports confident |
+| What came back | What it means | What you do |
+|---|---|---|
+| `worktrees: true` | Each track gets its own checkout. Two agents cannot touch the same file | **Proceed** |
+| `read, and no worktrees: key`, or `worktrees: false` | **All tracks share one working tree.** Two agents editing it will overwrite each other silently — no error, no warning, both reports confident | one of the two options below |
+| `UNREADABLE: …` | You do not know whether isolation is on | **Stop — not the `false` branch. See the stop below, past the two options** |
 
 With `worktrees: false` you have two honest options, and **inventing a third is not allowed**:
 
@@ -47,6 +57,23 @@ With `worktrees: false` you have two honest options, and **inventing a third is 
   briefing being obeyed, which is not isolation.
 
 Say which of the two you are doing, out loud, before continuing.
+
+**An unreadable cartridge is a stop, not the `false` branch.** The two options above are for a
+cartridge you *read*, which answered. One you could not read has not answered, and the branch an
+unread file falls to by default is the dangerous one: a gate that cannot find its input must not
+silently choose the unsafe answer. Concretely, on `UNREADABLE`:
+
+- **Spawn nothing.** Not one planner, not one builder. Claim nothing.
+- **Say the path you tried, and that isolation is unknown** — not "worktrees appears to be off".
+- **Ask for the right `docs_home`, or offer `ws-setup`** in adopt mode if the project has no
+  cartridge. Then re-run the gate.
+- **The "different repos" option is not available here** — whatever you can infer from the
+  filesystem or from the task. Its precondition is the cartridge's own `repos:` list, and you did
+  not read it: two directories you can see, or two repos a task happens to name, are not that list
+  and do not satisfy it. There is nothing to fall back to, which is the point.
+- **Do not search for the cartridge elsewhere.** A `find` for some other `reference.md` is the
+  invented third option this section forbids, and fanning out against a guessed cartridge is worse
+  than stopping: it is the same silent overwrite with a reason attached.
 
 ### Do the tracks overlap?
 
@@ -133,7 +160,7 @@ authority and this is the same job run N times. Each brief carries:
 - the task and acceptance criteria verbatim;
 - the files it owns;
 - the sources to read: the task's own source, the project's `decisions/`, the contracts, the
-  schema, the practices docs, and `<docs_home>/agent/risks/` — plan around the known traps rather
+  schema, the practices docs, and `<docs_home>/risks/` — plan around the known traps rather
   than meeting them in review;
 - **write the plan to its track directory as `plan.md`. Do not write code. Do not create
   branches.**
@@ -189,7 +216,7 @@ Every brief contains:
   brief.
 - **The rule skills and rulebooks to read**, named by path, in **two or three calls, never one** (a single
   batched read of a dozen files truncates silently): the project's
-  `<prefix>-<area>` skills, `<docs_home>/agent/rules/`, and the repo's own practices docs.
+  `<prefix>-<area>` skills, `<docs_home>/rules/`, and the repo's own practices docs.
 - **The project's house rules** that override defaults — attribution, commit convention, never
   `--no-verify`, never `git add -A`.
 - **Commit, do not push, do not open a PR, do not merge.** Shipping is the lead's decision after
@@ -321,4 +348,5 @@ Invoke with `/skill-name` in Claude Code or Cursor, `$skill-name` in Codex.
 - `ws-task` — a finding is real but out of that track's scope
 - `ws-wrap` — stopping with tracks still open
 - `ws-plan` — re-plan a single track whose plan was sent back
+- `ws-setup` — in adopt mode, for a project with no cartridge, so the isolation gate can answer
 - `ws-refine` — turn `worktrees: true` on for this project

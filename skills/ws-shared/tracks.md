@@ -83,6 +83,8 @@ Tracks make this possible; two things make it **safe**, and both are in `ws-fano
 
 1. **Isolation.** `worktrees: true` gives each track its own checkout. With `worktrees: false`
    every track shares one working tree and two agents editing it overwrite each other silently.
+   A cartridge that cannot be **read at all** is a third case, not `false`: it is a **stop**, because
+   a gate that cannot find its input must not silently choose the unsafe answer.
 2. **File ownership assigned before any work starts.** Two tracks that touch the same file do not
    run in the same batch — the overlapping one is dropped and run afterwards.
 
@@ -105,7 +107,7 @@ So `ws-ship` **harvests then deletes**. Nothing ephemeral survives a shipped tas
 is `artifacts: in-repo`, where the company wants the plan kept in the repo — there, ship keeps
 the plan and deletes only the journal and scratch.
 
-The harvested entry goes to `<docs_home>/agent/worklog/<track-id>.md`. The PR description and
+The harvested entry goes to `<docs_home>/worklog/<track-id>.md`. The PR description and
 the tracker item are the project's record; the worklog is the part that keeps the **rejected
 alternatives**, which a PR never does. Anything that turned out to be a durable fact about the
 system belongs in `engineering/` or `decisions/` instead, in the same change.
