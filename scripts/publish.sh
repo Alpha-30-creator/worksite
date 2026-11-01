@@ -6,45 +6,82 @@
 #   scripts/publish.sh --from <dir>     publish from another skills directory (a worktree, a fixture)
 #   scripts/publish.sh --dry-run        stop before writing to this repo; print what would change
 #   scripts/publish.sh --prune          allow removing a skill the source no longer has
+#   scripts/publish.sh --prune-many     also allow removing more than a third of what is published
+#   scripts/publish.sh --allow-extra    allow a non-Markdown file inside a skill directory
 #   scripts/publish.sh --no-push        commit, but do not push (for exercising the commit path)
 #
-# Exit 0 = published, or nothing to publish. Non-zero = refused, and this repo is untouched.
+# Exit 0 = published, or nothing to publish. Non-zero = refused, and this repo is left exactly as
+# it was found: same HEAD, clean index, clean working tree.
 #
 # Why it works this way:
 #
 #   * The source is the glob `ws-*` inside the library's skills/ — never the library directory
 #     and never anything git-level. The library's history holds the author's private project
-#     packs; the glob is what keeps them out, and it needs no list to be kept up to date.
-#   * The candidate is assembled in a throwaway `git clone` of this repo and checked there. A
-#     refusal therefore happens before a single byte is written here, which is what makes
-#     "fails loudly and changes nothing" true rather than hoped for.
-#   * `scripts/check.sh` is git-aware, so the candidate has to sit inside a git repo to be
-#     scanned at all. That is the second reason for the clone.
-#   * The copy is asserted to be plain: `diff -rq` source against candidate must be silent. If
-#     it ever is not, this script transformed something and must fail — publishing is a copy.
+#     packs, and the glob keeps them out. It does so by the library's **naming convention**, not
+#     by any property of the filesystem: a private pack named `ws-something` would be copied, so
+#     review has to keep that convention true.
+#   * The candidate is assembled in a throwaway `git clone` of this repo and checked there, so a
+#     refusal happens before a single byte is written here.
+#   * `scripts/check.sh` is git-aware, so a candidate has to sit inside a git repo to be scanned
+#     at all. That is the second reason for the clone.
+#   * The copy is asserted to be plain: `diff -rq` source against copy must be silent. If it ever
+#     is not, this script transformed something and must fail — publishing is a copy.
+#   * The guard and that assertion then run a SECOND time against this repo's own staged tree,
+#     because the candidate and the real copy are two independent copies from a source that can
+#     change in between. The bytes that get committed are the bytes that get checked.
+#   * From the first write to this repo until the commit succeeds, any failure restores the repo
+#     to the HEAD and the clean tree it was found with, and says so.
 #
 # What a green run does NOT mean: the scan bounds the patterns listed in
-# scripts/leak-patterns.txt. A private name nobody has added to that file passes it. Green means
-# "no known pattern", never "no private data".
+# scripts/leak-patterns.txt. A private name nobody has added to that file passes it, and a secret
+# is not a name at all. Green means "no known pattern", never "no private data".
 set -uo pipefail
 
 TARGET="$(cd "$(dirname "$0")/.." && pwd)"
 FROM="$HOME/.agent-sync/store/skills"
 DRY=0
 PRUNE=0
+PRUNE_MANY=0
+ALLOW_EXTRA=0
 PUSH=1
 BRANCH="main"
+WROTE=0
+PRE_HEAD=""
 
-die() { printf 'publish: refused — %s\n' "$*" >&2; exit 1; }
 say() { printf '%s\n' "$*"; }
+die() { printf 'publish: refused — %s\n' "$*" >&2; exit 1; }
+
+# Restore this repo to what it was found with. A no-op unless a write has happened and no commit
+# has landed yet. Preflight refused a dirty tree, so there is nothing of anyone else's to lose.
+restore_target() {
+  [ "$WROTE" -eq 1 ] || return 0
+  WROTE=0
+  git -C "$TARGET" reset -q --hard "$PRE_HEAD" >/dev/null 2>&1
+  git -C "$TARGET" clean -qfd -- skills >/dev/null 2>&1
+  local h st
+  h="$(git -C "$TARGET" rev-parse HEAD 2>/dev/null)"
+  st="$(git -C "$TARGET" status --porcelain 2>/dev/null)"
+  if [ "$h" = "$PRE_HEAD" ] && [ -z "$st" ]; then
+    say "publish: this repo was restored — HEAD $(git -C "$TARGET" rev-parse --short HEAD), index clean, tree clean, nothing committed."
+  else
+    say "publish: WARNING — could not fully restore this repo. Expected HEAD $PRE_HEAD and a clean"
+    say "tree; got $h and [$st]. Reset it by hand before publishing again."
+  fi
+  return 0
+}
+
+# Fail after a write: put the repo back first, then refuse.
+die_restore() { restore_target; die "$*"; }
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --from) [ $# -ge 2 ] || die "--from needs a directory"; FROM="$2"; shift 2 ;;
     --dry-run) DRY=1; shift ;;
     --prune) PRUNE=1; shift ;;
+    --prune-many) PRUNE=1; PRUNE_MANY=1; shift ;;
+    --allow-extra) ALLOW_EXTRA=1; shift ;;
     --no-push) PUSH=0; shift ;;
-    -h|--help) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,/^# Exit 0/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "unknown argument '$1'" ;;
   esac
 done
@@ -55,8 +92,67 @@ done
 [ -d "$FROM" ] || die "no skills directory at $FROM. Nothing to publish from."
 
 SRC=()
-for d in "$FROM"/ws-*/; do [ -d "$d" ] && SRC+=("${d%/}"); done
+for d in "$FROM"/ws-*/; do
+  [ -d "$d" ] || continue
+  d="${d%/}"
+  [ -L "$d" ] && die "$d is a symlink. A published skill must be a real directory."
+  SRC+=("$d")
+done
 [ "${#SRC[@]}" -gt 0 ] || die "$FROM holds no ws-* skill directories."
+
+# A symlink inside a skill directory is the one thing the clone scan cannot see: check.sh's
+# working-tree mode reads content with `cat`, which follows the link and never sees the link's
+# own path string, while git commits a blob whose content IS that path. So an absolute filesystem
+# path would reach a public repo with the pattern file never consulted. Refuse it here instead.
+for s in "${SRC[@]}"; do
+  links="$(find "$s" -type l 2>/dev/null)"
+  if [ -n "$links" ]; then
+    say "publish: refused — symlink(s) inside $(basename "$s"):" >&2
+    printf '%s\n' "$links" | sed 's|^|  |' >&2
+    die "a symlink publishes a filesystem path as file content, and the guard cannot read it. Replace it with the real file."
+  fi
+done
+
+# Everything inside a skill directory is published, and the guard is a list of private NAMES,
+# not a secret scanner: an .env, an editor backup, a .DS_Store or a stray agent artifact would
+# sail straight through it into a public repo. So the contents are classified here.
+#
+#   .md                                 the pack itself — published silently
+#   the data extensions below           the pack's own reference data — published, and LISTED
+#                                       on every run, because a secret can wear any extension
+#   a dotfile or dot-directory          REFUSED
+#   anything else                       REFUSED
+#
+# A refusal is lifted only by --allow-extra, which then names every file it let through. The
+# listing is the point: these files are few and the list is short enough to read each time.
+EXTRA=""
+DATA=""
+for s in "${SRC[@]}"; do
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    case "$(basename "$f")" in .*) EXTRA="$EXTRA${f#$FROM/}
+"; continue ;; esac
+    case "$f" in
+      */.*/*) EXTRA="$EXTRA${f#$FROM/}
+" ;;
+      *.md) ;;
+      *.tsv|*.csv|*.yaml|*.yml|*.json|*.txt) DATA="$DATA${f#$FROM/}
+" ;;
+      *) EXTRA="$EXTRA${f#$FROM/}
+" ;;
+    esac
+  done < <(find "$s" ! -type d 2>/dev/null)
+done
+if [ -n "$EXTRA" ]; then
+  if [ "$ALLOW_EXTRA" -eq 0 ]; then
+    say "publish: refused — a skill directory holds files that are neither pack Markdown nor" >&2
+    say "known reference data. Everything in it is published, so each of these would go public:" >&2
+    printf '%s' "$EXTRA" | sed 's|^|  |' >&2
+    die "remove them from the library, or pass --allow-extra if every one of them is meant to be public."
+  fi
+  say "publish: --allow-extra, so these WILL be published although they are not pack files:"
+  printf '%s' "$EXTRA" | sed 's|^|  |'
+fi
 
 git -C "$TARGET" rev-parse --git-dir >/dev/null 2>&1 || die "$TARGET is not a git repository."
 
@@ -66,8 +162,19 @@ cur="$(git -C "$TARGET" rev-parse --abbrev-ref HEAD 2>/dev/null)"
 [ -z "$(git -C "$TARGET" status --porcelain)" ] \
   || die "this repo's working tree is dirty. A publish must not sweep up an unrelated edit."
 
-[ -x "$TARGET/scripts/check.sh" ] || [ -f "$TARGET/scripts/check.sh" ] \
+[ -f "$TARGET/scripts/check.sh" ] \
   || die "no scripts/check.sh here. The guard is not optional, so there is nothing to publish into."
+
+# The pre-commit hook is one of this path's gates, and a hook that is not installed is silent:
+# the commit simply lands unchecked. core.hooksPath is a per-clone setting, so check it rather
+# than assume it.
+hp="$(git -C "$TARGET" config --get core.hooksPath 2>/dev/null || true)"
+if [ -n "$hp" ]; then
+  case "$hp" in /*) HOOK="$hp/pre-commit" ;; *) HOOK="$TARGET/$hp/pre-commit" ;; esac
+else
+  HOOK="$(git -C "$TARGET" rev-parse --absolute-git-dir 2>/dev/null)/hooks/pre-commit"
+fi
+[ -x "$HOOK" ] || die "no executable pre-commit hook at $HOOK. Install it with: git config core.hooksPath .githooks"
 
 if ! ( cd "$TARGET" && bash scripts/check.sh >/dev/null 2>&1 ); then
   say "publish: refused — scripts/check.sh is already failing on this repo as it stands."
@@ -79,23 +186,46 @@ fi
 # Orphans: published here, absent from the source. Deleting a skill needs an explicit yes, so a
 # mechanical copy must never be the thing that performs it.
 ORPHANS=()
+PUBLISHED=0
 for d in "$TARGET"/skills/ws-*/; do
   [ -d "$d" ] || continue
-  n="$(basename "$d")"
+  PUBLISHED=$((PUBLISHED + 1))
+  n="$(basename "${d%/}")"
   [ -d "$FROM/$n" ] || ORPHANS+=("$n")
 done
-if [ "${#ORPHANS[@]}" -gt 0 ] && [ "$PRUNE" -eq 0 ]; then
-  say "publish: refused — published here but absent from $FROM:"
+if [ "${#ORPHANS[@]}" -gt 0 ]; then
+  if [ "$PRUNE" -eq 0 ]; then
+    say "publish: refused — published here but absent from $FROM:" >&2
+    for n in "${ORPHANS[@]}"; do say "  $n" >&2; done
+    die "removing a published skill is a deletion, not a copy. Re-run with --prune to mean it."
+  fi
+  # --prune is one flag away from a typo in --from wiping the pack. Name the deletions, and make
+  # a large one need a second, separate yes.
+  say "publish: --prune, so these ${#ORPHANS[@]} published skill(s) WILL BE DELETED:"
   for n in "${ORPHANS[@]}"; do say "  $n"; done
-  say "Removing a published skill is a deletion, not a copy. Re-run with --prune to mean it."
-  exit 1
+  if [ $((${#ORPHANS[@]} * 3)) -gt "$PUBLISHED" ] && [ "$PRUNE_MANY" -eq 0 ]; then
+    say "publish: refused — that is ${#ORPHANS[@]} of $PUBLISHED published skills, more than a third." >&2
+    say "A wrong --from looks exactly like this. Check the source, then pass --prune-many too." >&2
+    exit 1
+  fi
 fi
 
 say "publish: ${#SRC[@]} ws-* skill(s) from $FROM"
+for s in "${SRC[@]}"; do
+  printf '  %-14s %s file(s)\n' "$(basename "$s")" "$(find "$s" -type f | wc -l | tr -d ' ')"
+done
+if [ -n "$DATA" ]; then
+  say "publish: reference data files included in this publish — read the list, the guard cannot:"
+  printf '%s' "$DATA" | sed 's|^|  |'
+fi
 
 # ---------------------------------------------------- 2. assemble the candidate in a clone
 TMP="$(mktemp -d "${TMPDIR:-/tmp}/worksite-publish.XXXXXX")" || die "could not make a temp directory."
-cleanup() { [ -n "${TMP:-}" ] && rm -rf "$TMP"; }
+cleanup() {
+  restore_target
+  [ -n "${TMP:-}" ] && rm -rf "$TMP"
+  return 0
+}
 trap cleanup EXIT
 
 CAND="$TMP/candidate"
@@ -104,13 +234,30 @@ git clone --no-hardlinks --quiet "$TARGET" "$CAND" || die "could not clone this 
 apply_to() {
   # Replace dest/skills/ws-* wholesale with the source's ws-* directories.
   local dest="$1"
-  mkdir -p "$dest/skills"
-  for d in "$dest"/skills/ws-*/; do [ -d "$d" ] && rm -rf "$d"; done
-  local s
-  for s in "${SRC[@]}"; do cp -Rp "$s" "$dest/skills/"; done
+  mkdir -p "$dest/skills" || return 1
+  local d s
+  for d in "$dest"/skills/ws-*/; do
+    [ -d "$d" ] || continue
+    rm -rf "$d" || return 1
+  done
+  for s in "${SRC[@]}"; do cp -Rp "$s" "$dest/skills/" || return 1; done
+  return 0
 }
 
-apply_to "$CAND"
+assert_plain_copy() { # assert_plain_copy <dest> — the copy must be byte-identical to the source
+  local dest="$1" s n
+  for s in "${SRC[@]}"; do
+    n="$(basename "$s")"
+    if ! diff -rq "$s" "$dest/skills/$n" >/dev/null 2>&1; then
+      say "publish: $n differs from its source after copying:"
+      diff -rq "$s" "$dest/skills/$n" || true
+      return 1
+    fi
+  done
+  return 0
+}
+
+apply_to "$CAND" || die "could not assemble the candidate."
 
 # Stage the candidate before scanning it. check.sh's working-tree mode enumerates with
 # `git ls-files --cached --others`, which still lists a file that was deleted but not staged —
@@ -137,15 +284,9 @@ if ! ( cd "$CAND" && bash scripts/check.sh ); then
 fi
 
 # ------------------------------------------- 4. assert the copy is plain, not a transformation
-for s in "${SRC[@]}"; do
-  n="$(basename "$s")"
-  if ! diff -rq "$s" "$CAND/skills/$n" >/dev/null 2>&1; then
-    say "publish: refused — $n differs from its source after copying:"
-    diff -rq "$s" "$CAND/skills/$n" || true
-    say "A publish is a plain copy. If it needs to rewrite anything, the fix belongs in the library."
-    exit 1
-  fi
-done
+if ! assert_plain_copy "$CAND"; then
+  die "a publish is a plain copy. If it needs to rewrite anything, the fix belongs in the library."
+fi
 say "publish: plain-copy assertion ok — candidate is byte-identical to the source"
 
 CHANGED="$(git -C "$CAND" status --porcelain | wc -l | tr -d ' ')"
@@ -158,22 +299,43 @@ if [ "$DRY" -eq 1 ]; then
 fi
 
 # --------------------------------------------------------------- 5. write it for real
-apply_to "$TARGET"
-git -C "$TARGET" add -A skills || die "could not stage skills/."
+# From here until the commit lands, every failure path goes through die_restore.
+PRE_HEAD="$(git -C "$TARGET" rev-parse HEAD)" || die "could not read this repo's HEAD."
+WROTE=1
+apply_to "$TARGET" || die_restore "could not copy the skills into this repo."
+git -C "$TARGET" add -A skills || die_restore "could not stage skills/."
 
 if git -C "$TARGET" diff --cached --quiet; then
+  restore_target
   say "publish: nothing to publish."
   exit 0
 fi
 
-# The pre-commit hook runs scripts/check.sh --staged here: an independent second gate, on exactly
-# the bytes being committed. Never --no-verify.
+# The candidate and this copy are two independent copies from a source that can change in
+# between, and nothing has yet checked what is actually about to be committed. So the guard and
+# the plain-copy assertion both run again, here, against the staged tree. --staged mode reads
+# blobs with `git show`, which also sees a symlink's own path rather than following it.
+say "publish: re-running the guard on the staged tree — the bytes that will be committed"
+if ! ( cd "$TARGET" && bash scripts/check.sh --staged ); then
+  say ""
+  say "publish: the staged tree does not pass scripts/check.sh --staged."
+  die_restore "the fix belongs in the library at $FROM, never in the published copy."
+fi
+if ! assert_plain_copy "$TARGET"; then
+  die_restore "a publish is a plain copy. If it needs to rewrite anything, the fix belongs in the library."
+fi
+say "publish: staged tree ok — guarded and byte-identical to the source"
+
+# The pre-commit hook runs scripts/check.sh --staged once more here, on exactly the bytes being
+# committed, independently of this script. Never --no-verify.
 MSG="chore(skills): publish ${#SRC[@]} ws-* skills from the library"
-git -C "$TARGET" commit -q -m "$MSG" || die "the commit was rejected. Nothing was published."
+git -C "$TARGET" commit -q -m "$MSG" || die_restore "the commit was rejected."
+WROTE=0
 say "publish: committed — $(git -C "$TARGET" rev-parse --short HEAD) $MSG"
 
 if [ "$PUSH" -eq 1 ]; then
-  git -C "$TARGET" push origin "$BRANCH" || die "the push failed. The commit is local; retry when the remote is reachable."
+  git -C "$TARGET" push origin "$BRANCH" \
+    || die "the push failed. The commit is local and still here; retry when the remote is reachable."
   say "publish: pushed to origin/$BRANCH"
 else
   say "publish: --no-push, so the commit is local only."
