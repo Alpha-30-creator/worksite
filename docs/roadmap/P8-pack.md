@@ -589,10 +589,19 @@ a decision about its safety rules — but if a second safety-rule change comes u
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
-- **Why:** 27 sites across 13 skills read `docs_home` as the agent directory itself — so it ends
-  `/agent`. Four read `<docs_home>/agent/...`, so it does not: `ws-fanout`:32, :136, :192 and
-  `ws-shared/tracks.md`:108, which contradicts **itself** against `tracks.md`:72. p3.1's schema page
-  states the dominant form and names the contradiction; this task fixes the four.
+- **Why:** of 35 `<docs_home>` sites in 16 files across 12 skill directories, **31 read it as the
+  agent directory itself** — so it ends `/agent`. **Four** append `/agent` and so read it as the docs
+  root: `ws-fanout`:32, :136, :192 and `ws-shared/tracks.md`:108, which contradicts **itself**
+  against `tracks.md`:72 and :266, and names a path neither of its own callers (`ws-ship`:100,
+  `ws-task`:67) uses. p3.1's schema page states the dominant form and names the contradiction; this
+  task fixes the four.
+- **The count is not the argument, and an earlier draft of this task got the figures wrong** (it said
+  27 against 4, across 13 skills). The question is settled without counting: `ws-setup`'s own
+  template at `templates/cartridge.md`:6 writes `docs_home: <project>-docs/agent` and
+  `ws-shared/examples/cartridge.md`:6 writes `northwind-docs/agent` — the **definition** of the key
+  puts `/agent` in the value. `ws-shared/stacks/hexagonal-nest.md`:7 corroborates from the other
+  side, reading `<docs_home>/../engineering/`, which only resolves if `docs_home` sits one level
+  below the docs root.
 - **It is live, not theoretical, and the failure direction is the bad one.** On this project's own
   `docs_home: docs/agent`, `ws-fanout`:32 greps `docs/agent/agent/reference.md`, which does not
   exist. The grep finds nothing, so the isolation gate reads `worktrees` as **absent** and takes the
