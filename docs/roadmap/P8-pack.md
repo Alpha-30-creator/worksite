@@ -146,3 +146,43 @@ should.
 - **Notes:** the second finding produced by using the pack on itself, after p8.3. Both are the
   same shape — a rule that is right for the projects it was written against and silent for a
   project of a different shape.
+
+## [x] p8.6 — worktrees defaulted to false · 2026-11-01 · @Alpha-30-creator
+
+- **Repos:** worksite (pack)
+- **Why:** `ws-setup`'s cartridge template shipped `worktrees: false  # opt-in`, so every project
+  it generated started without isolation — while `ws-fanout`'s own gate treats `false` as the
+  dangerous case that forces a refusal. The pack's default contradicted the pack's preference.
+- **Acceptance:**
+  - [x] template default is now `worktrees: true`, with an accurate comment: false only where the
+        per-worktree dependency install is genuinely prohibitive
+  - [x] no existing project is affected — their cartridges carry explicit values, so this changes
+        new cartridges only. R5 holds without needing a flag
+  - [x] this project's own cartridge flipped to `true`
+- **Notes:** flipping it here does **not** make `ws-fanout` usable on worksite — see p8.5. Worth
+  saying, so the two findings are not mistaken for one.
+
+## [x] p8.7 — settings.json: the pack is not the cause · 2026-11-01 · @Alpha-30-creator
+
+- **Repos:** worksite (pack)
+- **Investigated** because agent settings files carrying permission allowlists kept appearing
+  across the author's projects, and `ws-setup` was the suspect. **It is not.** No `ws-*` skill
+  mentions `settings.json`, `settings.local.json` or a permissions list anywhere. Two unrelated
+  causes:
+  - **`settings.local.json`** — written by the agent itself whenever "always allow" is chosen.
+    Globally gitignored via the user's own git ignore file, so it never reaches a repo. These
+    reappear regardless of anything the pack does; they are a local cache of approvals, not
+    configuration.
+  - **One committed `.claude/settings.json`**, tracked in a frontend repo. A curated allowlist of
+    the shape an automated "reduce permission prompts" tool produces — not this pack.
+- **Acceptance:**
+  - [x] confirmed by grep across all fourteen skills: zero references
+  - [x] a defensive house rule added to `ws-shared`, so no future skill starts doing it: never
+        write an agent's settings or permission files, in any project. Permission level is the
+        user's own control, switched per task; a committed allowlist overrides that choice and
+        rots
+  - [ ] **remains to do:** delete the one committed `.claude/settings.json` from the frontend repo
+        that carries it. That is a change to a product repo, so it ships through that project's
+        own tracker — `ws-setup`'s rule is that setup never touches a repo's own files
+- **Notes:** the useful half of this finding is the correction. Changing `ws-setup` would have
+  fixed nothing; the house rule is prevention, not a cure.

@@ -6,7 +6,7 @@ state_dir: .worksite
 docs_home: docs/agent
 artifacts: workspace-state
 agents_file: copy
-worktrees: false
+worktrees: true
 
 tracker:
   kind: roadmap-files
@@ -115,8 +115,10 @@ The workspace root **is** the repo — a single-repo project. That matters twice
 - **No rule skill, deliberately.** `ws-setup` would normally generate one per code repo. This
   repo's "code" is the pack itself, and `ws-refine` already governs editing it — a rule skill
   would duplicate it. Revisit if `skills/` grows a build step.
-- **`worktrees: false`** because the work is sequential and solo today. P2 and P3 have
-  independent tasks that could fan out; flip it through `ws-refine` if that becomes worth it.
+- **`worktrees: true`**, matching the new pack default (p8.6). Free here — a repo of Markdown
+  has no dependency install to repeat. **It does not make `ws-fanout` usable on this project**:
+  most open work edits the agent-sync library, which is not in `repos:`, so a worktree of this
+  repo isolates none of it. See p8.5.
 - **No environments and nothing deploys.** `environments: {}` is accurate, not unfinished.
 - **CI does not exist yet** (p4.3). Until it does, the hook is the only thing standing between a
   private name and a public commit, and a contributor without the hook has nothing.
