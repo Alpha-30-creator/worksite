@@ -93,6 +93,43 @@ while IFS= read -r f; do
 done < <(files)
 [ "$BROKEN" -gt 0 ] && { say "  FAIL — $BROKEN broken link(s)"; FAIL=1; } || say "  ok"
 
+# ------------------------------------------------- 4. library parity (informational)
+# ADR 0001 says the agent-sync library is the working copy and this repo is a published
+# artifact, so publishing must be a plain COPY. That only holds if the two are identical, and
+# nothing was checking it: a skill edited in the library and not re-copied here diverges
+# silently, which is exactly what happened on p8.10.
+#
+# Informational, never a failure. "Library ahead of repo, pending review" is a legitimate
+# state — it is where every change sits between being built and being published. The hard
+# gate belongs in the publish step (p6.1), not in a commit hook.
+say "== 4. library parity (informational) =="
+LIB="$HOME/.agent-sync/store/skills"
+if [ ! -d "$LIB" ]; then
+  say "  skipped — no local library on this machine, which is the normal case for a reader"
+elif [ ! -d skills ]; then
+  say "  skipped — no skills/ in the repo yet"
+else
+  DRIFT=0
+  for d in skills/ws-*/; do
+    [ -d "$d" ] || continue
+    n="$(basename "$d")"
+    if [ ! -d "$LIB/$n" ]; then
+      say "  $n: in the repo, absent from the library"; DRIFT=$((DRIFT + 1)); continue
+    fi
+    diff -rq "$LIB/$n" "$d" >/dev/null 2>&1 || { say "  $n: differs from the library"; DRIFT=$((DRIFT + 1)); }
+  done
+  for d in "$LIB"/ws-*/; do
+    [ -d "$d" ] || continue
+    n="$(basename "$d")"
+    [ -d "skills/$n" ] || { say "  $n: in the library, not yet published here"; DRIFT=$((DRIFT + 1)); }
+  done
+  if [ "$DRIFT" -gt 0 ]; then
+    say "  $DRIFT difference(s) — fine mid-change, but publishing must be a plain copy (ADR 0001)"
+  else
+    say "  ok — identical"
+  fi
+fi
+
 say ""
 [ "$FAIL" -eq 0 ] && say "all checks passed" || say "checks FAILED"
 exit "$FAIL"
