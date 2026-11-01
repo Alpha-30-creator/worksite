@@ -5,85 +5,26 @@ same way in every project you own.**
 
 ## The problem
 
-Coding agents are good at writing code and bad at nearly everything around it. They start
-without establishing what the task actually is. They skip the plan, or write one and quietly do
-something else. They declare success on a reading of their own diff, and they review their own
-work and find it good. Then the session compacts, or the laptop closes, and whatever they had
-worked out goes with it.
-
-It is tempting to read that as a model defect, fixable by a better prompt. It is not. Every one
-of those failures is a missing **stopping point** — nothing in a chat has a defined end state,
-so there is nothing for "done" to mean, nothing to hand to a second reader, and no place a
-record gets written on the way past. A stronger model with no stopping points fails the same
-way, faster.
-
-And the gap gets re-solved per repo. Each project grows its own instruction file and its own
-half-remembered conventions, all slightly different, none complete; an improvement made in one
-reaches none of the others. The effort is real and it never compounds.
+An agent will write the code and lose almost everything around it: what the task actually was,
+the plan it agreed to, whether the result was ever proved, and — when the session compacts or the
+laptop closes — whatever it had worked out. None of that is a model defect to be prompted away;
+each is a missing **stopping point**, and nothing in a chat has a defined end state for "done" to
+be measured against. And every repo re-solves it alone, in its own half-remembered dialect, so
+the effort never compounds.
 
 ## What it is
 
-worksite closes the gap once: thirteen skills plus a shared reference they all read, each one
-with a named terminal state it refuses to end without, and all of a project's own facts in one
-declarative file per project rather than inside the skills. The skills are generic; the file —
-the **cartridge** — is what makes them yours. Improve a skill and every project you own gets
-the improvement.
+Thirteen skills and one shared reference they all read by path. Each skill refuses to finish
+without producing one specific named thing — the table below says which — and every fact that is
+particular to your project lives in a single declarative file, the **cartridge**, rather than
+inside the skills. So the skills stay generic, the cartridge makes them yours, and improving a
+skill improves every project you own.
 
-Five of the thirteen are the loop, and one task walks them in order: `ws-start` claims it,
-`ws-plan` settles the approach before anything is written, `ws-verify` proves it against the
-criteria, `ws-review` judges it from a context that did not write it, and `ws-ship` merges it
-and writes the record. The skills table below says what each one refuses to end without. That
-those ends are *named* is the mechanism rather than decoration: a stage with no defined output
-cannot be seen to collapse, so planning that slid into building is invisible — against "ends
-with an approved plan" it is simply the gate not reached.
-
-## Why you should want the opinions
-
-### Gates that stop
-
-The failure a gate prevents is design churn discovered *after* the build, when changing course
-is expensive and an agent has already produced something that looks finished. An agent that can
-produce a screen or a migration in ninety seconds has removed the last natural pause from the
-process — there used to be one, and it was not discipline, it was the hour the work would take.
-`ws-plan` puts it back where changing your mind is still free, and for UI work it writes a
-mockup, presents it and stops. What you give up is real: a round trip and a human decision on
-every task, including the ones that did not need it. The gate worth being suspicious of is the
-one that never changes anything — a gate that only ever gets a yes is a formality, and
-formalities get skipped.
-
-### Evidence, not assertion
-
-The failure here is "done" meaning *the code it wrote reads as though it would work*.
-`ws-verify` produces evidence mapped one-by-one to each acceptance criterion, and records
-explicitly what it could **not** prove — the second half does the work, because an unprovable
-criterion written down is a visible gap someone can decide about, while the same criterion with
-no evidence and no note silently passes. The trade is that this is not a test runner and does
-not replace one; the point is the **mapping**, and a project with an excellent suite still has
-criteria no suite covers.
-
-### Fresh eyes
-
-The failure is the session that wrote the code reviewing the code: it reads its own intent into
-what is on the page, and where the intent and the text disagree it defends the text. `ws-review`
-composes a standalone brief — the criteria verbatim, the decisions summarised into it rather
-than linked, the project's own risks written as questions — and runs it where none of the
-writing conversation exists. The trade is tokens, and the counter-discipline comes in the same
-breath: every finding is verified against the code before it is reported, and overturned
-findings are recorded, or fresh eyes become a confident-noise generator.
-
-### The lead that never builds
-
-The failure is the coordinator quietly becoming the busiest builder; once it has a half-finished
-edit of its own, the two jobs only it can do are the first two it stops doing. When several
-tracks run at once, `ws-fanout`'s lead claims them, assigns **file ownership before any work
-starts**, briefs one builder per track in its own worktree and a *separate* reviewer per track,
-then reconciles. It is enforced by a refusal rather than a preference: two tracks that would
-touch the same file do not run in the same batch. The trade is that a lead who writes no code is
-overhead on a solo project — so it is opt-in, and the single-track loop has no lead at all.
-
-Each opinion also has an objection worth taking seriously, and an honest limit.
-[docs/product/overview.md](docs/product/overview.md) argues all four at length, answers the
-objections, and lists what this is not.
+The pack is opinionated in four ways that each cost you something real: a gate that stops before
+the build, evidence mapped to every acceptance criterion, a review run where none of the writing
+conversation exists, and a coordinator forbidden from writing code.
+[docs/product/overview.md](docs/product/overview.md) is the argument for all four — each with the
+objection worth taking seriously and its honest limit. This page does not re-argue them.
 
 ## The thirteen skills
 
@@ -154,8 +95,6 @@ on now.
 - [docs/integration/cartridge-schema.md](docs/integration/cartridge-schema.md) — every cartridge
   key: type, default, which skills read it, and what happens when it is missing. For writing
   your own.
-- [docs/engineering/sync-direction.md](docs/engineering/sync-direction.md) — how a change
-  travels from the working copy to this repo to your agents, and which direction is never valid.
 - [docs/engineering/trackers.md](docs/engineering/trackers.md) — adding a tracker kind is one
   file answering four questions, worked end to end on an invented board. Its honest centre is
   that claim is *not* uniform: a task file inside a repo gives a real lock, because a rejected
@@ -169,7 +108,8 @@ on now.
   evidence that a pack should be written.
 - [docs/engineering/layout.md](docs/engineering/layout.md) — a map of this repo: what each path
   is, whether it is authored here or a received copy the next publish overwrites, and which
-  check looks at it, including what each section of `check.sh` does **not** look at.
+  check looks at it, including what each section of `check.sh` does **not** look at. It also
+  holds where `skills/` comes from and what a publish does, step by step.
 - [docs/decisions/](docs/decisions/) — why things are the way they are, including the two
   rejected alternatives for which copy of the skills is authoritative.
 - [docs/STATUS.md](docs/STATUS.md) and [docs/roadmap/](docs/roadmap/README.md) — what is in
