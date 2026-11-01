@@ -17,7 +17,8 @@ The system edits itself through this skill. Nothing else should edit it.
    deployed copy to see what an agent currently loads is fine. The public `worksite` repo is a
    **published artifact**, not a place to edit: it receives a plain copy of the generic skills
    after they are saved here. Never edit a skill there, and never fix something there — fix it
-   in the library and let the publish carry it.
+   in the library and let the publish carry it. The copy is carried by the **Publish** step at
+   the end of this skill, so "let the publish carry it" means that step and nothing manual.
 3. **One blast radius to respect:** a generic `ws-*` skill is shared by every project. A bad
    edit breaks all of them at once, which is the cost of the generic design. So: propose, wait,
    then audit.
@@ -131,6 +132,55 @@ as if the rulebook said nothing — so an unaudited change is not a finished cha
 
 Then summarise in a few bullets: what changed, which shared files moved, and how to invoke
 anything new. **Do not run the changed skill unless asked.**
+
+## Publish — a step, not a suggestion
+
+Run this after the deploy and the audit, every time a generic `ws-*` skill changed. Some setups
+publish the generic skills as a public artifact; that artifact is a **published copy** and the
+publish below is the only way content reaches it. Doing it by hand is how the two drift.
+
+Targets are **configured on the machine, never named in a skill**: a published artifact's path
+belongs to one person's setup, and a path written here would be copied into every published
+artifact along with it. One absolute workspace path per line, `#` for comments, file absent
+means there is nothing to publish — which is the normal case for most setups and must not be an
+error.
+
+```bash
+targets="$HOME/.agent-sync/publish.targets"
+if [ ! -f "$targets" ]; then
+  echo "no publish targets configured — nothing to publish"
+else
+  while IFS= read -r t; do
+    case "$t" in ''|\#*) continue ;; esac
+    if [ -f "$t/scripts/publish.sh" ]; then
+      # </dev/null matters: the child may read stdin, and stdin here IS the target list. Without
+      # it, one target can swallow the rest and the next is silently never published.
+      bash "$t/scripts/publish.sh" </dev/null \
+        || { echo "PUBLISH REFUSED at $t — stop here"; break; }
+    else
+      echo "no scripts/publish.sh at $t — skipping"
+    fi
+  done < "$targets"
+fi
+```
+
+**Each target owns the copying.** Only the target knows its own leak guard, which skills it
+accepts, and how it commits — so this skill runs the target's script and respects the answer. It
+never copies files itself, and never works around a refusal.
+
+**On a non-zero exit, stop.** Report what the script printed, name the **library** file to fix,
+and do not retry, do not continue to another target, and do not offer to publish "just the clean
+ones" — a partial publish is a transformation by omission. A target is expected to refuse without
+leaving anything behind; if its output says it could **not** put itself back, that is the one case
+to report as needing a hand, and still not to work around.
+
+**A green publish means no *known* pattern, not "no private data".** A target's guard bounds the
+patterns it has been told about; a private name nobody has added to its pattern file passes it,
+and a secret is not a name at all. Read a green publish as the floor, never as a clean bill of
+health — in particular, **everything inside a skill directory is published**, so a stray `.env`,
+an editor backup or a credential file in the library goes public with it. Keep skill directories
+to the pack's own files; a target that lists extra files it is about to publish is telling you to
+read that list.
 
 ## What next?
 
