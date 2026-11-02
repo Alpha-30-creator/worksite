@@ -388,7 +388,7 @@ deleted without an answer is neither. Prefer the cheap failure.
 Recorded here because the ADR folder is for decisions about the system's architecture and this is
 a decision about its safety rules — but if a second safety-rule change comes up, it earns an ADR.
 
-## [r] p8.13 — `for r in <repos>` survives in three skills, including one that warns against it
+## [x] p8.13 — `for r in <repos>` survives in three skills, including one that warns against it
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -402,13 +402,13 @@ a decision about its safety rules — but if a second safety-rule change comes u
   - `ws-sync` line 45 uses `for r in "$root"/*/`, which is glob-based and quoted — **not** a
     finding. Worth stating so nobody "fixes" it.
 - **Acceptance:**
-  - [ ] all three sites read repo paths line by line, as the retirement block does
-  - [ ] each tested by execution under **bash**, against a fixture whose path contains a space —
+  - [x] all three sites read repo paths line by line, as the retirement block does
+  - [x] each tested by execution under **bash**, against a fixture whose path contains a space —
         not by reading. Two rounds of review on p8.10 showed that reading these loops does not
         find the bug
-  - [ ] the mirror-image warning added to the cross-platform table in `ws-shared`'s reference,
+  - [x] the mirror-image warning added to the cross-platform table in `ws-shared`'s reference,
         which today documents only the zsh under-splitting trap and not this one
-  - [ ] **two unlisted `What next?` exits, in these same two files** *(found 2026-11-02 by
+  - [x] **two unlisted `What next?` exits, in these same two files** *(found 2026-11-02 by
         p8.24's reverse coverage check, both confirmed against the files)*: `ws-plan`:15 sends
         the agent to `ws-start` and `ws-plan`'s `What next?` does not list it; `ws-start`:16
         offers `ws-setup` and `ws-start`'s does not list it. Added here rather than to p8.24

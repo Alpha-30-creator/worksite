@@ -75,11 +75,10 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
-| p8.13 | `for r in <repos>` survives in three skills | it prints success with the work still there, on a workspace whose path contains a space — this one |
+| p8.36 | The loop assumes a git remote and dies without one | four of five loop skills, and the situation a stranger is actually in — and p7.2 waits on it |
 | p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
 | p8.32 | A retired track leaves its parent directory behind | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |
 | p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
-| p8.36 | The loop assumes a git remote and dies without one | four of five loop skills; the situation a stranger is actually in |
 | p8.30 | One rule for who may push the library | resolved by hand in the last batch, written down nowhere |
 | p7.2 | Tag and announce | cut to one criterion — the README's claims verified against the tagged tree, the part that can fail silently |
 
@@ -114,6 +113,7 @@ today, so they do not have to wait for P1–P7.
 | p8.31 | The leak surface had three uncovered edges | 2026-11-03 |
 | p8.37 | `ws-refine`'s own audit could not be run as delivered | 2026-11-03 |
 | p8.38 | §6 blocked every publish — a local clone has no reflogs | 2026-11-03 |
+| p8.13 | `for r in <repos>` in three skills, one of which warned against it | 2026-11-03 |
 
 ## Phases
 
