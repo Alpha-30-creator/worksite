@@ -33,7 +33,7 @@
         4 observed; a working adapter written with zero skill edits, verified by `diff -rq`. But
         the pack never picked it up — now a criterion on p8.30**
 
-## [ ] p7.2 — Tag and announce
+## [~] p7.2 — Tag and announce
 
 - **Repos:** worksite
 - **Depends on:** p7.1
