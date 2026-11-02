@@ -893,7 +893,10 @@ third signal that it is not worth a track.
   - [x] a check that no `ws-*/SKILL.md` contains a positional parameter, so the next one is caught
         at the audit rather than by a stranger — `ws-refine` part 3b, scanning executable lines in
         fenced blocks **including indented ones**, with a denominator and a cross-check against
-        part 3's count. Covers `$1`-`$9` and `${1..9}`; `$0` excluded deliberately (awk field), and
+        part 3's count. Covered `$1`-`$9` and `${1..9}` at the time, with `$0` excluded
+        deliberately (awk field) — **that exclusion was the cause of p8.37, and since 2026-11-03
+        the check scans the whole file including `$0`**; this line records what shipped on
+        2026-11-02, not what runs now. And
         `$@`/`$*`/`${10}`+ named as untested rather than implied
   - [x] `ws-sync`'s sweep reports a project whose root is itself the repo, and reports **nothing
         found** distinctly from **nothing to report** — an empty sweep must announce itself —

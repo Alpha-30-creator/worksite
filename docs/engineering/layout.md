@@ -29,11 +29,11 @@ the pack. Editing them here does not change the pack, and the next publish overw
 | `CODE_OF_CONDUCT.md` | Contributor Covenant 2.1, with the contact method filled in and a scope note added above *Our Pledge* — the Covenant's own text and structure are otherwise unchanged. Scoped to the issue tracker, since no pull request is accepted | authored here | names, links |
 | `.github/workflows/check.yml` | runs `bash scripts/check.sh` in CI on every PR into `main` and every push to `main` | authored here | names only — section 3 reads `.md` files, so a link in a workflow is never resolved |
 | `docs/` | everything on this page's docs-tree table | authored here | names, links |
-| `skills/` | the pack itself: the `ws-*` skills and the shared reference material they read | **received copy** | names, frontmatter, links, parity |
+| `skills/` | the pack itself: the `ws-*` skills, the shared reference material they read, and `ws-refine/audit.sh` — the one executable file the pack ships | **received copy** | names, frontmatter, links, parity |
 | `scripts/check.sh` | the whole verification suite for this repo | authored here | **excluded from the name scan** — it holds the exclusion logic |
 | `scripts/leak-patterns.txt` | the private-name patterns the scan uses, **and its `!` allowlist entries** — this file alone is the whole definition of coverage | authored here | **excluded from the name scan** — it *is* the list |
 | `scripts/object-store-baseline.txt` | the unreachable objects known to carry a pattern, with the measurement and the decision not to prune | authored here | names, links — it holds hashes and prose, never a private name |
-| `scripts/publish.sh` | the guarded copy that lands a publish here | authored here | names |
+| `scripts/publish.sh` | the guarded copy that lands a publish here. It classifies every file in a skill directory: Markdown silently, reference data and the executable files named in its `PACK_EXEC` list **with the list printed**, anything else refused | authored here | names |
 | `.githooks/pre-commit` | runs the name scan over staged content | authored here | **excluded from the name scan** |
 | `.gitignore` | keeps workspace state and the journal out of history | authored here | names |
 | `.worksite/` | track directories, journal, scratch | local only — **not committed** | **section 5**, which asserts the ignore rule rather than trusting it |
@@ -91,9 +91,21 @@ residual risk and the mechanism's rejected alternatives are
 ### How the graph audit composes
 
 `ws-refine` ends with a graph audit, and every pack change is required to run it — so it is the
-one check whose own correctness is load-bearing for all the others. It runs as **one bash block**,
-whole: the later parts read counts the earlier parts established, and half of it produces a verdict
-that has not been earned.
+one check whose own correctness is load-bearing for all the others. It is **a script**,
+`ws-refine/audit.sh`, run whole by path: the later parts read counts the earlier parts established,
+and part of it produces a verdict that has not been earned.
+
+**It is a file for a reason, and the reason is the audit's own subject matter.** Until 2026-11-03
+it was a fenced block inside `ws-refine/SKILL.md`, and a skill's body has the caller's argument
+substituted into its positional parameters on the way to the agent. Its awk programs use `$0` as
+a field reference, so invoked with any argument — the normal way — the delivered copy arrived with
+`if($0!="---")` rewritten and would not parse. Part 3 then produced a spurious finding for every
+skill, and **part 3b reported no findings at all while its scanner had never run**, its own count
+already incremented. A clean verdict over a scan that did not happen, in the part added to catch
+that exact shape (p8.37). Nothing substitutes into a file run by path, so the file is the fix; it
+also lets part 3b stop excluding `$0`, which is what catches the next instance rather than this
+one. It is run as `bash <path>` so no execute bit has to survive a copy or a publish, and it is
+the **library** copy, which is one absolute path on every agent and the copy the audit is about.
 
 It reads three things, from three places, and the distinction matters because two of them are not
 in this repo:
@@ -150,7 +162,7 @@ between two parts' counts, aborts instead of certifying. Three consequences wort
   the preflight's floor refuses to be.
 - **`set -e` is deliberately not used, and would be actively harmful.** A clean part ends on
   `[ -n "$x" ] && printf …`, which returns **non-zero precisely when there are no findings**, so
-  under `set -e` the block would abort exactly when the audit is clean. Positive counts are the
+  under `set -e` the script would abort exactly when the audit is clean. Positive counts are the
   only route. This is written down because it is the first thing anyone will reach for.
 
 **One failure mode this design caught in its own author's work**, recorded because it is the
@@ -171,7 +183,9 @@ under an agent`.
 | the identity assertion fires first on any wrong directory | the marker and the floor can only ever fire on the real library path, so testing them needs identity satisfied by construction |
 | a skill whose entire body before `What next?` is fenced code | reported as `NO PROSE EXTRACTED` and **aborts**, because it is indistinguishable from a file whose frontmatter never closed. Legitimate-but-pathological input therefore stops the audit rather than being waved through |
 | it depends on `agent-sync` being runnable | on a machine with no deployment the audit **aborts** rather than running a narrower version of itself |
-| that an agent *obeys* `AUDIT ABORTED` is not proved | the shell makes the abort unavoidable within the snippet; the claim is only that a clean verdict is unreachable without the counts being printed |
+| that an agent *obeys* `AUDIT ABORTED` is not proved | the shell makes the abort unavoidable within the script; the claim is only that a clean verdict is unreachable without the counts being printed |
+| part 3b's compile probe catches a program that fails to **parse**, not one that is valid and wrong | a substitution yielding, say, a renamed-but-valid variable would still produce a clean scan. Measured. So the property is "cannot report zero after a scanner that **failed**", not "cannot report zero without having scanned" — and the reason the fix works is that the gap is now unreachable, because nothing substitutes into a file |
+| that an agent runs **the file** rather than reconstructing the block is not proved either | the skill says to run the path and says why, and the `$0` the block needed is gone from the skill body — so there is nothing left there to paste. An agent that runs a stale **deployed** copy of `audit.sh` is the remaining case, and part 1 catches it only when the library has moved |
 
 Why a verdict has to state its subject at all, the alternative that was tried and disproved, and
 why `ok`, `exitCode` and `targets[]` are not read from `agent-sync status`, are

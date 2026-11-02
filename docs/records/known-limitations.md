@@ -126,6 +126,17 @@ the state dir is the author's to keep non-identifying; nothing checks it.
 moves whenever a skill gains a line, so the quoted text is the durable half of a citation and the
 number is a convenience.
 
+**Nothing proves an agent runs `ws-refine/audit.sh` rather than reconstructing it.** The skill
+says to run the path and says why, and there is no longer a positional parameter in its body to
+paste — but an agent that runs a **stale deployed** copy of `audit.sh` is caught by part 1 only
+when the library has moved. Part 7 tracks `.md` files, so it does not notice the script itself
+being out of date.
+
+**A CRLF `audit.sh` would fail quietly.** `set -uo pipefail` with a trailing carriage return
+prints `set: pipefail: invalid option name` and the script *continues* without `set -u` or
+`pipefail` — measured, exit 0. The library copy has no CRLF and nothing asserts that it stays that
+way; `scripts/check.sh` does not scan `.sh` files for line endings.
+
 **The pack's gates are desk-verified, not live-verified.** Every description, collision matrix and
 refusal has been checked by reading and by composition against fixtures; nothing yet proves that
 the loop's triggers fire in ordinary use, and the author of a description is the worst judge of

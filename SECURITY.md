@@ -2,11 +2,17 @@
 
 ## What this repo is
 
-Markdown and two shell scripts. No runtime, no dependencies, no build, and nothing published to a
-registry — so there is no service to attack and no package to poison. The only code that ever runs
-is [`scripts/check.sh`](scripts/check.sh), [`scripts/publish.sh`](scripts/publish.sh) and
-[`.githooks/pre-commit`](.githooks/pre-commit), all of them run locally by someone who cloned the
-repo and read them first.
+Markdown and three shell scripts. No runtime, no dependencies, no build, and nothing published to
+a registry — so there is no service to attack and no package to poison. The only code that ever
+runs is [`scripts/check.sh`](scripts/check.sh), [`scripts/publish.sh`](scripts/publish.sh),
+[`.githooks/pre-commit`](.githooks/pre-commit) and **`skills/ws-refine/audit.sh`** — the one
+executable the pack itself ships, which the published skill tells its reader to run. All of them
+run locally by someone who cloned the repo and read them first.
+
+`audit.sh` has been part of the pack since 2026-11-03 (p8.37); before that the pack was Markdown
+only, and this paragraph said two scripts. It is published by name through `publish.sh`'s
+`PACK_EXEC` list rather than by extension, so a second `.sh` appearing in a skill directory is
+still refused.
 
 What this repo does have is a privacy boundary. It is assembled by copying skills out of a private
 working copy ([ADR 0001](docs/decisions/0001-library-is-the-source-of-truth.md)), and the history
@@ -24,13 +30,13 @@ whole working tree, tracked and untracked alike; run with `--staged` it reads
 untracked, or tracked and unmodified, is not read at all in that mode. It runs automatically in
 **five** places — three of them on the publish path, two of them in `--staged` mode:
 
-- as a **preflight on this repo before the publish starts** (`scripts/publish.sh`:181, working-tree
+- as a **preflight on this repo before the publish starts** (`scripts/publish.sh`:200, working-tree
   mode), which refuses to publish into a tree whose guard is already failing — so a pre-existing
   leak is never buried under a publish commit;
-- in a throwaway clone of the candidate, before a byte is written here (`publish.sh`:277,
+- in a throwaway clone of the candidate, before a byte is written here (`publish.sh`:300,
   working-tree mode);
 - again on this repo's staged tree, which is what is actually about to be committed
-  (`publish.sh`:321, `--staged`);
+  (`publish.sh`:344, `--staged`);
 - once more in the pre-commit hook, on exactly those staged bytes
   ([`.githooks/pre-commit`](.githooks/pre-commit), `--staged`) — which fires on the publish commit
   too, since `publish.sh` never passes `--no-verify`;
@@ -41,9 +47,14 @@ untracked, or tracked and unmodified, is not read at all in that mode. It runs a
 
 Plus one documented manual run, at [`CONTRIBUTING.md`](CONTRIBUTING.md):62.
 
-**Five sites, six invocation lines.** `publish.sh`:181 and :184 are the same preflight: when it
+**Five sites, six invocation lines.** `publish.sh`:200 and :203 are the same preflight: when it
 fails, the second line re-runs it without `>/dev/null` so the output is visible. Someone counting
 `bash scripts/check.sh` finds six and should not "correct" the five.
+
+These four line numbers moved on 2026-11-03 when `publish.sh` gained its `PACK_EXEC`
+classification (p8.37). They were exact before that commit and wrong after it, which is the
+citation drift [`docs/agent/risks/common.md`](docs/agent/risks/common.md) warns about happening to
+the document that warns about it.
 
 This count was **four** until 2026-11-02, omitting the preflight (p8.31).
 

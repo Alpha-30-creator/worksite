@@ -32,7 +32,11 @@ ADR 0003 (`docs/decisions/0003-shared-external-stores-are-declared-in-the-cartri
 the work reaches that no worktree isolates is declared in the cartridge, so `ws-fanout`'s gate can
 reason about it. ADR 0004
 (`docs/decisions/0004-a-check-must-state-what-it-read.md`) — a self-checking check may certify only
-what it stated it read, which is why the graph audit now names its own counts.
+what it stated it read, which is why the graph audit now names its own counts. ADR 0005
+(`docs/decisions/0005-the-graph-audit-is-a-script-in-the-library.md`) — that audit is a script in
+the library, run by path, because a skill's body has the caller's argument substituted into it and
+the audit's own awk programs did not survive delivery; it overturns the parts of ADR 0002 and
+ADR 0004 that had rejected this shape, and accepts the one objection that still binds.
 
 ## In progress
 
