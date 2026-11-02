@@ -86,6 +86,12 @@ gets better.
 OWASP Top 10:2025, and not optional. Pay particular attention where the change touches auth,
 identity, an external call, a new dependency, or user-supplied content.
 
+**15. A gate whose input is unreadable must not fall to the unsafe default.**
+Where a change greps, parses, globs or queries for a condition, a missing file, an unreadable one,
+an empty glob or a failed call returns the same nothing as a real negative — and the branch that
+nothing falls to is the permissive one. Establish the input was **read** before branching on what
+it said, and make the check state what it read.
+
 ## Severity
 
 | Level | Means |

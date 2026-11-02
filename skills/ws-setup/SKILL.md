@@ -20,7 +20,16 @@ echo "root: $ROOT"
 git rev-parse --is-inside-work-tree 2>/dev/null && echo "root IS a git repo" || echo "root is not a git repo (good for multi-repo)"
 for d in */; do [ -d "$d/.git" ] && printf '  repo: %-28s %s\n' "${d%/}" "$(git -C "$d" remote get-url origin 2>/dev/null)"; done
 ls -d .*/ 2>/dev/null | grep -vE '^\.(git|claude|codex|cursor|agents|vscode|idea)/$'
-find . -maxdepth 3 -name "reference.md" -path "*agent*" 2>/dev/null
+# find distinguishes "searched it all, found nothing" from "could not descend" by its own exit
+# code; throwing that away turns an unsearchable tree into the mode "new", and new on a
+# configured project is the damaging answer. Checked on BSD/macOS find; GNU find documents the
+# same non-zero-on-error contract, but that was not run here.
+hits=$(find . -maxdepth 3 -name 'reference.md' -path '*agent*' 2>/dev/null); rc=$?
+if [ -n "$hits" ]; then printf 'cartridge candidate: %s\n' "$hits"
+  [ "$rc" -eq 0 ] || echo "(and the search was incomplete — there may be more)"
+elif [ "$rc" -ne 0 ]; then echo "UNSEARCHABLE: could not descend under $ROOT — the mode is UNKNOWN"
+else echo "searched $ROOT to depth 3, and found no cartridge"
+fi
 ls AGENTS.md CLAUDE.md 2>/dev/null
 ```
 
@@ -31,6 +40,7 @@ ls AGENTS.md CLAUDE.md 2>/dev/null
 | A cartridge (`<docs_home>/reference.md` with frontmatter) | **upgrade** |
 | Repos, maybe an `AGENTS.md`, but no cartridge | **adopt** — interview, but seed every answer from what is there |
 | An empty or near-empty folder | **new** |
+| `UNSEARCHABLE: …` | **none — stop.** You have not established there is no cartridge, and **new** on a configured project is the damaging answer. Say which path you tried, ask, re-run |
 | One repo, throwaway or experimental | **lite** (offer it; `profile: lite`) |
 
 **Offer lite whenever it fits.** A one-off project should cost five questions, not thirty. Using
