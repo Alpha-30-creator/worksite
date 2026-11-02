@@ -388,7 +388,7 @@ deleted without an answer is neither. Prefer the cheap failure.
 Recorded here because the ADR folder is for decisions about the system's architecture and this is
 a decision about its safety rules — but if a second safety-rule change comes up, it earns an ADR.
 
-## [ ] p8.13 — `for r in <repos>` survives in three skills, including one that warns against it
+## [~] p8.13 — `for r in <repos>` survives in three skills, including one that warns against it
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
