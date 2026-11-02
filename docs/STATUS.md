@@ -38,7 +38,7 @@ what it stated it read, which is why the graph audit now names its own counts.
 
 | id | title | claimed | where it is |
 |---|---|---|---|
-| p8.31 | The leak surface has three uncovered edges | 2026-11-02 @Alpha-30-creator | claimed |
+| p8.31 | The leak surface has three uncovered edges | 2026-11-02 @Alpha-30-creator | [PR #17](https://github.com/Alpha-30-creator/worksite/pull/17), in review |
 
 **p8.35 shipped 2026-11-02**: a `$1` in a skill body is replaced by the caller's
 argument at delivery, which had `ws-env` and `ws-sync` reporting every project "not linked on this

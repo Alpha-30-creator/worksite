@@ -645,7 +645,7 @@ third signal that it is not worth a track.
 - **Notes:** the generic version of p8.5. p8.5 taught the gate that a shared store exists; this
   teaches the two skills who is allowed to publish one.
 
-## [~] p8.31 — The leak surface has three uncovered edges and nothing asserts any of them @Alpha-30-creator · 2026-11-02
+## [r] p8.31 — The leak surface has three uncovered edges and nothing asserts any of them @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/17
 
 - **Repos:** worksite (pack), worksite
 - **Depends on:** —
