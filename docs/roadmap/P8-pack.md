@@ -645,7 +645,7 @@ third signal that it is not worth a track.
 - **Notes:** the generic version of p8.5. p8.5 taught the gate that a shared store exists; this
   teaches the two skills who is allowed to publish one.
 
-## [r] p8.31 — The leak surface has three uncovered edges and nothing asserts any of them @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/17
+## [x] p8.31 — The leak surface has three uncovered edges and nothing asserts any of them · 2026-11-03 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/17
 
 - **Repos:** worksite (pack), worksite
 - **Depends on:** —
@@ -655,25 +655,25 @@ third signal that it is not worth a track.
   the stop is still there — and because they touch the same two files. The bodies of the three
   absorbed tasks are kept above; this is the shipping unit.
 - **Acceptance:**
-  - [ ] when `state_dir` is inside a git repo, something asserts the ignore rule instead of
+  - [x] when `state_dir` is inside a git repo, something asserts the ignore rule instead of
         trusting it. `git check-ignore -q <state_dir>` is the whole test; it runs where it is
         seen before damage — the project's own `verify` where there is one, `ws-start` otherwise
         — and `scripts/check.sh` in this repo gains it as the first consumer *(from p8.16)*
-  - [ ] proven by deleting the ignore line and watching the check fail, not by reading it
+  - [x] proven by deleting the ignore line and watching the check fail, not by reading it
         *(from p8.16)*
-  - [ ] the journal entry header carries a device **alias** rather than the raw device id, so a
+  - [x] the journal entry header carries a device **alias** rather than the raw device id, so a
         device named after its owner cannot reach a public repo through the mirror or through any
         other path *(from p8.8)*
-  - [ ] `tracks.md` states the consequence where it describes the mirror, next to the existing
+  - [x] `tracks.md` states the consequence where it describes the mirror, next to the existing
         note about `lite` projects with no `docs_home` *(from p8.8)*
-  - [ ] **§1's allowlist drops the whole line, so a private name sharing a line with the
+  - [x] **§1's allowlist drops the whole line, so a private name sharing a line with the
         allowlisted npm scope passes silently** *(measured 2026-11-02 while planning p1.2, and
         reproduced)*. `scripts/check.sh`:46 pipes the hit list through `grep -vi 'abdur-codes'`,
         which discards the entire output line rather than the allowlisted substring. Narrowing
         the string to `@abdur-codes/` does **not** fix it — the fix is to strip the allowlisted
         substring from the line before matching. Proven by a line carrying both, which must
         FAIL §1 afterwards and passes today
-  - [ ] **nothing has ever looked at the object store, and it already holds private names.**
+  - [x] **nothing has ever looked at the object store, and it already holds private names.**
         `git add` writes a blob before the hook can refuse the commit, so a refused commit still
         leaves its content in `.git/objects` — found 2026-11-02 while building p1.2, which
         removed its own probe blob by exact hash. Measuring the store afterwards found **two
@@ -687,20 +687,20 @@ third signal that it is not worth a track.
         carries a pattern, and a decision on pruning — which must not be a bare
         `git gc --prune=now`, because this workspace's object store is shared with live
         worktrees whose unreachable objects are wanted
-  - [ ] **`SECURITY.md` undercounts its own run sites**: it says §1 "runs in four places" and
+  - [x] **`SECURITY.md` undercounts its own run sites**: it says §1 "runs in four places" and
         lists four, omitting `scripts/publish.sh`:181, the working-tree preflight. There are
         five automated invocations — `publish.sh`:181, `publish.sh`:277, `publish.sh`:321,
         `.githooks/pre-commit`, `.github/workflows/check.yml`:24 — plus the documented manual
         run at `CONTRIBUTING.md`:62. `docs/agent/risks/common.md`:56-59 repeats the same count
         *(measured 2026-11-02 while planning p1.2)*
-  - [ ] a check that `ws-shared` still carries `disable-model-invocation: true` — if it ever
+  - [x] a check that `ws-shared` still carries `disable-model-invocation: true` — if it ever
         loses the flag the pack silently becomes fourteen invocable skills, and the README, the
         concepts page and the cartridge all become wrong about the count in the same moment
         *(from p8.26)*
-  - [ ] §1's inline allowlisted string is visible where coverage is **defined**, not only in the
+  - [x] §1's inline allowlisted string is visible where coverage is **defined**, not only in the
         script body, so an auditor reading the pattern file alone sees the whole of it
         *(from p8.26)*
-  - [ ] changed through `ws-refine`, with its graph audit
+  - [x] changed through `ws-refine`, with its graph audit
 - **Notes:** p8.16's observation is the argument for the whole task: the cartridge already said
   *"Do not remove that line"* in bold — the pack knew the risk and wrote a reminder instead of a
   check. **Deliberately not included:** the cartridge key for "this docs home is public", and

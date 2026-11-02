@@ -1,6 +1,6 @@
 # worksite status
 
-**Updated:** 2026-11-02
+**Updated:** 2026-11-03
 
 **Where it is:** the pack is in the repo and generic — thirteen `ws-*` workflow skills plus the
 `ws-shared` reference pack they all read, no private names. Public at
@@ -36,9 +36,12 @@ what it stated it read, which is why the graph audit now names its own counts.
 
 ## In progress
 
-| id | title | claimed | where it is |
-|---|---|---|---|
-| p8.31 | The leak surface has three uncovered edges | 2026-11-02 @Alpha-30-creator | [PR #17](https://github.com/Alpha-30-creator/worksite/pull/17), in review |
+Nothing claimed. **p8.31 shipped 2026-11-03** ([PR #17](https://github.com/Alpha-30-creator/worksite/pull/17)):
+`scripts/check.sh` grew sections 5 and 6 — the state dir's ignore rule is asserted rather than
+trusted, and the object store is read for the first time — the §1 allowlist now strips instead of
+dropping the line, and the journal header carries a derived device alias. Two review rounds found
+**three fail-open silent passes in the first cut**, all reproduced and fixed; the run-site count
+went from four to five.
 
 **p8.35 shipped 2026-11-02**: a `$1` in a skill body is replaced by the caller's
 argument at delivery, which had `ws-env` and `ws-sync` reporting every project "not linked on this
@@ -104,6 +107,7 @@ today, so they do not have to wait for P1–P7.
 | p1.2 | Prove the leak guard actually refuses a commit | 2026-11-02 |
 | p3.4 | An index for the docs tree | 2026-11-02 |
 | p8.24 | Gates that read an empty result as a pass | 2026-11-02 |
+| p8.31 | The leak surface had three uncovered edges | 2026-11-03 |
 
 ## Phases
 
