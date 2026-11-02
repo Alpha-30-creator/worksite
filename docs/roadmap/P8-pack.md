@@ -450,12 +450,17 @@ a decision about its safety rules — but if a second safety-rule change comes u
 - **Repos:** worksite (pack)
 - **Depends on:** —
 - **Found 2026-11-03 by p8.36's review**, as the consequence that outlives it.
-- **Why:** *Retiring a track* refuses any branch with no upstream, because those commits exist
-  nowhere else, and that guard is correct and must not be weakened. But a project with no remote
-  can never give a branch an upstream, so **no track on it can ever be retired** — and
-  `ws-start`'s sweep will go on offering the same stale tracks at every session. p8.36 made the
-  loop usable without a remote; this is the one place where "degrade, never fail" and "never
-  discard work" genuinely conflict, so it needs a decision rather than a patch.
+- **Why:** *Retiring a track* refuses a **worktree** whose branch has no upstream, because those
+  commits exist nowhere else, and that guard is correct and must not be weakened. On a project with
+  no remote there is no obvious way to satisfy it, so `ws-start`'s sweep goes on offering the same
+  stale tracks at every session and nothing documents a way out. **Measured 2026-11-03, correcting
+  this entry's first draft:** it is *not* true that such a track can never be retired. Setting a
+  local upstream (`git branch --set-upstream-to=main <branch>`) satisfies the check once the work is
+  merged, and a track configured `worktrees: false` is never checked at all, because the guard only
+  loops over the track's worktrees. So the gap is narrower than "impossible": it is undocumented,
+  and the workaround is one nobody is told about. p8.36 made the loop usable without a remote; this
+  is where "degrade, never fail" and "never discard work" meet, so it wants a written decision
+  rather than a patch.
 - **Acceptance:**
   - [ ] a written decision on how a remoteless project retires a track without the guard losing
         its meaning — a bundle, an explicit acknowledgement, or a stated refusal with a reason
