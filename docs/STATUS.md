@@ -40,12 +40,7 @@ ADR 0004 that had rejected this shape, and accepts the one objection that still 
 
 ## In progress
 
-| id | title | claimed | where it is |
-|---|---|---|---|
-| p8.37 | `ws-refine`'s audit cannot be run as delivered | 2026-11-03 @Alpha-30-creator | claimed |
-| p8.38 | §6 blocks every publish — a local clone has no reflogs | 2026-11-03 @Alpha-30-creator | claimed, blocking p8.37's publish |
-
-**p8.31 shipped 2026-11-03** ([PR #17](https://github.com/Alpha-30-creator/worksite/pull/17)):
+Nothing claimed. **p8.31 shipped 2026-11-03** ([PR #17](https://github.com/Alpha-30-creator/worksite/pull/17)):
 `scripts/check.sh` grew sections 5 and 6 — the state dir's ignore rule is asserted rather than
 trusted, and the object store is read for the first time — the §1 allowlist now strips instead of
 dropping the line, and the journal header carries a derived device alias. Two review rounds found
@@ -117,6 +112,8 @@ today, so they do not have to wait for P1–P7.
 | p3.4 | An index for the docs tree | 2026-11-02 |
 | p8.24 | Gates that read an empty result as a pass | 2026-11-02 |
 | p8.31 | The leak surface had three uncovered edges | 2026-11-03 |
+| p8.37 | `ws-refine`'s own audit could not be run as delivered | 2026-11-03 |
+| p8.38 | §6 blocked every publish — a local clone has no reflogs | 2026-11-03 |
 
 ## Phases
 

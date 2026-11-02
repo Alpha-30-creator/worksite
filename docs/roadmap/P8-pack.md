@@ -707,7 +707,7 @@ third signal that it is not worth a track.
   `ws-setup` warning when it generates one. Both are schema work with no behaviour yet behind
   them, and the alias makes the leak harmless whatever the key says.
 
-## [~] p8.37 — `ws-refine`'s own audit cannot be run as delivered, and part 3b then reports zero @Alpha-30-creator · 2026-11-03
+## [x] p8.37 — `ws-refine`'s own audit cannot be run as delivered, and part 3b then reports zero · 2026-11-03 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/18
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -728,22 +728,22 @@ third signal that it is not worth a track.
   because fenced awk programs use it as a field reference — a correct exclusion that makes this
   blind spot structural rather than an oversight.
 - **Acceptance:**
-  - [ ] the audit is runnable from a skill invoked **with** an argument, proven by invoking it
+  - [x] the audit is runnable from a skill invoked **with** an argument, proven by invoking it
         that way and diffing the delivered block against the library file — not by reading
-  - [ ] part 3b cannot report zero having scanned nothing: its count is incremented only after
+  - [x] part 3b cannot report zero having scanned nothing: its count is incremented only after
         its scanner has produced a result, or the scanner's failure is asserted separately
-  - [ ] whatever fixes this does not reintroduce `$0` in a fenced program. The likely shape is a
+  - [x] whatever fixes this does not reintroduce `$0` in a fenced program. The likely shape is a
         reference **file** the audit runs by path, since nothing substitutes into a plain read —
         which would also fix it for every other skill that ships an executable block
-  - [ ] every other `ws-*` skill is checked for the same hazard in a block an agent is expected
+  - [x] every other `ws-*` skill is checked for the same hazard in a block an agent is expected
         to run, and the result stated as a count
-  - [ ] changed through `ws-refine`, with its graph audit — which here means the audit must be
+  - [x] changed through `ws-refine`, with its graph audit — which here means the audit must be
         run to certify a change to itself, so say which copy was run and why
 - **Notes:** worked around for p8.31 by extracting the block from the library file and running
   that. The workaround is the evidence: an audit that cannot be used as delivered is an audit
   most invocations will skip.
 
-## [~] p8.38 — Section 6 blocks every publish, because a local clone has no reflogs @Alpha-30-creator · 2026-11-03
+## [x] p8.38 — Section 6 blocks every publish, because a local clone has no reflogs · 2026-11-03 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/19
 
 - **Repos:** worksite
 - **Depends on:** —
@@ -763,13 +763,13 @@ third signal that it is not worth a track.
   Fail-safe rather than fail-open, and still a full stop: the library cannot reach the public repo
   at all, so `skills/` goes stale and section 4 stays drifted indefinitely.
 - **Acceptance:**
-  - [ ] the candidate scan stops gating on the local object store, and the way it stops is
+  - [x] the candidate scan stops gating on the local object store, and the way it stops is
         **explicit in the output** — a section that silently does not run is the defect class this
         repo keeps fixing, so `check.sh` must say which sections it skipped and why
-  - [ ] section 6 still runs, and still fails, on the target repo's own preflight, on its staged
+  - [x] section 6 still runs, and still fails, on the target repo's own preflight, on its staged
         tree, in the pre-commit hook and in CI. Only the throwaway clone opts out
-  - [ ] proven by running a real publish end to end, not by reading
-  - [ ] the reflog interaction is stated where section 6's coverage is defined, since it now cuts
+  - [x] proven by running a real publish end to end, not by reading
+  - [x] the reflog interaction is stated where section 6's coverage is defined, since it now cuts
         both ways: a reflog **hides** residue from the source and **invents** it in a clone
 - **Notes:** the mechanism was already recorded in
   [records/known-limitations.md](../records/known-limitations.md) as a blind spot of section 6 —
