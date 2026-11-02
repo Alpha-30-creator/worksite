@@ -190,6 +190,40 @@ because the `sed` that produces the ids constrains them to `[a-z0-9-]`, and
 — stated here because they look like the bug p8.13 fixed and the next reader will want to "fix"
 them.
 
+**What still assumes a remote, after p8.36.** `ws-ship`'s push and PR steps and `ws-wrap`'s push
+are unchanged: a local-only project genuinely cannot push or open a PR, and refusing is right.
+But neither *says* so — both run `git push -u origin <branch>` unguarded, so what a stranger
+actually sees is a raw git fatal, not an explanation. **And the consequence reaches past the
+push:** retiring a track refuses a **worktree** whose branch has no upstream, by design, because
+those commits exist nowhere else — so on a local-only project nothing obvious satisfies it, and
+`ws-start`'s sweep keeps offering the same stale tracks. The refusal is the correct guard and must
+not be weakened. What it is *not* is an absolute bar, and the first draft of this paragraph said it
+was: a local upstream (`git branch --set-upstream-to=<integration> <branch>`) satisfies the check
+once the work is merged, and a track configured `worktrees: false` is never checked at all, since
+the guard only loops over the track's worktrees. So the real gap is that the workaround is
+undocumented — filed as p8.40, whose acceptance is a written decision. The tracker adapter `ws-shared/trackers/roadmap-files.md`
+degrades with a named `COULD NOT REFRESH` message, but phrases it as "may be stale" even where
+there is nothing to be stale against. What p8.36 changed is the seven places that
+failed *before* reaching any such decision. The limitation that remains is in the degrade itself:
+where `origin/<integration>` does not resolve, `ws-plan` and `ws-review` fall back to the **local**
+`<integration>`, which is this machine's last-fetched view. A plan or a review built on it can
+silently miss commits someone else has pushed. Both now print which ref they used, so the reader
+can tell — but nothing checks whether that ref is current, because without a remote there is
+nothing to check it against.
+
+**The sync row reports the remote and the upstream as two separate facts, and that is deliberate.**
+`ws-start` §1 now reads the fetch's exit status, so `NO REMOTE`, `FETCH FAILED`, `no upstream for
+this branch`, `upstream [gone]` and `behind/ahead N/M` are named states rather than one confident
+row — and the remote clause and the upstream clause both print, because they are independent: a
+branch tracking a purely local branch in a repo with no remote reads `NO REMOTE — nothing was
+fetched · behind/ahead 0/1`, which is exactly true. Six states measured, `[gone]` among them
+(reproduced by deleting a non-default branch on the remote, since a bare repo refuses deletion of
+its own HEAD branch). What the row still cannot say is *why* a fetch failed — git's own reason
+prints above the table rather than in it. It also cannot tell one `rev-list` failure from
+another: `2>/dev/null` means an unborn or orphan HEAD whose upstream ref *does* exist reads as
+`upstream [gone]`. Narrow, and loud in every other respect, but it is a mislabel rather than a
+silence.
+
 **The pack's gates are desk-verified, not live-verified.** Every description, collision matrix and
 refusal has been checked by reading and by composition against fixtures; nothing yet proves that
 the loop's triggers fire in ordinary use, and the author of a description is the worst judge of
