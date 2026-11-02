@@ -52,12 +52,54 @@ depends on someone remembering, it is not there when it matters.
 One entry per boundary, appended, never rewritten:
 
 ```markdown
-## <stage> · <YYYY-MM-DD HH:MM> · <device> · <handle>
+## <stage> · <YYYY-MM-DD HH:MM> · <device-alias> · <handle>
 - did: <what actually changed — files, decisions, commands that mattered>
 - next: <the single next step, concrete enough to act on cold>
 - rejected: <what was tried and abandoned, and why — this is the part that saves the most time>
 - open: <questions, or none>
 ```
+
+### `<device-alias>`, and why it is not the device name
+
+**Never write the raw `device:` value into a journal entry.** A machine is commonly named after
+the person who owns it, and the journal is **mirrored into the project's docs home and pushed**
+(below) — which on an open-source project is a public repo. A reader of the mirror needs to tell
+one machine from another; they do not need to know whose it is, or what it is called.
+
+So the header carries a **derived alias**: stable for one machine, different for another, and
+naming neither.
+
+```bash
+alias_file="<state_dir>/device-alias"      # optional, and normally absent
+
+# Derive, never read a hostname: `hostname` is the very string that tends to carry the owner's
+# name, which is the leak this exists to avoid.
+sha256_of_stdin() {
+  if command -v shasum >/dev/null 2>&1; then shasum -a 256
+  else sha256sum
+  fi
+}
+device_alias() {
+  # An explicit alias wins, and it lives in the state dir, which is never pushed. Keeping a
+  # hand-written one non-identifying is the author's job; the derived form below is safe
+  # without anybody deciding anything, which is why it is the default.
+  if [ -r "$alias_file" ] && [ -s "$alias_file" ]; then
+    head -1 "$alias_file"; return
+  fi
+  dev=$(sed -n 's/^device: *//p' "$HOME/.agent-sync/device.yaml" 2>/dev/null | head -1)
+  # No device.yaml, or no device line: say so rather than substituting something identifying.
+  # "dev-unknown" is a worse journal entry and a correct one.
+  [ -n "$dev" ] || { printf 'dev-unknown\n'; return; }
+  printf 'dev-%s\n' "$(printf '%s' "$dev" | sha256_of_stdin | cut -c1-6)"
+}
+
+device_alias
+```
+
+Six hex digits distinguish the handful of machines one person works on, and a collision costs a
+reader an ambiguity rather than anything real. The alias is **not** a secret — it is derived from
+a name an attacker could guess — so it is not a privacy mechanism. It is narrower than that and
+that is the whole claim: a public mirror stops carrying a name nobody chose to publish.
 
 Stages: `claimed`, `planned`, `step <n>` (one per completed plan step), `verified`, `reviewed`,
 `paused`, `shipped`.
@@ -76,6 +118,13 @@ property.
 `artifacts: in-repo` projects need no mirror — the task branch already carries the files.
 `lite` projects with no `docs_home` get a local journal only; say so once when the track is
 created, so nobody expects it on the other machine.
+
+**The mirror is a push into a repo that may be public, and the consequence belongs here rather
+than in the memory of whoever set the project up.** Everything the journal format carries travels
+with it: that is why the entry header uses a derived alias and not the device name (above). A
+project that would rather not push the journal at all gitignores `<docs_home>/journal/` and says
+why in the ignore file — the reason enforces itself there, and `ws-ship`'s mirror cleanup already
+treats a never-tracked mirror as normal rather than as a failure.
 
 ## Running several tracks at once
 

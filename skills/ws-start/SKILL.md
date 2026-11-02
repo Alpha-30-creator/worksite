@@ -17,6 +17,32 @@ code.
 3. Read `<state_dir>/me` if the project has collaborators. Missing → ask once and write it.
 4. Read the tracker adapter for `tracker.kind` from `../ws-shared/trackers/`. Unknown kind → ask
    the four questions in that folder's README and carry on.
+5. **Assert that the state dir cannot be committed.** `<state_dir>` holds the journal, whose
+   entry header identifies the machine, and every track file. On most projects the workspace
+   root is not a git repo and the question does not arise. Where it *is* one, the only thing
+   standing between those files and a commit is an ignore rule — and an ignore rule is a line
+   someone can delete. A project whose own `verify` already asserts this gets it twice, which is
+   cheaper than reading the cartridge to work out whether to bother.
+
+   ```bash
+   sd="<state_dir>"                                  # from the cartridge
+   if ! git rev-parse --git-dir >/dev/null 2>&1; then
+     echo "state dir: not inside a git repo, so nothing here can be committed"
+   elif git check-ignore -q "${sd%/}/" || git check-ignore -q "${sd%/}"; then
+     echo "state dir: $sd is matched by an ignore rule"
+   else
+     echo "STATE DIR IS NOT IGNORED: $sd sits inside a git repo and git would commit it."
+     echo "Add it to .gitignore before creating a track — the journal identifies the machine."
+   fi
+   ```
+
+   **The trailing slash is not cosmetic.** A rule written `<state_dir>/` matches directories
+   only, and git can tell a bare path is a directory only by looking at the filesystem — so the
+   bare query answers "ignored" on a checkout where the directory already exists and "NOT
+   ignored" on a fresh one. Written the obvious way this check passes on the machine that has
+   been running tracks for weeks and fails on every clone and in CI. Measured both ways
+   2026-11-02; the bare form is kept as a fallback so a state dir ignored by a non-directory
+   rule is still recognised.
 
 ## 1. Sync
 
