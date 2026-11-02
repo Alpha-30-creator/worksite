@@ -1,6 +1,6 @@
 # Known limitations
 
-**Recorded 2026-11-02.** Fourteen mechanisms in this repo and in the pack that work, and the
+**Recorded 2026-11-02.** Seventeen mechanisms in this repo and in the pack that work, and the
 boundary each one stops at. Each entry names the mechanism in one clause and its boundary in the
 next. This is a record, not a task list: an entry changes only when the mechanism does, and then
 it changes in the same commit.
@@ -43,6 +43,25 @@ left rather than removing it.
 **`tracker.lists` names the open and in-progress lists only.** On a three-list board the agent
 has nowhere to record where a finished card goes, so it asks, every task, for the life of the
 project.
+
+**Three of the pack's documented steps cannot be run in a sandbox.** `ws-sync` step 1
+(`agent-sync sync` — pull, apply, push against the real library, with no read-only form),
+`ws-env pull` (decrypts to disk), and `agent-sync save` (deploys to every agent and pushes) all
+write outside a working directory, and none has a `--store` or dry-run escape. A cautious
+first-time user therefore cannot trial the pack without writing to their own machine. Measured
+2026-11-02 when two agents following `INSTALL.md` refused all three.
+
+**`ws-env status` cannot be fully answered without the age key.** Its table promises whether each
+file matches the store "by variable names, never values", which requires decrypting. So the mode
+the skill calls "read-only and always safe" is complete only on a machine that already holds the
+key; elsewhere the match column is unverified rather than clean.
+
+**A retirement block that must run whole can be refused for being exactly that.**
+`ws-shared/tracks.md` requires its removal block to run in one shell, because an in-script `$id`
+guard is what bounds its `rm -rf`. An agent harness that screens commands may refuse the block for
+containing that construct — met 2026-11-02 — leaving the operator to run the removal with the path
+written out literally. Nothing in the pack can resolve this; a documented safety mechanism and a
+platform one are in direct opposition.
 
 **`tracker.statuses` is declared schema-less.** An adapter needing a board's column names has no
 shape to read, so it states that need in its own text rather than relying on one the pack does not

@@ -12,6 +12,30 @@ and the user's own edits.
 What the user gets: thirteen `ws-*` workflow skills plus the `ws-shared` reference pack they all
 read, deployed to every agent they have.
 
+## Before you start: this install needs the user present, and it writes outside this repo
+
+Read this now rather than discovering it at step 5. **Added 2026-11-02 after two agents ran this
+document cold**; both got through step 4 and then could not finish.
+
+**Three stops need an answer only the user can give**, so an install run with nobody to ask will
+halt at one of them:
+
+1. **Step 3, if `storeExists` is `false`.** agent-sync is installed but not set up, and setting it
+   up asks questions about their machine. You cannot answer them.
+2. **Step 4, for every skill that reads `DIFFERS`.** Whether their version or this one survives is
+   theirs to decide, and you must not choose.
+3. **Step 5's `save`**, which publishes to their machine and their remote — see below.
+
+**And step 5 writes well outside this repository.** `agent-sync save` is one command that
+validates, deploys into each agent's own skills directory (`~/.claude`, `~/.codex`, `~/.cursor` as
+applicable), commits to the library, **and pushes it to the user's private remote.** `--no-push`
+suppresses the push only — it still deploys into every agent directory, and there is no documented
+way to do the library half without the deploy half.
+
+So if you are running in a sandbox, cannot write outside a working directory, or have no user to
+ask: **stop here and say so.** Steps 1 to 4 are all read-only and safe to run first — doing them
+and reporting what you found is a useful outcome. Starting step 5 and stopping halfway is not.
+
 ---
 
 ## 1. Check prerequisites
@@ -56,9 +80,20 @@ that JSON's `store` field — do not assume `~/.agent-sync/store`.** It is the d
 writing: if you guess it wrong, the comparison finds nothing, tells you there is nothing to lose,
 and step 5 then deletes the user's real skills.
 
+**Mind the level of `--store`.** It names the library's **parent**: agent-sync appends `store`
+to it, so `--store /tmp/x` makes the library `/tmp/x/store`. Passing a path that already ends in
+`store` creates a nested `store/store`. This is why you read the path out of the `store` field
+instead of constructing it — that field is already resolved, whichever way the flag was given.
+
 **If `storeExists` is `false`, stop**: the user has agent-sync installed but not set up, and
 `agent-sync setup` asks questions only they can answer. Point them at agent-sync's `INSTALL.md`
 step 3 and come back.
+
+Do **not** improvise past this with `agent-sync init`, even though `doctor`'s own error text
+suggests it. It scaffolds a library — on this machine it added three artifacts of its own — so an
+agent that runs it has silently created a different library from the one the user will later expect,
+and step 6's count will not match. An agent ran it here for exactly that reason; the fix is to say
+so rather than to leave the gap.
 
 ## 4. Compare before you write
 
@@ -66,6 +101,11 @@ The next step uses `agent-sync add skill`, and **that command deletes the destin
 before copying into it**. There is no prompt and no backup. On a first install that is harmless. On
 a re-run it would destroy any change the user has made to any of these skills — so compare first,
 every time, including the first time.
+
+**Run this from the root of the worksite clone** — the `skills/ws-*/` glob is relative to it, and
+from anywhere else the loop matches nothing and prints no rows at all, which looks like agreement.
+If the user runs agent-sync with `--store`, add that flag to the `doctor` call here too, or `$LIB`
+resolves to the default library and the comparison answers about the wrong one.
 
 ```bash
 LIB="$(agent-sync doctor --json | node -e 'console.log(JSON.parse(require("fs").readFileSync(0,"utf8")).store)')/skills"
@@ -132,7 +172,17 @@ agent-sync doctor --json
 ```
 
 In `status`, **the `skill/ws-*` entries for the skills the user agreed to install** should read
-`synced`. The full set is fourteen — thirteen workflow skills plus `ws-shared` — but if they chose
+`synced`.
+
+You may instead see **`adopted`**, and it does **not** mean what its position in a fresh install
+suggests. agent-sync reports `adopted` only when the agent's own copy already exists **and hashes
+equal to the library's** — so it means that agent had this skill already and it matched, not that
+the skill is waiting to be deployed. On a genuinely fresh machine you will not see it; you will see
+`missing` until `save` runs. If you do see it, say so: the user had a copy of this pack before you
+arrived, which is worth telling them.
+
+A trailing `N change(s) pending` line means `save` has not deployed yet. **That is not arrived**,
+so do not report success on fourteen green ticks alone: check the word, not the tick. The full set is fourteen — thirteen workflow skills plus `ws-shared` — but if they chose
 to keep their own version of one in step 4, expect one fewer and say which. Do not re-add a skill
 to make the number come out.
 
@@ -151,6 +201,19 @@ Codex). It interviews them and generates the cartridge, the state directory and 
 instruction files. Worked cartridges are in `skills/ws-shared/examples/`, alongside a device file and a secrets manifest.
 
 After that, **`/ws-start`** begins the loop.
+
+**You can check this step landed**, which is worth doing because it is the first thing that proves
+the install was useful rather than merely complete. In the project they chose:
+
+```bash
+ls -d .worksite 2>/dev/null && sed -n '1,12p' docs/agent/reference.md 2>/dev/null
+```
+
+A cartridge with frontmatter and a state directory means `ws-setup` ran. If the paths differ, read
+the cartridge's own `state_dir` and `docs_home` — `ws-setup` may place them elsewhere, and a `lite`
+profile deliberately generates less. **If step 5's `save` did not happen, step 7 cannot work at
+all**: the skills are in the library and not in any agent, so `/ws-setup` will not resolve. Say that
+rather than reporting the install complete.
 
 ## 8. Report what actually happened
 
