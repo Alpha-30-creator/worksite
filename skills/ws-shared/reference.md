@@ -279,6 +279,7 @@ is deliberate.
 | Symlinks | Do not create them. Windows git checks a symlink out as a text file containing the path, silently. Use a deployed **copy** with a generated-by header |
 | Python venv | `bin/` on macOS, `Scripts/` on Windows |
 | **zsh word splitting** | If your default shell is **zsh**, it does **not** split an unquoted `$var` into words the way bash does. `for t in $tags` iterates **once** under zsh and silently does the wrong thing. `for p in $(cmd)` is fine (zsh splits command substitution). Prefer `while IFS=… read -r` over `for … in $var`, or declare `bash` explicitly |
+| **bash word splitting on a path with a space** | The mirror image of the row above, and the one that actually bites: under **bash** a workspace path like `~/My Projects/app` splits into `~/My` and `Projects/app`, so `for r in <repos>` iterates **fragments**. Every `git -C` then fails on a path that does not exist, and the loop still prints a row per fragment and exits **0** — a dirty repo reports `0 changed`, a refresh refreshes nothing, a review diff comes back empty. Read repo paths line by line: `while IFS= read -r r` fed from a heredoc, and quote `"$r"` at every use. zsh hides it, bash shows it, and the report looks the same either way |
 
 ## House rules for every ws-* skill
 

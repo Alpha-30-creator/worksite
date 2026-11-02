@@ -47,12 +47,29 @@ code.
 ## 1. Sync
 
 ```bash
-for r in <repos>; do
+while IFS= read -r r; do
+  [ -n "$r" ] || continue
+  _pfx=$(git -C "$r" rev-parse --show-prefix 2>/dev/null) && [ -z "$_pfx" ] \
+    || { echo "NOT A REPO ROOT: $r — run that rev-parse by hand to see why"; continue; }
   git -C "$r" fetch --all --prune -q
   printf '%-26s %-24s %s\n' "$r" "$(git -C "$r" branch --show-current)" \
     "$(git -C "$r" status --porcelain | wc -l | tr -d ' ') changed"
-done
+done <<'REPOS'
+<repo paths, one per line>
+REPOS
 ```
+
+Read line by line, never `for r in <repos>`: a workspace path containing a space word-splits
+under bash, every `git -C` fails on a fragment, and this block still prints a row per fragment
+and exits 0 — so a dirty repo reports `0 changed`. The same rule and the same reason as the
+orphan sweep below, which carries the same two lines and prints the same refusal. The `rev-parse`
+line is the second half of the same fix: it turns every wrong *fill* — a stray space, a tab, a
+CRLF, a glob character, an unexpanded `~`, every path on one line, a path that is a
+*subdirectory* of a repo rather than its root, or the placeholder left in verbatim — into a named
+`NOT A REPO ROOT` line instead of another reassuring `0 changed`. **That line is not a result**:
+fix the fill and run it again before reporting anything. It is loud but **not fatal** — a fill
+where every path is wrong still exits 0, so read the output, not the status. The delimiter is
+quoted (`<<'REPOS'`) so a path containing `$` or a backtick is not rewritten on the way in.
 
 Report any repo that is dirty, behind, diverged, `[gone]`, or not on its integration branch.
 **Do not discard anything** — report and ask. Pull the docs repo if the tracker lives there.
@@ -115,11 +132,13 @@ track directories:
 # every worktree id under the project's track root, per repo
 while IFS= read -r r; do
   [ -n "$r" ] || continue
+  _pfx=$(git -C "$r" rev-parse --show-prefix 2>/dev/null) && [ -z "$_pfx" ] \
+    || { echo "NOT A REPO ROOT: $r — run that rev-parse by hand to see why"; continue; }
   git -C "$r" worktree list --porcelain | sed -n 's|^worktree ||p' \
     | awk -F/ -v root="<project>-tracks" '
         { for (i = 1; i < NF; i++) if ($i == root) { print $(i+1); next }
           if ($NF == root) next }'
-done <<REPOS
+done <<'REPOS'
 <repo paths, one per line>
 REPOS
 # then: any id printed here with no <state_dir>/tracks/<id>/ is an orphan worktree
@@ -278,6 +297,7 @@ applies, and anything unclear or blocked. **Do not plan. Do not write code.**
 Invoke with `/skill-name` in Claude Code or Cursor, `$skill-name` in Codex.
 
 - `ws-plan` — plan it before writing code
+- `ws-setup` — the project has no cartridge yet, in adopt mode
 - `ws-fanout` — run two to five tracks at once instead of one
 - `ws-debug` — it is a bug with an unknown cause
 - `ws-task` — it is too big, unclear, or something is missing from the tracker

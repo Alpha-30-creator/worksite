@@ -18,12 +18,24 @@ Ends with **an approved plan**, not with code written.
 ## 1. Refresh before believing anything
 
 ```bash
-for r in <repos>; do
+while IFS= read -r r; do
+  [ -n "$r" ] || continue
+  _pfx=$(git -C "$r" rev-parse --show-prefix 2>/dev/null) && [ -z "$_pfx" ] \
+    || { echo "NOT A REPO ROOT: $r — run that rev-parse by hand to see why"; continue; }
   git -C "$r" fetch --all --prune -q
   printf '%-24s behind/ahead %s\n' "$r" "$(git -C "$r" rev-list --left-right --count origin/<integration>...HEAD)"
   git -C "$r" status --short | head -5
-done
+done <<'REPOS'
+<repo paths, one per line>
+REPOS
 ```
+
+Read line by line, never `for r in <repos>`: a workspace path containing a space word-splits
+under bash, every `git -C` fails on a fragment, and the block still prints a row per fragment
+with an empty `behind/ahead` — a refresh that refreshed nothing, at exit 0. The `rev-parse` line
+catches the other half: a wrong *fill* now prints a named `NOT A REPO ROOT` instead of another
+empty row. **That line is not a result** — fix the fill and run it again. It is loud but not
+fatal, so read the output rather than the exit status.
 
 Read the code you plan around **as it is on the integration branch**, without checking anything
 out:
@@ -132,6 +144,7 @@ plan step 1. Mirror and push the journal if the project has a `docs_home`.
 Invoke with `/skill-name` in Claude Code or Cursor, `$skill-name` in Codex.
 
 - Build it, following the project's rule skills
+- `ws-start` — there is no current track to plan, so claim one first
 - `ws-verify` — prove it works
 - `ws-review` — independent review before shipping
 - `ws-task` — it is too big, or something out of scope turned up

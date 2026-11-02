@@ -83,12 +83,33 @@ The reviewer has none of this conversation. Include:
   changes and every untracked file:
 
 ```bash
-cd "<workspace>"; for r in <repos>; do
-  echo "=== $r ($(git -C $r branch --show-current))"; git -C $r status --short
-  git -C $r diff origin/<integration>...HEAD; git -C $r diff HEAD
-  git -C $r ls-files --others --exclude-standard | while read -r f; do echo "--- NEW: $r/$f"; cat "$r/$f"; done
-done
+( cd "<workspace>" || exit 1        # a subshell: a bare exit would close a persistent terminal
+while IFS= read -r r; do
+  [ -n "$r" ] || continue
+  _pfx=$(git -C "$r" rev-parse --show-prefix 2>/dev/null) && [ -z "$_pfx" ] \
+    || { echo "NOT A REPO ROOT: $r — run that rev-parse by hand to see why"; continue; }
+  echo "=== $r ($(git -C "$r" branch --show-current))"; git -C "$r" status --short
+  git -C "$r" diff origin/<integration>...HEAD; git -C "$r" diff HEAD
+  git -C "$r" ls-files --others --exclude-standard | while IFS= read -r f; do
+    echo "--- NEW: $r/$f"; cat "$r/$f"
+  done
+done <<'REPOS'
+<repo paths, one per line>
+REPOS
+)
 ```
+
+Read line by line, and quote every `$r`: a workspace path containing a space word-splits under
+bash, every `git -C` fails on a fragment, and this block still prints a `===` heading and an
+empty diff per fragment — which reads exactly like a branch with no changes. A review that saw
+nothing is the worst available failure here, so the gather is the one block that must not have
+this shape. Two more guards for the same reason. The `cd` is now `|| exit 1` **inside a
+subshell**, because a failed `cd` used to leave the loop running against relative paths and
+printing empty diffs — and the parentheses matter: a bare `exit` in a block pasted into a
+persistent terminal closes the session. The `rev-parse` line makes a wrong *fill* print a named
+`NOT A REPO ROOT` rather than one more empty diff. **Neither that line nor a missing repo is a
+review result** — fix it and gather again, and read the output rather than the exit status, which
+stays 0 even when every path was refused.
 
 - **Checks to run and report** pass/fail, never fix: each changed repo's `commands` from the
   cartridge (`verify` if it has one, else typecheck/lint/test/build plus `extra`). Batch

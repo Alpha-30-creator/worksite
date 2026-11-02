@@ -213,8 +213,9 @@ done < <(find ws-* -name '*.md' | sort)
 # roughly two dozen findings, nearly all of them references that are not exits, and it invents a
 # skill out of the word "Windows-safe". Every finding is READ AND JUDGED, never auto-fixed, and
 # it does not fail the audit: a comparison ("as `ws-review` does") looks exactly like an offer and
-# only a reader can tell them apart. Measured precision is about 2 in 3; its RECALL is the weaker
-# half and much lower, so this check narrows the pack and never certifies it.
+# only a reader can tell them apart. No precision figure is stated here: listing the real findings
+# changes it, so a ratio in a shipped comment rots. The project's own dated record holds it. Its
+# RECALL is the weaker half and much lower, so this check narrows the pack and never certifies it.
 #
 # rvb is the count that makes "rvc checked" mean something. The two awks below are independent:
 # $wn decides whether the file is checked, $body is what gets scanned. An empty $body is
