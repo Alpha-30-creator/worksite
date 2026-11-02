@@ -36,7 +36,11 @@ what it stated it read, which is why the graph audit now names its own counts.
 
 ## In progress
 
-Nothing claimed. **p8.35 shipped 2026-11-02**: a `$1` in a skill body is replaced by the caller's
+| id | title | claimed | where it is |
+|---|---|---|---|
+| p8.31 | The leak surface has three uncovered edges | 2026-11-02 @Alpha-30-creator | claimed |
+
+**p8.35 shipped 2026-11-02**: a `$1` in a skill body is replaced by the caller's
 argument at delivery, which had `ws-env` and `ws-sync` reporting every project "not linked on this
 device" while writing nothing. Fixed in the library and published as `cbcc499`; the audit now has a
 gate so the next one is caught by a check rather than by a stranger.
@@ -64,7 +68,6 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
-| p8.31 | The leak surface has three uncovered edges | the repo is public and permanent, and the one guarantee that holds it rests on a bold reminder |
 | p8.13 | `for r in <repos>` survives in three skills | it prints success with the work still there, on a workspace whose path contains a space — this one |
 | p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
 | p8.32 | A retired track leaves its parent directory behind | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |
