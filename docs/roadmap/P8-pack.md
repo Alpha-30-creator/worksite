@@ -471,6 +471,31 @@ a decision about its safety rules — but if a second safety-rule change comes u
 - **Notes:** recorded in `docs/records/known-limitations.md` by p8.36. A decision task, so its
   acceptance is a written record.
 
+## [ ] p7.3 — Nothing runs the README claim checker, so a claim can go stale between tags
+
+- **Repos:** worksite
+- **Depends on:** —
+- **Found 2026-11-03 while doing p7.2**, which wrote the checker.
+- **Why:** p7.2's criterion was "the README's claims all verified against the tagged tree", and the
+  verification is now a script — `scripts/check-readme-claims.sh` — that enumerates every
+  checkable claim and exits non-zero if one fails. **Nothing runs it.** `verify` is
+  `bash scripts/check.sh` and deliberately the only gate (AGENTS.md), so the checker is a rule with
+  no path that executes it — the pack's recurring shape, now reproduced on the repo's own front
+  page. The claim p7.2 found false had been stale for a day; the next one will go stale the same
+  way, between tags, with nothing looking.
+- **Acceptance:**
+  - [ ] the claim checks run as a section of `scripts/check.sh`, so a stale README claim fails the
+        same gate as everything else — not as a second `verify`
+  - [ ] the section states what it read and what it could not check, per
+        [ADR 0004](../decisions/0004-a-check-must-state-what-it-read.md)
+  - [ ] the paraphrase check stays a `note` rather than a failure: three of the thirteen skill-table
+        cells are fair paraphrases and would fail a literal comparison
+  - [ ] the section count is corrected everywhere it is stated — `CONTRIBUTING.md`,
+        `docs/engineering/layout.md`, and `SECURITY.md`'s run-site arithmetic
+  - [ ] proven by making a README claim false and watching the gate refuse
+- **Notes:** `scripts/check-readme-claims.sh` already exits non-zero on failure, so this is wiring
+  and the documentation cascade, not new logic. The script's own header says it is not `verify`.
+
 ## [-] p8.14 — Nothing ever enumerates the track root, so a forgotten worktree is invisible — its cheap half is absorbed into p8.32; the third sweep pass is dropped
 
 **Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. **p8.32** takes the half that stops the residue being created

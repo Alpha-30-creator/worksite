@@ -75,6 +75,7 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
+| p7.3 | Nothing runs the README claim checker | p7.2 wrote it and nothing executes it — the pack's recurring shape, now on the repo's front page |
 | p8.39 | `git -C <repo>` is unquoted in the pack's placeholder idiom | p8.13's defect class in a different shape, at dozens of sites — it fails loudly, so it wastes runs rather than lying about them |
 | p8.40 | A local-only project can never retire a track | the one place "degrade, never fail" and "never discard work" genuinely conflict, so it needs a decision |
 | p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
