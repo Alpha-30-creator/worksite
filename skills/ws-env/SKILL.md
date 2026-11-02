@@ -48,10 +48,12 @@ or `jq` — neither is installed, and the Windows laptop would need them too:
 
 ```bash
 D="$HOME/.agent-secrets"
-ws_root() { sed -n '/^projects:/,$p' "$HOME/.agent-sync/device.yaml" | sed -n "s|^  $1: *||p" | head -1; }
+# $proj, not $1: a positional parameter inside a skill body is replaced by the caller's
+# argument before an agent ever sees it. Set proj, then call ws_root with no arguments.
+ws_root() { sed -n '/^projects:/,$p' "$HOME/.agent-sync/device.yaml" | sed -n "s|^  $proj: *||p" | head -1; }
 
 grep -v '^#' "$D/manifest.tsv" | while IFS=$'\t' read -r src type project dest; do
-  root=$(ws_root "$project")
+  proj="$project"; root=$(ws_root)
   [ -n "$root" ] && [ -d "$root" ] || { echo "skip $project — not linked on this device"; continue; }
 mkdir -p "$(dirname "$root/$dest")"
 case "$type" in

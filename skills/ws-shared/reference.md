@@ -135,9 +135,11 @@ A fuller one, covering `json` and `binary` too, is in
 Read it with no dependencies:
 
 ```bash
-ws_root() { sed -n '/^projects:/,$p' "$HOME/.agent-sync/device.yaml" | sed -n "s|^  $1: *||p" | head -1; }
+# $proj, not $1: a positional parameter inside a skill body is replaced by the caller's
+# argument before an agent ever sees it. Set proj, then call ws_root with no arguments.
+ws_root() { sed -n '/^projects:/,$p' "$HOME/.agent-sync/device.yaml" | sed -n "s|^  $proj: *||p" | head -1; }
 grep -v '^#' "$HOME/.agent-secrets/manifest.tsv" | while IFS=$'\t' read -r src type project dest; do
-  root=$(ws_root "$project"); ...
+  proj="$project"; root=$(ws_root); ...
 done
 ```
 

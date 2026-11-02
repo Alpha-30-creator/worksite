@@ -91,6 +91,23 @@ even when nothing else changes:
 
 **Wait for a yes.** Then apply only what was approved.
 
+## Verifying a change to a skill's own text
+
+A skill's body is served to an agent from the **deployed** copy, not from the library, and the
+argument string is substituted into it on the way. Two consequences, learned the expensive way:
+
+Both facts were measured by p7.1's stranger run — the probe and its three reproductions are in
+that task's record under `docs/records/` in the project that found them.
+
+- **A positional parameter in a skill body is not yours.** `$1` becomes a word from the caller's
+  argument string before the agent sees it, so a snippet using one arrives corrupted while the file
+  on disk stays perfect. Use a named variable. A reference page an agent opens with a file tool is
+  not affected — nothing substitutes into a plain read.
+- **Verify in two runs, and the first one must fail.** Invoke the skill with arguments *before*
+  deploying and confirm the old behaviour still reproduces: a delivery test that passes pre-deploy
+  proves nothing, because it read a copy the change had not reached. Then deploy and invoke again.
+  Pre-deploy reproduces, post-deploy confirms — anything else and you have tested the wrong file.
+
 ## Deploy
 
 ```bash
@@ -226,6 +243,33 @@ for d in ws-*/; do d=${d%/}; f="$d/SKILL.md"; [ -r "$f" ] || continue
 "
 done
 [ -n "$fm" ] && printf '%s' "$fm"
+
+# ---- part 3b: no $1-$9 or ${1..9} in a skill body ----
+# A $1 (or $2...) inside a SKILL.md is replaced by the caller's argument before the agent ever
+# sees it: invoke the skill with arguments and the snippet arrives corrupted, while the file on
+# disk stays perfect. ws-env and ws-sync both lost their ws_root() helper to this and reported
+# every project "not linked on this device" while writing nothing. Found 2026-11-02 by p7.1's
+# stranger run, because reading the file never finds it. npos is carried to the verdict so a
+# clean result cannot be confused with a scan that read nothing.
+pos=""; npos=0
+for d in ws-*/; do d=${d%/}; f="$d/SKILL.md"; [ -r "$f" ] || continue
+  npos=$((npos+1))
+  # Inside a fenced block AND not a comment line: prose about the hazard is not the hazard, and
+  # a comment inside a block is not executable either. The naive grep flagged this very file's
+  # explanation of the rule, which is the same trap p8.24's reverse check fell into.
+  # ^[[:space:]]*``` not ^```: the pack has fences inside numbered steps (ws-task has one), and
+  # a column-0 anchor walks straight past them. Scans $1-$9 and ${1..9} only; $0 is deliberately
+  # excluded because fenced awk programs use it as a field reference. Reports the FIRST hit per
+  # file, so fix and re-run rather than expecting a full list.
+  hits=$(awk '/^[[:space:]]*```/{inf=!inf; next} !inf{next} /^[[:space:]]*#/{next}
+              /\$[1-9]|\$\{[1-9]/{printf "%d:%s\n", NR, $0}' "$f")
+  [ -z "$hits" ] || pos="${pos}POSITIONAL PARAMETER: $d — $(printf '%s' "$hits" | head -1)
+"
+done
+[ -n "$pos" ] && printf '%s' "$pos"
+# A reference page an agent opens with a file tool is NOT at risk — nothing substitutes into a
+# plain read — so ws-shared/tracks.md's `git -C "$1"` is correct where it is. This part scans
+# SKILL.md only, deliberately.
 
 # ---- part 4: forward coverage — every skill NAMED ANYWHERE IN THE PACK exists ----
 # Deliberately not scoped to What next? sections: this greps whole SKILL.md files, so a skill
@@ -381,18 +425,21 @@ earned=1
 [ "$nlinks" -gt 0 ] || { echo "AUDIT ABORTED: part 5 found 0 links — the pack has some"; earned=0; }
 [ "$rvc"    -gt 0 ] || { echo "AUDIT ABORTED: part 6 checked 0 skills"; earned=0; }
 [ "$rvb"    -eq "$rvc" ] || { echo "AUDIT ABORTED: part 6 scanned $rvb of $rvc"; earned=0; }
+[ "$npos"   -gt 0 ] || { echo "AUDIT ABORTED: part 3b scanned 0 SKILL.md"; earned=0; }
+[ "$npos"   -eq "$nfm" ] || { echo "AUDIT ABORTED: part 3 parsed $nfm, part 3b scanned $npos"; earned=0; }
 [ "$nfm"    -eq "$n" ] || { echo "AUDIT ABORTED: part 2 counted $n readable skills, part 3 parsed $nfm"; earned=0; }
 [ "$earned" -eq 1 ] || { echo "AUDIT ABORTED: a verdict was not earned — see above"; exit 1; }
 
 echo "VERDICT: library $here · $nd ws-* dirs, $n readable · part 3 parsed $nfm · part 4 resolved" \
-     "$nnames names · part 5 read $nmd files, $nlinks links · part 6 checked $rvc, scanned $rvb," \
-     "skipped $rvs for having no What next?"
+     "$nnames names · part 5 read $nmd files, $nlinks links · part 3b scanned $npos ·" \
+     "part 6 checked $rvc, scanned $rvb, skipped $rvs for having no What next?"
 echo "         findings: $(printf '%s' "$fm" | grep -c .) frontmatter," \
      "$(printf '%s' "$fwd" | grep -c .) missing skill," \
      "$(printf '%s' "$lnk" | grep -c .) broken link," \
      "$(printf '%s' "$rev" | grep -c .) unlisted exit," \
      "$(printf '%s\n' "$dep" | grep -c '^MISSING UNDER') missing under an agent," \
      "$(printf '%s\n' "$dep" | grep -c '^UNREADABLE IN LIBRARY') unreadable in the library," \
+     "$(printf '%s' "$pos" | grep -c .) positional parameter," \
      "$((nd-n)) ws-* dirs with no readable SKILL.md"
 ```
 

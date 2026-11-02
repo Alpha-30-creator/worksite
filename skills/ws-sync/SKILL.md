@@ -15,7 +15,9 @@ anything.**
    → jump to **New device** at the bottom, then come back and run steps 1–5.
 
 ```bash
-ws_root() { sed -n '/^projects:/,$p' "$HOME/.agent-sync/device.yaml" | sed -n "s|^  $1: *||p" | head -1; }
+# $proj, not $1: a positional parameter inside a skill body is replaced by the caller's
+# argument before an agent ever sees it. Set proj, then call ws_root with no arguments.
+ws_root() { sed -n '/^projects:/,$p' "$HOME/.agent-sync/device.yaml" | sed -n "s|^  $proj: *||p" | head -1; }
 projects() { sed -n '/^projects:/,$p' "$HOME/.agent-sync/device.yaml" | sed -n 's|^  \([a-z0-9-]*\):.*|\1|p'; }
 echo "device: $(sed -n 's/^device: *//p' "$HOME/.agent-sync/device.yaml")"
 ```
@@ -40,10 +42,14 @@ Read-only. Fetch, then report — no checkouts, no pulls, no stashes.
 
 ```bash
 for p in $(projects); do
-  root=$(ws_root "$p"); [ -d "$root" ] || { echo "== $p: FOLDER MISSING at $root"; continue; }
+  proj="$p"; root=$(ws_root); [ -d "$root" ] || { echo "== $p: FOLDER MISSING at $root"; continue; }
   echo "== $p ($root)"
-  for r in "$root"/*/; do
+  n=0
+  # "$root" first: on a single-repo project the workspace root IS the repo, and a children-only
+  # glob then skips every source directory and prints nothing, which reads as nothing to report.
+  for r in "$root" "$root"/*/; do
     [ -d "$r/.git" ] || continue
+    n=$((n + 1))
     name=$(basename "$r")
     git -C "$r" fetch --all --prune -q 2>/dev/null
     br=$(git -C "$r" branch --show-current)
@@ -53,8 +59,14 @@ for p in $(projects); do
     printf '   %-26s %-26s behind/ahead=%-12s dirty=%-4s untracked=%s\n' \
       "$name" "$br" "$counts" "$dirty" "$untracked"
   done
+  [ "$n" -gt 0 ] || echo "   NO REPO FOUND at $root, or one level under it — nothing was examined, which is not the same as nothing to report"
 done
 ```
+
+**An empty sweep announces itself.** A project that printed its header and no rows used to be
+indistinguishable from one with nothing to say; it now prints `NO REPO FOUND`. Surface that
+line rather than swallowing it — on a project that *should* have repos it means the workspace
+root in `device.yaml` points somewhere wrong.
 
 **Flag, and ask about, each of these — never act on them unprompted:**
 
