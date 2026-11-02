@@ -503,7 +503,7 @@ defect by this phase's new goal line.
 
 **Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`.
 
-## [~] p8.24 — Gates that read an empty result as a pass, and the graph audit has two of them · @Alpha-30-creator · 2026-11-02
+## [r] p8.24 — Gates that read an empty result as a pass, and the graph audit has two of them · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/15
 
 - **Repos:** worksite (pack)
 - **Depends on:** p8.17
