@@ -1,6 +1,6 @@
 # Known limitations
 
-**Recorded 2026-11-02.** Eleven mechanisms in this repo and in the pack that work, and the
+**Recorded 2026-11-02.** Thirteen mechanisms in this repo and in the pack that work, and the
 boundary each one stops at. Each entry names the mechanism in one clause and its boundary in the
 next. This is a record, not a task list: an entry changes only when the mechanism does, and then
 it changes in the same commit.
@@ -18,6 +18,17 @@ the build; a page that documents the link checker cannot show a broken link.
 **Section 3 resolves relative links only.** It never resolves an anchor, never a line number, and
 never its own coverage — the inline allowlisted string in section 1 is part of what the scan
 excludes and is not in `scripts/leak-patterns.txt`.
+
+**`LICENSE`'s exclusion from section 1 is whole-file.** It is applied before the file's content is
+read, in both modes, rather than being scoped to the copyright line that needed it, so a line that
+would fail section 1 anywhere else in the repo passes there — measured on 2026-11-02 by staging a
+pattern-carrying line appended to a copy of it
+([2026-11-02-leak-guard-refusal.md](2026-11-02-leak-guard-refusal.md)).
+
+**A refused commit leaves the rejected content in the object store.** `git add` writes the blob
+before the pre-commit hook runs and `git restore --staged` only rewrites the index, so the guard
+keeps the name out of history and out of every commit while the bytes remain as an unreachable
+loose object until something prunes them; the hook cannot reach back past its own invocation.
 
 ## Trackers
 
