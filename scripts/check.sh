@@ -16,6 +16,15 @@ FAIL=0
 PATTERNS="$(grep -vE '^[[:space:]]*(#|!|$)' scripts/leak-patterns.txt | paste -sd'|' -)"
 ALLOW="$(sed -n 's/^!//p' scripts/leak-patterns.txt)"
 [ -n "$PATTERNS" ] || { printf '%s\n' "UNKNOWN: scripts/leak-patterns.txt yielded no patterns. The scan would pass everything." >&2; exit 1; }
+# A pattern file that yields patterns grep cannot COMPILE is as silent as one that yields none,
+# and far likelier: one unbalanced bracket in any line makes grep exit 2 on every file, and the
+# `|| true` on each call swallows that status, so both §1 and §6 report ok on a real leak at
+# exit 0. Measured with a single plausible typo (`trust[ -?loop`). Since p8.31 routes ALL
+# coverage through this one file, a typo in it now silences the entire guard — so the regex is
+# compiled once, here, against empty input. Exit 1 means "compiled, no match"; 2 means "did not
+# compile", and only that is fatal.
+printf '' | grep -qE "$PATTERNS" 2>/dev/null
+[ "$?" -le 1 ] || { printf '%s\n' "UNKNOWN: grep cannot compile the patterns in scripts/leak-patterns.txt, so every scan below would pass everything. Fix the regex:" >&2; printf '' | grep -qE "$PATTERNS"; exit 1; }
 
 # Blank each allowlisted substring in place, case-insensitively, and emit ONE line per input
 # line so `grep -n` downstream still reports the file's own line numbers.
@@ -35,7 +44,14 @@ ALLOW="$(sed -n 's/^!//p' scripts/leak-patterns.txt)"
 #     fail-OPEN silent pass, in the guard, triggered by using the pattern file as documented.
 #   * `awk -v` also expands escape sequences, so an allowlist entry containing a literal
 #     backslash-t would have matched a tab instead of itself. ENVIRON does neither.
+#
+# NUL bytes are removed first. awk truncates a line at a NUL, so `logo\0<private name>` reached
+# the patterns as `logo` — and BSD grep then skips binary input anyway, so both halves of the
+# pipeline missed it. Pre-existing, and it matters more now: §6 points this scan at arbitrary
+# object-store blobs, where a staged PNG or a minified bundle from a refused commit is exactly
+# the residue §6 exists for. The greps that consume this pass -a for the same reason.
 strip_allowlisted() {
+  tr -d '\000' | {
   [ -n "$ALLOW" ] || { cat; return; }
   ALLOW="$ALLOW" awk '
     BEGIN { n = split(ENVIRON["ALLOW"], A, "\n"); for (i = 1; i <= n; i++) L[i] = tolower(A[i]) }
@@ -50,6 +66,7 @@ strip_allowlisted() {
         line = out line
       }
       print line }'
+  }
 }
 
 # Files that may legitimately contain a pattern.
@@ -83,7 +100,7 @@ LEAKS=0
 while IFS= read -r f; do
   [ -n "$f" ] || continue
   excluded "$f" && continue
-  hits=$(content "$f" 2>/dev/null | strip_allowlisted | grep -nEi "$PATTERNS" || true)
+  hits=$(content "$f" 2>/dev/null | strip_allowlisted | grep -anEi "$PATTERNS" || true)
   if [ -n "$hits" ]; then
     printf '%s\n' "$hits" | sed "s|^|  $f:|"
     LEAKS=$((LEAKS + 1))
@@ -118,7 +135,7 @@ if [ -d skills ]; then
     # mid-line, so nothing fires yet — which is exactly when to scope it.)
     awk 'NR==1 && /^---$/ { infm = 1; next } infm && /^---$/ { exit } infm' "$f" \
       | sed -n 's/^disable-model-invocation:[[:space:]]*//p' | head -1 \
-      | sed 's/[[:space:]]*$//' | grep -qx 'true' \
+      | sed 's/[[:space:]]*$//' | grep -qix 'true' \
       && NOINVOKE="$NOINVOKE $n"
   done
 
@@ -243,7 +260,11 @@ else
     # path with a space all used to reach the branch below and print "restore the .gitignore
     # line" while the .gitignore line was present and correct — a true FAIL with a false reason,
     # which sends the reader to fix the wrong file.
-    say "  FAIL — could not parse state_dir from $CART: read [$SDRAW], got [$SD]. UNKNOWN."
+    if [ "$SDRAW" = "$SD" ]; then
+      say "  FAIL — state_dir in $CART is not a usable path: [$SD]. UNKNOWN, not a pass."
+    else
+      say "  FAIL — could not parse state_dir from $CART: read [$SDRAW], reduced to [$SD]. UNKNOWN."
+    fi
     FAIL=1
   elif git check-ignore -q "${SD%/}/" || git check-ignore -q "${SD%/}"; then
     say "  ok — read $CART; '$SD' is matched by an ignore rule"
@@ -300,13 +321,26 @@ else
     NTREE="$(printf '%s\n' "$TREES" | grep -c '^[0-9a-f]\{40\}$' || true)"
 
     SCANNED=0; KNOWN=0; NEW=0; UNREAD=0
-    scan_object() {   # $1 = sha, $2 = how to render it as text
+    render_object() { # $1 = sha, $2 = kind. A tree is rendered as its ENTRY NAMES.
+      case "$2" in
+        blob) git cat-file blob "$1" ;;
+        # core.quotePath=false, or a non-ASCII name arrives C-quoted: a directory
+        # `café-<name>` prints as "caf\303\251-<name>", so a pattern containing a non-ASCII
+        # character, or one whose match spans an escaped byte, would be invisible. Measured.
+        tree) git -c core.quotePath=false ls-tree --name-only "$1" ;;
+      esac
+    }
+    scan_object() {   # $1 = sha, $2 = kind
       # NOT `grep -q`. grep -q exits on the first match and closes the pipe; awk upstream then
       # dies of SIGPIPE, and under `set -o pipefail` the pipeline status is 141 — so a `|| continue`
       # keyed on it SKIPS the hit. Measured: a large object with its match on line 1 was silently
       # passed over while the section still counted it as scanned. `grep -c` reads to the end.
+      #
+      # `cat-file -e` proves the object EXISTS, not that it is intact; a present-but-corrupt
+      # object would stream partially and read as clean. The fsck exit check above is what
+      # covers that, since fsck would have errored on it first.
       git cat-file -e "$1" 2>/dev/null || { UNREAD=$((UNREAD + 1)); return 2; }
-      hits="$(eval "$2" 2>/dev/null | strip_allowlisted | grep -cEi "$PATTERNS" || true)"
+      hits="$(render_object "$1" "$2" 2>/dev/null | strip_allowlisted | grep -acEi "$PATTERNS" || true)"
       [ "${hits:-0}" -gt 0 ]
     }
     classify() {      # $1 = sha, $2 = kind, for the message
@@ -321,7 +355,7 @@ else
     while IFS= read -r o; do
       case "$o" in '' | *[!0-9a-f]* ) continue ;; esac
       SCANNED=$((SCANNED + 1))
-      scan_object "$o" 'git cat-file blob "$1"' && classify "$o" blob
+      scan_object "$o" blob && classify "$o" blob
     done <<UNREACHABLE_BLOBS
 $BLOBS
 UNREACHABLE_BLOBS
@@ -333,7 +367,7 @@ UNREACHABLE_BLOBS
     while IFS= read -r o; do
       case "$o" in '' | *[!0-9a-f]* ) continue ;; esac
       TSCANNED=$((TSCANNED + 1))
-      scan_object "$o" 'git ls-tree --name-only "$1"' && classify "$o" tree
+      scan_object "$o" tree && classify "$o" tree
     done <<UNREACHABLE_TREES
 $TREES
 UNREACHABLE_TREES

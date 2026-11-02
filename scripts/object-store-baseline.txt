@@ -1,7 +1,11 @@
 # Unreachable objects that are KNOWN to carry a pattern from scripts/leak-patterns.txt.
 #
 # Section 6 of scripts/check.sh reads the unreachable objects in .git/objects and fails on any
-# that carries a pattern and is not listed here. This file is a declaration, not a suppression:
+# that carries a pattern and is not listed here. It reads BOTH kinds: a blob's content, and a
+# tree's entry names — a path like src/<private-project>/ leaks the same string with perfectly
+# clean file content. Unreachable COMMIT objects are not read, because every commit header
+# carries the committer's name and email, so a pattern list holding the author's name matches
+# all of them; section 6 prints how many it skipped rather than implying it read them. This file is a declaration, not a suppression:
 # every hash below was measured, identified and decided about on the date in its row, and a hash
 # that is not here fails the check.
 #
@@ -26,17 +30,27 @@
 # docs/runbooks/purge-a-leak-from-history.md rather than by a bare prune.
 # ---------------------------------------------------------------------------------------------
 #
-# Format: <40-hex sha> <date measured> <what it is, generically>
+# Format: <40-hex sha> <blob|tree> <date measured> <what it is, generically>
 #
-# Measured 2026-11-02 while building p8.31. Three of the 28 unreachable blobs in this store
-# carry a pattern. The two others that a naive scan reports are matches on the allowlisted npm
-# scope alone and are not leaks — which is itself the first evidence that stripping the
-# allowlisted substring behaves differently from dropping the line.
+# The kind is recorded because the two are different declarations: a blob row forgives CONTENT,
+# a tree row forgives a FILENAME, and the same sha shape means both. Section 6 keys only on the
+# sha — the kind is for the person reading this file, which is the whole purpose of declaring
+# rather than suppressing.
+#
+# Measured 2026-11-02 while building p8.31, re-checked 2026-11-03 after the section grew its
+# tree scan. Three of the 28 unreachable blobs carry a pattern; none of the 33 unreachable trees
+# does, so there is no tree row below. The two further blobs a naive scan reports are matches on
+# the allowlisted npm scope alone and are not leaks — which is itself the first evidence that
+# stripping the allowlisted substring behaves differently from dropping the line.
+#
+# Those counts move with ordinary git work: a rebase and a stash took this store from 28 blobs
+# and 32 trees to 34 and 40 inside one session. That is why section 6 keys on pattern hits and
+# never on a total, and why this file holds hashes rather than a count.
 #
 # The roadmap row for p8.31 says TWO, and it is not wrong: it counted blobs carrying private
 # PROJECT names. The third carries a device name, through the journal mirror — the leak that
 # this same task's alias criterion exists to close, found as residue rather than reasoned about.
 
-e8ab6423c7db371d1d80e4dc2bcfb10883c1aa40 2026-11-02 superseded roadmap file; private project abbreviations
-3e6efcfe40198a713e7ab05ce917994012d01b7a 2026-11-02 superseded validation record; one private project name
-cda1585e35ea0d83f7e1977c383cecd1478584c9 2026-11-02 superseded journal mirror; a device identifier in the entry headers
+e8ab6423c7db371d1d80e4dc2bcfb10883c1aa40 blob 2026-11-02 superseded roadmap file; private project abbreviations
+3e6efcfe40198a713e7ab05ce917994012d01b7a blob 2026-11-02 superseded validation record; one private project name
+cda1585e35ea0d83f7e1977c383cecd1478584c9 blob 2026-11-02 superseded journal mirror; a device identifier in the entry headers
