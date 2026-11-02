@@ -46,6 +46,12 @@ permissive one.
 
 Concretely, for the graph audit:
 
+0. **Every count in the verdict is earned, not defaulted.** Each part carries a denominator — how
+   many files it parsed, how many names it resolved, how many it both checked and actually scanned
+   — and the verdict is unreachable unless each is positive and consistent with its neighbours.
+   This is the general form of the decision; the rest are instances of it. The reason it has to be
+   mechanical is that a part which read nothing leaves its findings variable **empty**, and empty
+   is the same text as "no findings".
 1. **It states its subject before its verdict.** The block prints `auditing N skills under <path>`
    and one `deployed check:` line per agent, and the skill's prose carries the half no shell can
    enforce: **a verdict without those counts is not a verdict.** An audit that printed neither has
@@ -118,6 +124,16 @@ before, only louder.
 - **The audit now has two outcomes that are not "pass" and "fail": it also has "aborted".** An
   abort is not a finding about the change; it is the audit declining to have an opinion. Anyone
   reading a report has to tell the three apart, which is why the verdict line names its counts.
+- **The fix reproduced the defect three times before it stopped**, which is the strongest evidence
+  this ADR is about a real pattern and not a one-off bug. First the per-agent check printed a zero
+  at exit 0 when it had not run. Then review found the reverse-coverage check incrementing a
+  "checked" counter off a *different* variable from the one it scanned, so a file whose frontmatter
+  never closed was **actively certified** as checked while contributing nothing — worse than
+  silence, because it was a false positive claim rather than an absent one. Then, while closing
+  that, a new variable collided with the one holding the deployment JSON and emptied a later
+  part's input. Each was found by the assertion added for the previous one. **The pattern is not
+  "this check had a bug"; it is that a check composed of parts which cannot fail the whole will
+  default to reassuring output at every seam.**
 - **The fix reproduced the defect once, and the shape of that is the argument for this ADR.** The
   per-agent check runs inside a command substitution, so a `SystemExit` in it ends that subshell
   and not the audit. Review found that a dead check therefore left the verdict printing
