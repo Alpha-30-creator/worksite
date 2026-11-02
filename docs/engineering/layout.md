@@ -87,6 +87,59 @@ Publish commits land on `main` directly rather than through a pull request. That
 residual risk and the mechanism's rejected alternatives are
 [ADR 0002](../decisions/0002-publishing-is-a-guarded-copy-from-the-library.md).
 
+### How the graph audit composes
+
+`ws-refine` ends with a graph audit, and every pack change is required to run it — so it is the
+one check whose own correctness is load-bearing for all the others. It runs as **one bash block**,
+whole: the later parts read counts the earlier parts established, and half of it produces a verdict
+that has not been earned.
+
+It reads three things, from three places, and the distinction matters because two of them are not
+in this repo:
+
+| It reads | From | Which copy that is |
+|---|---|---|
+| the pack's own Markdown — frontmatter, skill references, links, `What next?` sections | `~/.agent-sync/store/skills/` | the **library**: the working copy, which is what the audit is *about* |
+| whether each referenced file reached each agent | the deployed trees, one per agent | the **deployed copies**, written by `agent-sync save` |
+| whether anything is unapplied | `agent-sync status --json` → `operations[]` | neither copy — the deployment's own state |
+
+**Nothing in the audit reads this repo.** `skills/` here is a received copy
+([ADR 0001](../decisions/0001-library-is-the-source-of-truth.md)) and auditing it would answer
+about files no agent loads — which is exactly the failure the first two parts exist to refuse.
+
+Two **gates** decide whether a verdict is available at all, then five checks run, then a verdict
+line names its own counts:
+
+1. **Is it deployed?** Any `agent-sync` operation on a `skill/ws-*` ref aborts the audit —
+   `conflicted` by name, anything else as pending. Run before `agent-sync save` this gate
+   **always** aborts, because the library has moved and the deployed copies have not. That is
+   correct: the run that certifies a change is the one *after* the save.
+2. **Is this the library?** The resolved working directory is compared against the store path
+   `agent-sync` itself reports — not against the string the block just used to `cd`, which would be
+   a comparison of a value with itself. Then a readable `ws-shared/SKILL.md` as a marker and a floor
+   of ten readable `ws-*/SKILL.md`, which catch the right directory holding the wrong contents.
+3. **Frontmatter**, **forward coverage** (every skill a `What next?` names exists), and **links**,
+   now over all of the pack's Markdown rather than only each `SKILL.md`, each link resolved against
+   the directory of the file that holds it.
+4. **Reverse coverage** — every exit the *prose* offers is listed in that skill's `What next?`.
+5. **The deployed check, per agent**, printed even when clean.
+
+**What it does not cover**, so the absence is not read as coverage:
+
+| Blind spot | Consequence |
+|---|---|
+| reverse coverage is anchored on backticks **and** an offer verb | an exit offered in prose that names no skill in backticks, or through a verb outside the anchor list, is invisible. The anchor list is a sample of the pack's current idiom, not a grammar |
+| its precision is **two true in three** on the pack as it stands | roughly one false positive per pack-wide run. Each finding is read and judged, never auto-fixed, and it does not fail the audit — a comparison reads exactly like an offer and only a reader can tell them apart |
+| reverse coverage only looks at `SKILL.md` files | shared reference material sends readers to skills by name and has no `What next?`. Skills without one are **counted and the count printed**, not silently skipped |
+| the identity assertion fires first on any wrong directory | the marker and the floor can only ever fire on the real library path, so testing them needs identity satisfied by construction |
+| it depends on `agent-sync` being runnable | on a machine with no deployment the audit **aborts** rather than running a narrower version of itself |
+| that an agent *obeys* `AUDIT ABORTED` is not proved | the shell makes the abort unavoidable within the snippet; the claim is only that a clean verdict is unreachable without the counts being printed |
+
+Why a verdict has to state its subject at all, the alternative that was tried and disproved, and
+why `ok`, `exitCode` and `targets[]` are not read from `agent-sync status`, are
+[ADR 0004](../decisions/0004-a-check-must-state-what-it-read.md). The measured precision behind the
+reverse check is [a dated record](../records/2026-11-02-reverse-coverage-precision.md).
+
 ## The docs tree here
 
 The pack's shared reference holds the generic docs structure and the living/immutable property
