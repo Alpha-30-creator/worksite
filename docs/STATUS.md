@@ -115,6 +115,7 @@ today, so they do not have to wait for P1–P7.
 | p8.37 | `ws-refine`'s own audit could not be run as delivered | 2026-11-03 |
 | p8.38 | §6 blocked every publish — a local clone has no reflogs | 2026-11-03 |
 | p8.13 | `for r in <repos>` in three skills, one of which warned against it | 2026-11-03 |
+| p8.36 | The loop assumed a git remote and died rather than degrading | 2026-11-03 |
 
 ## Phases
 

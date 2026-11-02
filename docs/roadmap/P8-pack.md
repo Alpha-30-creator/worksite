@@ -988,7 +988,7 @@ third signal that it is not worth a track.
   measurement in
   [`records/2026-11-02-stranger-install-dry-run.md`](../records/2026-11-02-stranger-install-dry-run.md).
 
-## [r] p8.36 — The loop assumes a git remote, and dies rather than degrading without one
+## [x] p8.36 — The loop assumes a git remote, and dies rather than degrading without one · 2026-11-03 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/21
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -1005,14 +1005,14 @@ third signal that it is not worth a track.
   absent from `device.yaml`. The pack's own stated principle is "degrade, never fail", which
   `ws-sync`:101 follows explicitly; this is the path that does not.
 - **Acceptance:**
-  - [ ] a repo with no remote, or a branch with no upstream, is detected and **named** before any
+  - [x] a repo with no remote, or a branch with no upstream, is detected and **named** before any
         command that needs one runs — not met as a git error
-  - [ ] the three sites degrade and say what they could not check, per the pack's own "degrade,
+  - [x] the three sites degrade and say what they could not check, per the pack's own "degrade,
         never fail": `ws-plan`'s refresh, `ws-review`'s gather, and `ws-start`'s fetch — the last of
         which must stop exiting 0 on a fetch that established nothing
-  - [ ] `ws-review` has a stated branch for a project absent from `device.yaml`
-  - [ ] proven by execution in a fresh `git init` repo with no remote, which is how it was found
-  - [ ] changed through `ws-refine`, with its graph audit
+  - [x] `ws-review` has a stated branch for a project absent from `device.yaml`
+  - [x] proven by execution in a fresh `git init` repo with no remote, which is how it was found
+  - [x] changed through `ws-refine`, with its graph audit
 - **Notes:** `ws-ship`'s push and PR steps are **not** in scope — a local-only project genuinely
   cannot open a PR, and saying so is correct behaviour. What is in scope is the four skills that
   fail before reaching any such decision. *("Four skills" is a leftover from the count this task
