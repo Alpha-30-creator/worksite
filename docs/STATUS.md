@@ -34,7 +34,15 @@ what it stated it read, which is why the graph audit now names its own counts.
 
 ## In progress
 
-Nothing claimed. A three-track batch shipped 2026-11-02: p1.2, p3.4 and p8.24. The graph audit now
+| id | what it is doing | where |
+|---|---|---|
+| p7.1 | the stranger's dry-run of the install: a fresh library in a temp store, a throwaway project, and the loop end to end | `docs/records/`, nothing in the pack |
+
+The stranger is a subagent with none of this project's history, briefed only as a user pointing an
+agent at `INSTALL.md`. The author cannot un-know the pack, so independence is the only honest
+simulation of a first install. The real library is never touched — the run uses a `--store` override.
+
+Previously: A three-track batch shipped 2026-11-02: p1.2, p3.4 and p8.24. The graph audit now
 earns every count it prints, so a pack change is no longer certified by a check that may not have
 run — which was the argument for doing p8.24 before any other P8 task.
 
@@ -67,7 +75,6 @@ today, so they do not have to wait for P1–P7.
 | p8.32 | A retired track leaves its parent directory behind | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |
 | p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
 | p8.30 | One rule for who may push the library | resolved by hand in the last batch, written down nowhere |
-| p7.1 | Dry-run the install as a stranger | the install is unproven by anyone who is not the author; needs p4.2 |
 | p7.2 | Tag and announce | cut to one criterion — the README's claims verified against the tagged tree, the part that can fail silently |
 
 ## Shipped
