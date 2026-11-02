@@ -633,6 +633,14 @@ third signal that it is not worth a track.
   - [ ] the rule covers who runs the graph audit, since the audit cannot see per-agent deployment
         until `save` has run (p8.9)
   - [ ] `ws-fanout`'s builder-brief bullet and `ws-refine`'s closing step agree in writing
+  - [ ] **the adapter path says a deploy is required, and that there is no way to test one without
+        publishing** *(from p7.1, 2026-11-02)*. `ws-shared/trackers/README.md`:12 says adding an
+        adapter "is adding a file in this folder" without saying which copy — authoring is the
+        library, reading is the deployed `~/.claude/skills/…`, and only `save` bridges them. A
+        stranger wrote a correct `pitwall` adapter with zero skill edits, and **the pack never
+        picked it up.** The author's own test of this passes, because the author's library is
+        already deployed. Added here rather than as its own task because it is this task's
+        mechanism: who crosses from library to deployed, and what it costs
   - [ ] changed through `ws-refine`, with its graph audit
 - **Notes:** the generic version of p8.5. p8.5 taught the gate that a shared store exists; this
   teaches the two skills who is allowed to publish one.
@@ -802,3 +810,73 @@ third signal that it is not worth a track.
   `ws-setup`:54 for the no-tracker sentence, which p8.24's new mode-table row moved to `:64` the
   same morning — the citation drift this project keeps paying for, inside a task about the pack
   promising things it does not deliver.
+
+## [ ] p8.35 — `ws-env` and `ws-sync` each give a confidently wrong answer and exit clean
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Found 2026-11-02 by p7.1's stranger run**, reproduced three times and then by the lead.
+  Three sites, two files, one class — the phase's goal line in the two skills that touch
+  credentials and other machines.
+- **Why:**
+  - **A `$1` in a skill body is replaced by the caller's argument.** `ws-env/SKILL.md`:51 and
+    `ws-sync/SKILL.md`:18 both hold
+    `ws_root() { … sed -n "s|^  $1: *||p" … }`. Both files are byte-identical to the repo; the
+    corruption happens **at delivery** — invoke the skill with arguments and `$1` becomes the
+    second whitespace-separated word of the argument string. The lead's probe settles it: invoked
+    with `inspect ZZQQPROBE delivery-test-do-nothing`, the delivered line read
+    `s|^  ZZQQPROBE: *||p`. The consequence is not an error: `ws-env pull`'s next line is
+    `[ -n "$root" ] … || { echo "skip $project — not linked on this device"; continue; }`, so all
+    28 manifest rows get a plausible, specific, **wrong** diagnosis, no credentials are written,
+    and the command finishes cleanly. **No author test finds this** — the file is perfect, and the
+    trigger is the author's own habit of passing a track id.
+  - **`ws-sync`'s repo sweep cannot see a single-repo project, and says nothing.** `:45` is
+    `for r in "$root"/*/` with `[ -d "$r/.git" ] || continue`, which enumerates **children** of
+    the workspace root. Where the root *is* the repo, every child is a source directory, all are
+    skipped, and the project contributes no rows and no message. **It applies to this repo**,
+    whose cartridge declares `repos: [{dir: .}]`. The glob is correctly quoted — this is a depth
+    assumption, not p8.10's word-splitting bug.
+- **Acceptance:**
+  - [ ] no skill body relies on `$1` surviving delivery. The two `$1` sites in **reference** files
+        (`ws-shared/reference.md`:138, `tracks.md`:213-214) are **not** affected, because nothing
+        substitutes into a file an agent opens directly — so the fix distinguishes a snippet that
+        is safe in a reference page from one that is not in a skill body, and says why
+  - [ ] proven by invoking each affected skill **with arguments** and reading the delivered text,
+        not by reading the file — reading the file is what hid this
+  - [ ] a check that no `ws-*/SKILL.md` contains a positional parameter, so the next one is caught
+        at the audit rather than by a stranger
+  - [ ] `ws-sync`'s sweep reports a project whose root is itself the repo, and reports **nothing
+        found** distinctly from **nothing to report** — an empty sweep must announce itself
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** the single highest-value finding of p7.1 and the argument for having run it. Full
+  measurement in
+  [`records/2026-11-02-stranger-install-dry-run.md`](../records/2026-11-02-stranger-install-dry-run.md).
+
+## [ ] p8.36 — The loop assumes a git remote, and dies rather than degrading without one
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Found 2026-11-02 by p7.1's stranger run**, in the situation a stranger is actually in: a fresh
+  local repo with no remote and no GitHub.
+- **Why:** two skills issue `origin/<ref>` revision commands with no remoteless form — `ws-plan`
+  (3 sites) and `ws-review` (1) — and a third fails silently. `ws-plan`'s refresh died outright
+  (`fatal: invalid object name 'origin/main'`), `ws-review`'s prescribed gather dies the same way on
+  `origin/main...HEAD`, and `ws-start`'s `git fetch --all --prune -q` exits 0 while establishing
+  nothing. **Count corrected on filing:** p7.1's record first said "four of five", counting
+  `ws-ship`'s and `ws-wrap`'s pushes. Those are a different thing — a local-only project genuinely
+  cannot push, so refusing is right — and counting them made this task's own acceptance criterion
+  name a site its Notes declare out of scope. `ws-review` also has no degrade branch for a project
+  absent from `device.yaml`. The pack's own stated principle is "degrade, never fail", which
+  `ws-sync`:101 follows explicitly; this is the path that does not.
+- **Acceptance:**
+  - [ ] a repo with no remote, or a branch with no upstream, is detected and **named** before any
+        command that needs one runs — not met as a git error
+  - [ ] the three sites degrade and say what they could not check, per the pack's own "degrade,
+        never fail": `ws-plan`'s refresh, `ws-review`'s gather, and `ws-start`'s fetch — the last of
+        which must stop exiting 0 on a fetch that established nothing
+  - [ ] `ws-review` has a stated branch for a project absent from `device.yaml`
+  - [ ] proven by execution in a fresh `git init` repo with no remote, which is how it was found
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** `ws-ship`'s push and PR steps are **not** in scope — a local-only project genuinely
+  cannot open a PR, and saying so is correct behaviour. What is in scope is the four skills that
+  fail before reaching any such decision.
