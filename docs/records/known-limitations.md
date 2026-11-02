@@ -98,6 +98,13 @@ the current tree, so a private name in an old commit is invisible to the whole s
 the [purge runbook](../runbooks/purge-a-leak-from-history.md)'s, and it is the operator's to
 notice.
 
+**A reflog cuts both ways against section 6, and the second direction cost a publish.** It hides
+residue from the source (below) — and a local `git clone` copies the whole object store while not
+copying reflogs, so everything the source's reflog was holding becomes *unreachable in the clone*.
+`publish.sh` assembles its candidate in exactly such a clone, so section 6 refused every publish
+until the candidate scan was given `--no-object-store` (p8.38). The mechanism was already written
+down here before it bit; what was missing was reading it from the other end.
+
 **A reflog hides residue from section 6 for as long as it holds it.** `git fsck` treats reflog
 entries as roots, so the blobs and trees of a commit just dropped by `reset` or `amend` are still
 *reachable* and the section cannot see them — it becomes able to only when the reflog expires,

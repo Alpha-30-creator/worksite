@@ -33,10 +33,10 @@ untracked, or tracked and unmodified, is not read at all in that mode. It runs a
 - as a **preflight on this repo before the publish starts** (`scripts/publish.sh`:200, working-tree
   mode), which refuses to publish into a tree whose guard is already failing — so a pre-existing
   leak is never buried under a publish commit;
-- in a throwaway clone of the candidate, before a byte is written here (`publish.sh`:300,
-  working-tree mode);
+- in a throwaway clone of the candidate, before a byte is written here (`publish.sh`:312,
+  working-tree mode, **minus section 6** — see below);
 - again on this repo's staged tree, which is what is actually about to be committed
-  (`publish.sh`:344, `--staged`);
+  (`publish.sh`:356, `--staged`);
 - once more in the pre-commit hook, on exactly those staged bytes
   ([`.githooks/pre-commit`](.githooks/pre-commit), `--staged`) — which fires on the publish commit
   too, since `publish.sh` never passes `--no-verify`;
@@ -51,10 +51,24 @@ Plus one documented manual run, at [`CONTRIBUTING.md`](CONTRIBUTING.md):62.
 fails, the second line re-runs it without `>/dev/null` so the output is visible. Someone counting
 `bash scripts/check.sh` finds six and should not "correct" the five.
 
-These four line numbers moved on 2026-11-03 when `publish.sh` gained its `PACK_EXEC`
-classification (p8.37). They were exact before that commit and wrong after it, which is the
-citation drift [`docs/agent/risks/common.md`](docs/agent/risks/common.md) warns about happening to
-the document that warns about it.
+These line numbers moved twice on 2026-11-03 — once for `PACK_EXEC` (p8.37) and again for the
+candidate's section-6 opt-out (p8.38) — and were re-derived both times. They are exact against the
+commit that carries this sentence and will drift again, which is the citation drift
+[`docs/agent/risks/common.md`](docs/agent/risks/common.md) warns about, happening twice in a day
+to the document that warns about it.
+
+**The candidate clone is scanned without section 6, and that is the one place any section is
+skipped.** Section 6 reads the *unreachable* objects in `.git/objects`, and a local `git clone`
+copies the whole object store while **not** copying reflogs — and `git fsck` treats reflog entries
+as roots. So everything the source repo's reflog was holding arrives in the candidate with nothing
+reaching it: measured, this repo reports 29 unreachable blobs and 0 undeclared while a clone of it
+reports 46 blobs, 105 trees and 51 commits unreachable, one of them a superseded skill version that
+is *reachable in `main`'s history* and therefore correctly ignored here. Gating a publish on that
+gates it on the author's reflog rather than on the bytes being published. The opt-out is explicit:
+`check.sh` names the section it did not run and why, and its closing line says `all checks passed
+EXCEPT …`, so a publish log cannot read as a clean six-section pass. **Sections 1 to 5 still run on
+the candidate**, and the target repo's own object store is still checked by its preflight, its
+`--staged` run, the hook and CI.
 
 This count was **four** until 2026-11-02, omitting the preflight (p8.31).
 

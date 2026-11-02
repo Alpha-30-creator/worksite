@@ -297,7 +297,19 @@ fi
 
 # ----------------------------------------------------------- 3. the guard, in the clone
 say "publish: running the leak guard on the candidate"
-if ! ( cd "$CAND" && bash scripts/check.sh ); then
+# --no-object-store: section 6 reads the UNREACHABLE objects in .git/objects, and this is a
+# throwaway clone. A local clone copies the whole object store but not the reflogs, and git fsck
+# treats reflog entries as roots — so everything the source's reflog was holding arrives here
+# unreachable. Measured 2026-11-03: the source reports 29 unreachable blobs and 0 undeclared,
+# this clone reports 46 blobs / 105 trees / 51 commits, including a pre-p2.2 skill version that
+# is reachable in main's history and correctly ignored there. Gating the publish on that is
+# gating it on the author's reflog rather than on the bytes being published (p8.38).
+#
+# The target repo's own object store is NOT let off: the preflight above and the --staged run
+# below both run the full six sections against it, as do the pre-commit hook and CI. And the
+# skip announces itself — check.sh prints which section it did not run and why, and its closing
+# line says so too, so a publish log can never read as a clean six-section pass.
+if ! ( cd "$CAND" && bash scripts/check.sh --no-object-store ); then
   say ""
   say "publish: refused — the candidate does not pass scripts/check.sh."
   say "Each path above is reported inside the candidate; the file to fix is the library's copy:"
