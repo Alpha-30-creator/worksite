@@ -73,7 +73,7 @@ pack without reading the skills' source.
   - [x] `docs/engineering/layout.md` — what lives where in this repo
   - [x] both guides state the rule that adding a tracker or stack never edits a skill
 
-## [~] p3.4 — The docs tree has no index · @Alpha-30-creator · 2026-11-02
+## [r] p3.4 — The docs tree has no index · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/14
 
 - **Repos:** worksite
 - **Depends on:** p3.2
