@@ -2,7 +2,7 @@
 
 ## What this repo is
 
-Markdown and three shell scripts. No runtime, no dependencies, no build, and nothing published to
+Markdown and four shell scripts. No runtime, no dependencies, no build, and nothing published to
 a registry — so there is no service to attack and no package to poison. The only code that ever
 runs is [`scripts/check.sh`](scripts/check.sh), [`scripts/publish.sh`](scripts/publish.sh),
 [`.githooks/pre-commit`](.githooks/pre-commit) and **`skills/ws-refine/audit.sh`** — the one

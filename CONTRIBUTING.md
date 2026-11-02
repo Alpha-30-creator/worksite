@@ -63,7 +63,7 @@ bash scripts/check.sh
 ```
 
 That is the **whole** suite. There is no typecheck, no linter, no test runner and no build, and
-those are absent on purpose rather than unfinished — a repo of Markdown and three shell scripts
+those are absent on purpose rather than unfinished — a repo of Markdown and four shell scripts
 does not get an invented test runner. The script has **six** sections: private names, skill
 frontmatter, relative links, library parity, the state-dir ignore assertion, and the object store.
 Section 4 is informational and never fails; **every other section can fail**, sections 5 and 6
