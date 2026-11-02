@@ -162,7 +162,7 @@ between two parts' counts, aborts instead of certifying. Three consequences wort
   the preflight's floor refuses to be.
 - **`set -e` is deliberately not used, and would be actively harmful.** A clean part ends on
   `[ -n "$x" ] && printf …`, which returns **non-zero precisely when there are no findings**, so
-  under `set -e` the block would abort exactly when the audit is clean. Positive counts are the
+  under `set -e` the script would abort exactly when the audit is clean. Positive counts are the
   only route. This is written down because it is the first thing anyone will reach for.
 
 **One failure mode this design caught in its own author's work**, recorded because it is the
@@ -184,6 +184,7 @@ under an agent`.
 | a skill whose entire body before `What next?` is fenced code | reported as `NO PROSE EXTRACTED` and **aborts**, because it is indistinguishable from a file whose frontmatter never closed. Legitimate-but-pathological input therefore stops the audit rather than being waved through |
 | it depends on `agent-sync` being runnable | on a machine with no deployment the audit **aborts** rather than running a narrower version of itself |
 | that an agent *obeys* `AUDIT ABORTED` is not proved | the shell makes the abort unavoidable within the script; the claim is only that a clean verdict is unreachable without the counts being printed |
+| part 3b's compile probe catches a program that fails to **parse**, not one that is valid and wrong | a substitution yielding, say, a renamed-but-valid variable would still produce a clean scan. Measured. So the property is "cannot report zero after a scanner that **failed**", not "cannot report zero without having scanned" — and the reason the fix works is that the gap is now unreachable, because nothing substitutes into a file |
 | that an agent runs **the file** rather than reconstructing the block is not proved either | the skill says to run the path and says why, and the `$0` the block needed is gone from the skill body — so there is nothing left there to paste. An agent that runs a stale **deployed** copy of `audit.sh` is the remaining case, and part 1 catches it only when the library has moved |
 
 Why a verdict has to state its subject at all, the alternative that was tried and disproved, and

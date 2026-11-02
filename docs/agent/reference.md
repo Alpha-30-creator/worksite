@@ -101,7 +101,7 @@ The workspace root **is** the repo — a single-repo project. That matters twice
 
 | Path | Role |
 |---|---|
-| `skills/` | the pack as published: the thirteen workflow skills plus `ws-shared`, a plain copy out of the library ([ADR 0001](../decisions/0001-library-is-the-source-of-truth.md)) |
+| `skills/` | the pack as published: the thirteen workflow skills plus `ws-shared`, a plain copy out of the library ([ADR 0001](../decisions/0001-library-is-the-source-of-truth.md)). All Markdown except `ws-refine/audit.sh`, the graph audit — the one executable the pack ships, published by name and not by extension |
 | `examples/` | worked examples a stranger can read: two whole cartridges, `device.yaml`, `manifest.tsv`, a tracker example. Exists — the second cartridge landed with p8.5 |
 | `docs/` | STATUS, roadmap, decisions, worklog and this cartridge, plus the reference pages — the cartridge schema under `integration/`, the concepts page under `product/`, sync direction under `engineering/` — and `records/` for what a validation run found, `runbooks/` for procedures to follow under pressure, including purging a leak from history |
 | `scripts/check.sh` | the whole test suite: leak scan, frontmatter, links, library parity, the state-dir ignore assertion, the object store |
