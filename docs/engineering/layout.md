@@ -133,6 +133,31 @@ line names its own counts:
    from a check that did not run is the defect this whole block exists to kill, and it was found
    in review *inside the fix*.
 
+**Every count in the verdict is earned, and that is the point of the design rather than a detail.**
+Parts 3 to 6 each do their work in a plain loop and end without an `exit`, so a part that read
+nothing leaves its findings variable empty — which is the same text as "no findings". So each part
+carries a **denominator** into the verdict and the block asserts it before printing: how many
+`SKILL.md` were parsed, how many skill names were resolved, how many files and links were read, and
+how many skills were both *checked* and *actually scanned*. A denominator of zero, or a mismatch
+between two parts' counts, aborts instead of certifying. Three consequences worth knowing:
+
+- **`0 findings` and `0 read` are now different outputs.** Before this, a `grep` writing
+  `Permission denied` to stderr still produced `0 missing skill` in the verdict.
+- **A `ws-*` directory whose `SKILL.md` cannot be read is reported, not dropped.** Directories that
+  *exist* and directories that are *readable* are counted separately and the difference is a
+  finding, because noticing the gap by knowing today's count by heart is exactly the bookkeeping
+  the preflight's floor refuses to be.
+- **`set -e` is deliberately not used, and would be actively harmful.** A clean part ends on
+  `[ -n "$x" ] && printf …`, which returns **non-zero precisely when there are no findings**, so
+  under `set -e` the block would abort exactly when the audit is clean. Positive counts are the
+  only route. This is written down because it is the first thing anyone will reach for.
+
+**One failure mode this design caught in its own author's work**, recorded because it is the
+argument for it: part 3 was first written using a variable name that part 1 already held the
+`agent-sync` JSON in. Part 3 clobbered it, part 7 silently received nothing — and the completion
+sentinel added one revision earlier is what surfaced it, rather than a verdict reading `0 missing
+under an agent`.
+
 **What it does not cover**, so the absence is not read as coverage:
 
 | Blind spot | Consequence |
@@ -143,6 +168,7 @@ line names its own counts:
 | **fenced code blocks are excluded from the scan** | the check is about what the *prose* offers, and a comment inside a shell block is not prose — it tripped on one in the audit's own text. The cost is one-directional: an exit offered **only** inside a fenced example is missed |
 | reverse coverage only looks at `SKILL.md` files | shared reference material sends readers to skills by name and has no `What next?`. Skills without one are **counted and the count printed**, not silently skipped |
 | the identity assertion fires first on any wrong directory | the marker and the floor can only ever fire on the real library path, so testing them needs identity satisfied by construction |
+| a skill whose entire body before `What next?` is fenced code | reported as `NO PROSE EXTRACTED` and **aborts**, because it is indistinguishable from a file whose frontmatter never closed. Legitimate-but-pathological input therefore stops the audit rather than being waved through |
 | it depends on `agent-sync` being runnable | on a machine with no deployment the audit **aborts** rather than running a narrower version of itself |
 | that an agent *obeys* `AUDIT ABORTED` is not proved | the shell makes the abort unavoidable within the snippet; the claim is only that a clean verdict is unreachable without the counts being printed |
 
