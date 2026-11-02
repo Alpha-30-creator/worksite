@@ -422,6 +422,50 @@ a decision about its safety rules — but if a second safety-rule change comes u
   path that executes it. Found by the lead's own grep after the review, which had declared it
   skimmed `ws-start` outside the diff hunks. A coverage gap honestly declared, not a miss.
 
+## [ ] p8.39 — `git -C <repo>` is unquoted in the pack's placeholder idiom, so a bare fill word-splits
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Found 2026-11-03 while building p8.36's fixture**, by filling the placeholders the way a skill
+  tells an agent to fill them.
+- **Why:** p8.13 fixed the *loops* that iterated repo paths, and `ws-shared/reference.md` says to
+  "use `git -C <repo>`" — but the placeholder itself carries no quotes. An agent that substitutes a
+  workspace path containing a space produces `git -C /Users/x/My Projects/app`, which splits, and
+  every command fails with `fatal: cannot change to '/Users/x/My'`. Reproduced. It is the same
+  defect class as p8.13 in a different shape, and it is the pack's documented idiom at dozens of
+  sites across most skills.
+- **Acceptance:**
+  - [ ] every `<repo>`-style path placeholder inside a fenced command either carries its quotes in
+        the template (`git -C "<repo>"`) or the skill states that the fill must be quoted
+  - [ ] the rule is stated once in `ws-shared/reference.md`'s cross-platform table, beside the two
+        word-splitting rows p8.13 added
+  - [ ] proven by execution against a workspace path containing a space, per p8.13's precedent
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** it **fails loudly** (`fatal:`), unlike p8.13's loops, which printed a reassuring row at
+  exit 0 — so it wastes a run rather than lying about one. That is why it was filed rather than
+  fixed inside p8.36.
+
+## [ ] p8.40 — A local-only project can never retire a track
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Found 2026-11-03 by p8.36's review**, as the consequence that outlives it.
+- **Why:** *Retiring a track* refuses any branch with no upstream, because those commits exist
+  nowhere else, and that guard is correct and must not be weakened. But a project with no remote
+  can never give a branch an upstream, so **no track on it can ever be retired** — and
+  `ws-start`'s sweep will go on offering the same stale tracks at every session. p8.36 made the
+  loop usable without a remote; this is the one place where "degrade, never fail" and "never
+  discard work" genuinely conflict, so it needs a decision rather than a patch.
+- **Acceptance:**
+  - [ ] a written decision on how a remoteless project retires a track without the guard losing
+        its meaning — a bundle, an explicit acknowledgement, or a stated refusal with a reason
+  - [ ] whatever is decided, `ws-start`'s sweep stops re-offering a track it can never retire, or
+        says why it cannot
+  - [ ] proven by execution in a repo with no remote
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** recorded in `docs/records/known-limitations.md` by p8.36. A decision task, so its
+  acceptance is a written record.
+
 ## [-] p8.14 — Nothing ever enumerates the track root, so a forgotten worktree is invisible — its cheap half is absorbed into p8.32; the third sweep pass is dropped
 
 **Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. **p8.32** takes the half that stops the residue being created
@@ -966,4 +1010,10 @@ third signal that it is not worth a track.
   - [ ] changed through `ws-refine`, with its graph audit
 - **Notes:** `ws-ship`'s push and PR steps are **not** in scope — a local-only project genuinely
   cannot open a PR, and saying so is correct behaviour. What is in scope is the four skills that
-  fail before reaching any such decision.
+  fail before reaching any such decision. *("Four skills" is a leftover from the count this task
+  records correcting on filing; the Why and the criteria name three sites, which is right.)*
+- **Shipped 2026-11-03 covering two sites beyond the three named**, both under criterion 1's
+  "any command that needs one": `ws-start`'s stale sweep, whose `log @{u}..HEAD` exits 128 with
+  empty stdout so a never-pushed worktree reads as holding no work and is offered for removal —
+  the only work-losing path here — and `ws-plan` §5's `pull --ff-only`, which failed between two
+  commands that both ran, so the branch was cut from an unknown base.

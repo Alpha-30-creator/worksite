@@ -75,7 +75,8 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
-| p8.36 | The loop assumes a git remote and dies without one | four of five loop skills, and the situation a stranger is actually in — and p7.2 waits on it |
+| p8.39 | `git -C <repo>` is unquoted in the pack's placeholder idiom | p8.13's defect class in a different shape, at dozens of sites — it fails loudly, so it wastes runs rather than lying about them |
+| p8.40 | A local-only project can never retire a track | the one place "degrade, never fail" and "never discard work" genuinely conflict, so it needs a decision |
 | p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
 | p8.32 | A retired track leaves its parent directory behind | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |
 | p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
