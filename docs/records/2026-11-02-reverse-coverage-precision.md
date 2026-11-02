@@ -24,7 +24,7 @@ for, another saying what a sibling does afterwards. It also **invents a skill**:
 the words "Windows-safe", from which an unanchored `ws-[a-z]+` extracts `ws-safe`, and the forward
 check then dutifully reports it missing.
 
-## The anchored form: three candidates, two real
+## The anchored form, before the change: three candidates, two real
 
 Anchored twice — on a **backticked** skill name *and* on an **offer verb** (`offer`, `ask for`,
 `go through`, `hand off`, `switch to`, `instead`, `→`):
@@ -38,6 +38,52 @@ Anchored twice — on a **backticked** skill name *and* on an **offer verb** (`o
 **Precision 2/3 on fourteen files. One skill was skipped** for having no `What next?` — a reference
 pack is read by path rather than invoked, and correctly must not grow one. The skip is **counted
 and printed**, not silent, so "1 skipped" is visible rather than assumed.
+
+## Recall — measured, because a precision figure beside an unmeasured recall is half a result
+
+Precision says how many of the findings are real. It says nothing about how many real gaps the
+check never raises, and that number is the larger one:
+
+| | Count |
+|---|---|
+| distinct prose mentions of a sibling skill, across the 13 skills with a `What next?` | **33** |
+| surviving the offer-verb filter | **9** |
+| unlisted **and** reported | **3** |
+| unlisted **and never reported** | **12** |
+
+Twelve. The check raises a quarter of the unlisted pairs that exist. Several of the misses read
+like real exits rather than like references — one skill's prose reaches for the verify step and the
+wrap step, another for the ship step, another for the start step — and the verb filter does not see
+any of them because they are phrased in idioms outside its anchor list.
+
+**This is the honest shape of the result: high-ish precision bought with low recall.** The check
+narrows the pack to a line or two that are worth reading, and it is not a coverage guarantee in
+either direction. The blind spot was disclosed in kind from the start — "the anchor list is a sample
+of the pack's current idiom, not a grammar" — and this is its magnitude. An independent review
+measured 35 and 10 for the first two rows, scanning fenced code as well as prose; the 33 and 9 here
+exclude fenced code, which is what the shipped check does.
+
+## A false positive the change introduced into its own text, and what was done about it
+
+Worth recording because it is the sharpest thing the review found about this check, and because
+the first instinct — reword the sentence — would have been the wrong one.
+
+A comment added to the audit block explained the precision hazard by quoting a comparison in
+backticks: ``("as `ws-review` does") looks exactly like an offer``. The reverse check then fired on
+that comment, because `ws-refine`'s own `What next?` does not list the review step. **The sentence
+explaining the false-positive hazard was itself a false positive**, and live precision on the
+shipped library became **4 candidates, 2 real, 2 false**.
+
+The fix taken is **not** rewording the comment. It is excluding **fenced code blocks** from the
+scan, on the principle that the check's own definition is "an exit the *prose* offers", and a
+comment inside a shell block is not prose. Measured: the exclusion drops exactly that one finding
+and keeps both true positives, which sit in ordinary prose. Precision returns to **3 candidates, 2
+real, 1 false**.
+
+**The exclusion has a one-directional cost and it is not hypothetical:** an exit genuinely offered
+inside a fenced example is now invisible to the check. That trade was taken because a worked example
+is not an offer, and a check that cannot tell them apart would make every future explanation of its
+own behaviour a finding.
 
 ## What was accepted, and why
 
