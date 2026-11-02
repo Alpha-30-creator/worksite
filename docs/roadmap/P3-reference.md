@@ -73,7 +73,7 @@ pack without reading the skills' source.
   - [x] `docs/engineering/layout.md` — what lives where in this repo
   - [x] both guides state the rule that adding a tracker or stack never edits a skill
 
-## [r] p3.4 — The docs tree has no index · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/14
+## [x] p3.4 — The docs tree has no index · 2026-11-02 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/14
 
 - **Repos:** worksite
 - **Depends on:** p3.2
@@ -83,12 +83,12 @@ pack without reading the skills' source.
   link two of them. A docs tree whose own structure the pack documents and this repo does not follow
   is the weakest possible advertisement for the pack.
 - **Acceptance:**
-  - [ ] `docs/README.md` or `docs/00-START-HERE.md`, per the pack's own structure, linking every
+  - [x] `docs/README.md` or `docs/00-START-HERE.md`, per the pack's own structure, linking every
         reference page that exists — and nothing that does not, since `check.sh` §3 fails on a
         missing target
-  - [ ] the root `README.md`'s documentation list reaches `product/overview.md` and
+  - [x] the root `README.md`'s documentation list reaches `product/overview.md` and
         `integration/cartridge-schema.md`
-  - [ ] it says which folders are living and which are immutable, matching `ws-shared/reference.md`
+  - [x] it says which folders are living and which are immutable, matching `ws-shared/reference.md` — **`docs/README.md` shipped 2026-11-02: 20 targets / 0 missing, 41 docs `.md` / 0 unreachable in at most two hops**
 - **Notes:** raised independently by both p3.1's and p3.2's builders. Worth doing before P3 adds
   p3.3's three extension guides.
   **Write it after the documentation trim (added 2026-11-02):** an index built now would enshrine

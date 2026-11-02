@@ -27,14 +27,13 @@ guarded plain copy, its commits land directly on `main`, with the residual risk 
 
 ## In progress
 
-A three-track fanout batch claimed 2026-11-02 by @Alpha-30-creator. One library task only, because
-all five remaining pack defects publish through the single declared store `agent-library`.
-
 | id | what it is doing | where |
 |---|---|---|
-| p1.2 | recording a real refusal, and the two false-positive cases | `.githooks/`, `scripts/`, `docs/records/` |
-| p3.4 | the docs index, written after the trim rather than before it | `docs/README.md`, root `README.md` |
-| p8.24 | the graph audit's two silent-pass gates, and the class written down once | library: `ws-refine`, `ws-setup`, `ws-shared/review/`, `ws-shared/trackers/` |
+| p8.24 | the graph audit's silent-pass gates — built and reviewed twice, not shipped | library: `ws-refine`, `ws-setup`, `ws-shared/review/`, `ws-shared/trackers/` |
+
+p8.24 is held back from this batch's ship. Its second review found a Must — the fix reproduced the
+defect it exists to kill, one part over — and closing it surfaced a **third** instance. The library
+is ahead of the published `skills/` until it ships, which is why §4 reports three differences.
 
 ## Blocked
 
@@ -92,6 +91,8 @@ today, so they do not have to wait for P1–P7.
 | p4.3 | Repo furniture: contributing, security, conduct and CI | 2026-11-02 |
 | p8.5 | Shared external stores are declared in the cartridge | 2026-11-02 |
 | p4.2 | `INSTALL.md`, written for the agent that will run it | 2026-11-02 |
+| p1.2 | Prove the leak guard actually refuses a commit | 2026-11-02 |
+| p3.4 | An index for the docs tree | 2026-11-02 |
 
 ## Phases
 
