@@ -2,7 +2,7 @@
 
 **Goal:** the install is known to work for someone who is not the author.
 
-## [~] p7.1 — Dry-run the install as a stranger · @Alpha-30-creator · 2026-11-02
+## [r] p7.1 — Dry-run the install as a stranger · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/16
 
 - **Repos:** worksite
 - **Depends on:** p4.2
