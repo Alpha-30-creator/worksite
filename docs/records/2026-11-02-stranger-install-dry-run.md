@@ -144,6 +144,14 @@ cannot finish stops before starting.
   voice. `ws-ship` and `ws-wrap` hold pushes, which is a different thing: a local-only project
   genuinely cannot push, and refusing is correct rather than a defect. A first-ever run in a fresh
   local repo — the stranger's exact situation — hits all of it.
+  **Fixed 2026-11-03 by p8.36**, every clause of it: the `device.yaml` branch, the gather (which
+  now resolves and *prints* its base ref), and step 5's `fetch -q`, whose line was rewritten to
+  say that `fetch` proves nothing in a repo with no remote and to check `git remote` first.
+  p8.36 also found two more sites under the same criterion: the stale sweep's `log @{u}..HEAD`,
+  where failure reads as "holds no work" and the track is then offered for removal, and
+  `ws-plan` §5's `pull --ff-only`, which failed between two commands that both ran, so the branch
+  was cut from whatever the local tip happened to be. The two push sites remain out of scope, as
+  this entry says they should.
 - **Three documented steps cannot be exercised in a sandbox at all**: `ws-sync` step 1
   (`agent-sync sync` pushes the real library, and has no read-only form), `ws-env pull`, and
   `agent-sync save`. A cautious first-time user cannot trial the pack without writing to their own
