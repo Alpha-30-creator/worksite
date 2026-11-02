@@ -38,7 +38,7 @@ lost between machines.
 This is the whole point of the skill, so make it good. Append a `paused` journal entry:
 
 ```markdown
-## paused · <YYYY-MM-DD HH:MM> · <device> · <handle>
+## paused · <YYYY-MM-DD HH:MM> · <device-alias> · <handle>
 - did: <what is done, and what is half-done — be specific about half-done>
 - next: <the single next step, concrete enough to act on with no context>
 - rejected: <what was tried and abandoned, and why>
@@ -49,8 +49,15 @@ This is the whole point of the skill, so make it good. Append a `paused` journal
 Then put a one-line version on the tracker via the adapter, so it is visible to a person and to
 the other machine.
 
+`<device-alias>` is the derived alias defined in
+[../ws-shared/tracks.md](../ws-shared/tracks.md), **not** the `device:` value from `device.yaml`.
+This is the only skill that writes a journal entry from its own template rather than from that
+page, so it is the one place the rule has to be repeated — and the entry it writes is pushed:
+
 If the project has a `docs_home`, **mirror and push the journal** — without that push, the note
-does not reach your other laptop, which is usually the reason you are wrapping.
+does not reach your other laptop, which is usually the reason you are wrapping. A machine is
+commonly named after the person who owns it and the docs home may be public, which is why the
+header carries an alias.
 
 ## 3. Keep, hand over, or release
 

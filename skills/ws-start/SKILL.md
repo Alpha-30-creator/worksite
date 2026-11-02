@@ -204,12 +204,14 @@ mkdir -p <state_dir>/tracks/"$id"/verify
 printf '%s\n' "$id" > <state_dir>/tracks/current
 ```
 
-Write `task.md`:
+Write `task.md`. `<device-alias>` is the derived alias from
+[../ws-shared/tracks.md](../ws-shared/tracks.md) — `task.md` is not mirrored, but its only
+protection is the ignore rule asserted above, and that is not a reason to write a name into it:
 
 ```markdown
 # <id> — <title>
 - Tracker: <kind> · <url or path>
-- Claimed: <date> by <handle> on <device>
+- Claimed: <date> by <handle> on <device-alias>
 - Repos: <which this touches>
 - Branches: none yet
 - Worktrees: none yet
