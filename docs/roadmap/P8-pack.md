@@ -530,7 +530,14 @@ defect by this phase's new goal line.
     and leave the shell, the block enumerates all **fourteen published skills**, resolves every
     link and reports clean — certifying the published artifact instead of the library, which is
     ADR 0001's whole failure mode signed off green. Reproduced 2026-11-02, so the gate must
-    assert **cwd identity**, not merely a positive count;
+    assert **cwd identity**, not merely a positive count. **Corrected after the build:** a bare
+    `cd … || exit` *does* close the reproduction above, and the lead was wrong to say otherwise —
+    if the `cd` fails and the snippet exits, the loop never runs. The reproduction was of the
+    **old** block, whose `cd` is unguarded. What a `cd` guard cannot close is a `cd` that
+    **succeeds** into a library that is not the real one: a redirected `$HOME`, or a symlink
+    aimed at the published artifact. Identity therefore has to compare the cwd against the store
+    path `agent-sync doctor --json` reports — two independent sources — and not against the same
+    string the `cd` used, which is a tautology that passes wherever the `cd` landed;
   - its coverage is **forward only** — it verifies that every skill *named* in a `What next?` exists,
     with no reverse check that every exit the *prose* offers is listed. p8.17 added a `ws-setup`
     exit and the audit stayed clean. **The audit cannot catch the kind of gap the change introduced.**
