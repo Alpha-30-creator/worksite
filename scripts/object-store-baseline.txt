@@ -1,0 +1,42 @@
+# Unreachable objects that are KNOWN to carry a pattern from scripts/leak-patterns.txt.
+#
+# Section 6 of scripts/check.sh reads the unreachable objects in .git/objects and fails on any
+# that carries a pattern and is not listed here. This file is a declaration, not a suppression:
+# every hash below was measured, identified and decided about on the date in its row, and a hash
+# that is not here fails the check.
+#
+# Why any of this exists: `git add` writes a blob before a pre-commit hook can refuse the
+# commit, so a commit the guard REFUSED still leaves its content in the object store. Sections
+# 1 to 5 read the working tree or the index and never looked there.
+#
+# Nothing here has escaped. Unreachable objects are never pushed, and every file in the pushed
+# tree of origin/main was checked against the full pattern set with the allowlist applied and is
+# clean. These are local residue on one machine; a fresh clone holds none of them, and there
+# section 6 reads zero unreachable objects and says so.
+#
+# ---------------------------------------------------------------------------------------------
+# THE DECISION, 2026-11-02: leave them. Do not prune.
+#
+# The obvious remedy is `git gc --prune=now`, and it is the wrong one here. This workspace's
+# object store is SHARED with the live worktrees under ../worksite-tracks/, whose unreachable
+# objects are wanted — a prune would destroy work in progress that is not residue at all. The
+# residue is harmless where it sits (nothing pushes it), it is now asserted rather than
+# unknown, and the cost of removing it safely is higher than the risk it carries. Revisit only
+# when no worktree is live, and then by the procedure in
+# docs/runbooks/purge-a-leak-from-history.md rather than by a bare prune.
+# ---------------------------------------------------------------------------------------------
+#
+# Format: <40-hex sha> <date measured> <what it is, generically>
+#
+# Measured 2026-11-02 while building p8.31. Three of the 28 unreachable blobs in this store
+# carry a pattern. The two others that a naive scan reports are matches on the allowlisted npm
+# scope alone and are not leaks — which is itself the first evidence that stripping the
+# allowlisted substring behaves differently from dropping the line.
+#
+# The roadmap row for p8.31 says TWO, and it is not wrong: it counted blobs carrying private
+# PROJECT names. The third carries a device name, through the journal mirror — the leak that
+# this same task's alias criterion exists to close, found as residue rather than reasoned about.
+
+e8ab6423c7db371d1d80e4dc2bcfb10883c1aa40 2026-11-02 superseded roadmap file; private project abbreviations
+3e6efcfe40198a713e7ab05ce917994012d01b7a 2026-11-02 superseded validation record; one private project name
+cda1585e35ea0d83f7e1977c383cecd1478584c9 2026-11-02 superseded journal mirror; a device identifier in the entry headers
