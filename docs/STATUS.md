@@ -36,19 +36,10 @@ what it stated it read, which is why the graph audit now names its own counts.
 
 ## In progress
 
-| id | what it is doing | where |
-|---|---|---|
-| p8.35 | the `$1` substitution that breaks `ws_root()`, and `ws-sync`'s blind sweep | library: `ws-env`, `ws-sync` |
-
-Taken ahead of p8.31 because p7.1 changed the ordering: this one is broken on this machine today, in
-the skill that handles credentials, and `ws-env` is invoked with arguments routinely. p8.31's leak
-surface is a latent risk on a tree that is currently clean.
-
-Previously, nothing claimed. **p7.1 shipped 2026-11-02: the install has now been run by agents that had never
-seen this project, and the loop ran end to end unaided.** 44 guess-points, five `INSTALL.md` fixes,
-three defects — the sharpest being that a `$1` in a skill body is replaced by the caller's argument,
-so a credential sync reports every project "not linked on this device" and writes nothing. What is
-still unproven is clarity, not followability: two agents are not a population.
+Nothing claimed. **p8.35 shipped 2026-11-02**: a `$1` in a skill body is replaced by the caller's
+argument at delivery, which had `ws-env` and `ws-sync` reporting every project "not linked on this
+device" while writing nothing. Fixed in the library and published as `cbcc499`; the audit now has a
+gate so the next one is caught by a check rather than by a stranger.
 
 ## Blocked
 
@@ -106,6 +97,7 @@ today, so they do not have to wait for P1–P7.
 | p8.5 | Shared external stores are declared in the cartridge | 2026-11-02 |
 | p4.2 | `INSTALL.md`, written for the agent that will run it | 2026-11-02 |
 | p7.1 | Dry-run the install as a stranger | 2026-11-02 |
+| p8.35 | `ws-env` and `ws-sync` each gave a confidently wrong answer | 2026-11-02 |
 | p1.2 | Prove the leak guard actually refuses a commit | 2026-11-02 |
 | p3.4 | An index for the docs tree | 2026-11-02 |
 | p8.24 | Gates that read an empty result as a pass | 2026-11-02 |

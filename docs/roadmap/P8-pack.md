@@ -413,7 +413,7 @@ a decision about its safety rules — but if a second safety-rule change comes u
         the agent to `ws-start` and `ws-plan`'s `What next?` does not list it; `ws-start`:16
         offers `ws-setup` and `ws-start`'s does not list it. Added here rather than to p8.24
         because they are p8.13's files, and the check that finds them ships with p8.24
-  - [ ] changed through `ws-refine`, with its graph audit
+  - [x] changed through `ws-refine`, with its graph audit
 - **Where the three sites are (2026-11-02):** `ws-start`, `ws-plan` and `ws-review` — and
   `ws-start` itself warns against the idiom, which is the instance that proves the point. **It is
   live on this workspace**, whose own path contains a space, so the failure is reproducible here
@@ -715,6 +715,12 @@ third signal that it is not worth a track.
   first needs the second: removing the parent `<id>/` directory means naming it, and the root has
   no defined base. p8.14's third sweep pass is **dropped explicitly** — see its body above.
 - **Acceptance:**
+  - [ ] **the no-upstream refusal fires on a branch that carries nothing** *(met 2026-11-02 while
+        retiring p8.35)*. A library-only task never pushes its branch, because there is nothing
+        repo-side to push, so the branch sits at the claim commit with zero commits of its own and
+        `@{u}` is unset — and the guard, which exists to protect commits that live nowhere else,
+        refuses. Fail-safe rather than fail-open, so not urgent: the test wants to be "unpushed
+        commits exist", not "no upstream is configured"
   - [ ] *Retiring a track* removes the parent `<id>/` directory when removing its last worktree
         leaves it empty, so the residue is never created rather than reported afterwards. A
         directory that still contains a working `.git` is not touched *(from p8.14)*
@@ -811,7 +817,7 @@ third signal that it is not worth a track.
   same morning — the citation drift this project keeps paying for, inside a task about the pack
   promising things it does not deliver.
 
-## [~] p8.35 — `ws-env` and `ws-sync` each give a confidently wrong answer and exit clean · @Alpha-30-creator · 2026-11-02
+## [x] p8.35 — `ws-env` and `ws-sync` each give a confidently wrong answer and exit clean · 2026-11-02 · @Alpha-30-creator · published cbcc499 (library-only, no PR per ADR 0002)
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -837,16 +843,25 @@ third signal that it is not worth a track.
     whose cartridge declares `repos: [{dir: .}]`. The glob is correctly quoted — this is a depth
     assumption, not p8.10's word-splitting bug.
 - **Acceptance:**
-  - [ ] no skill body relies on `$1` surviving delivery. The two `$1` sites in **reference** files
+  - [x] no skill body relies on `$1` surviving delivery. The two `$1` sites in **reference** files
         (`ws-shared/reference.md`:138, `tracks.md`:213-214) are **not** affected, because nothing
         substitutes into a file an agent opens directly — so the fix distinguishes a snippet that
         is safe in a reference page from one that is not in a skill body, and says why
-  - [ ] proven by invoking each affected skill **with arguments** and reading the delivered text,
-        not by reading the file — reading the file is what hid this
-  - [ ] a check that no `ws-*/SKILL.md` contains a positional parameter, so the next one is caught
-        at the audit rather than by a stranger
-  - [ ] `ws-sync`'s sweep reports a project whose root is itself the repo, and reports **nothing
-        found** distinctly from **nothing to report** — an empty sweep must announce itself
+  - [~] proven by invoking each affected skill **with arguments** and reading the delivered text,
+        not by reading the file — reading the file is what hid this. **Half done, and said so:** the
+        pre-deploy run reproduced the defect on the exact argument string, so the test is sensitive;
+        the post-deploy *delivery* read could not be taken because the harness served a cached copy
+        of a skill already loaded that session. What is proved instead is that `$HOME` survived the
+        same delivered line in which `$1` was replaced, so named variables are not substituted — and
+        no positional parameter remains for delivery to alter
+  - [x] a check that no `ws-*/SKILL.md` contains a positional parameter, so the next one is caught
+        at the audit rather than by a stranger — `ws-refine` part 3b, scanning executable lines in
+        fenced blocks **including indented ones**, with a denominator and a cross-check against
+        part 3's count. Covers `$1`-`$9` and `${1..9}`; `$0` excluded deliberately (awk field), and
+        `$@`/`$*`/`${10}`+ named as untested rather than implied
+  - [x] `ws-sync`'s sweep reports a project whose root is itself the repo, and reports **nothing
+        found** distinctly from **nothing to report** — an empty sweep must announce itself —
+        proven on fixtures in paths containing spaces, where the old form is silent on both
   - [ ] changed through `ws-refine`, with its graph audit
 - **Notes:** the single highest-value finding of p7.1 and the argument for having run it. Full
   measurement in
