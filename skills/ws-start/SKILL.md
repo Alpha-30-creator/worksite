@@ -51,9 +51,23 @@ while IFS= read -r r; do
   [ -n "$r" ] || continue
   _pfx=$(git -C "$r" rev-parse --show-prefix 2>/dev/null) && [ -z "$_pfx" ] \
     || { echo "NOT A REPO ROOT: $r — run that rev-parse by hand to see why"; continue; }
-  git -C "$r" fetch --all --prune -q
-  printf '%-26s %-24s %s\n' "$r" "$(git -C "$r" branch --show-current)" \
-    "$(git -C "$r" status --porcelain | wc -l | tr -d ' ') changed"
+  if [ -z "$(git -C "$r" remote)" ]; then
+    _sync="NO REMOTE — nothing was fetched"
+  elif ! git -C "$r" fetch --all --prune -q; then      # git's own reason prints above the table
+    _sync="FETCH FAILED — treat what follows as stale"
+  else
+    _sync=""
+  fi
+  _br=$(git -C "$r" branch --show-current)
+  if _ba=$(git -C "$r" rev-list --left-right --count '@{u}...HEAD' 2>/dev/null); then
+    _up="behind/ahead $(printf '%s' "$_ba" | tr '\t' '/')"
+  elif [ -n "$(git -C "$r" config "branch.$_br.merge")" ]; then
+    _up="upstream [gone] — configured, but its remote-tracking ref is missing"
+  else
+    _up="no upstream for this branch"
+  fi
+  printf '%-26s %-18s %s%s · %s changed\n' "$r" "${_br:-DETACHED}" "${_sync:+$_sync · }" "$_up" \
+    "$(git -C "$r" status --porcelain | wc -l | tr -d ' ')"
 done <<'REPOS'
 <repo paths, one per line>
 REPOS
@@ -70,6 +84,20 @@ CRLF, a glob character, an unexpanded `~`, every path on one line, a path that i
 fix the fill and run it again before reporting anything. It is loud but **not fatal** — a fill
 where every path is wrong still exits 0, so read the output, not the status. The delimiter is
 quoted (`<<'REPOS'`) so a path containing `$` or a backtick is not rewritten on the way in.
+
+The sync state is a new column, and it is named rather than assumed. The old form ran
+`git fetch --all --prune -q` and printed path, branch and `N changed` — it made no claim about
+freshness, which was the problem: `fetch` **exits 0 in a repo with no remote**, establishing
+nothing, and the instruction below it to "report any repo that is dirty, behind, diverged,
+`[gone]`" had nothing behind the last three. Now: `NO REMOTE — nothing was fetched` when there is no remote at
+all, `FETCH FAILED — treat what follows as stale` when the fetch itself failed, `no upstream
+for this branch` when the branch was never pushed, `upstream [gone]` when the config names one but
+its remote-tracking ref is missing — which is what `fetch --prune` leaves behind after someone
+deletes the branch on the remote, and the state the paragraph below asks you to report — and
+`behind/ahead N/M` when the upstream resolved. The remote state and the upstream state are
+**separate facts** and both are printed: a branch tracking a purely local branch in a repo with no
+remote reads `NO REMOTE — nothing was fetched · behind/ahead 0/0`, which is exactly true. **A repo with no remote is not an error** — a stranger's first project is exactly that, and
+the pack's rule is degrade, never fail. It is a fact the row has to carry.
 
 Report any repo that is dirty, behind, diverged, `[gone]`, or not on its integration branch.
 **Do not discard anything** — report and ask. Pull the docs repo if the tracker lives there.
@@ -106,7 +134,7 @@ in step 3**, before the claim:
 | is the task still open? | its id **absent** from the adapter's open + claimed + blocked ids |
 | what stage it reached | the last journal entry heading in `journal.md` |
 | does a worktree exist | `git -C <repo> worktree list --porcelain`, per repo, matched as in *Retiring a track* |
-| does that worktree hold work | `status --porcelain` non-empty, or `log --oneline @{u}..HEAD` non-empty |
+| does that worktree hold work | `status --porcelain` non-empty, **or** the separate upstream check *Retiring a track* uses: no upstream at all counts as holding work, and only where one exists does `rev-list --count '@{u}..HEAD'` decide. Never `log --oneline @{u}..HEAD` — with no upstream that exits 128, an agent reading failure as "empty" concludes the worktree holds nothing, and the track is then offered for removal |
 | age | mtime of the newest file in the track directory |
 
 Match the worktree path **one whole segment at a time**, as *Retiring a track* in

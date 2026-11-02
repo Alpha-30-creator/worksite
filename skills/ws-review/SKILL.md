@@ -13,14 +13,22 @@ better than it was.
 1. Read [../ws-shared/reference.md](../ws-shared/reference.md).
 2. Find the project: resolve the workspace root from `device.yaml`, then read its cartridge at
    `<docs_home>/reference.md` if there is one.
+   **Not in `device.yaml`, or no `device.yaml` at all?** Do not refuse and do not guess a path.
+   Take the workspace root to be the directory you were pointed at — the repo's own root, or its
+   parent where several repos sit side by side — say which you chose and that it was not resolved
+   from `device.yaml`, and carry on. Review is read-only, so the cost of a wrong root is a gather
+   that finds nothing, which the gather's own output now names. A project reviewed on a machine
+   that has never been set up is the normal case for an outside reviewer, not an error.
 3. **No cartridge?** Work without it. Ask three questions and carry on: which repos changed,
    what the change is supposed to do, and what the stack is. Never refuse for a missing
    cartridge.
 4. Read the task and the approved plan if they exist (`<state_dir>/tracks/<id>/`, or the
    project's own location — a project whose cartridge sets `artifacts: in-repo` keeps plans in
    the repo, typically under `implementation_plans/<id>/`).
-5. `git -C <repo> fetch -q` for each changed repo, so the diff is against the real integration
-   branch and not a stale ref.
+5. `git -C <repo> fetch -q` for each changed repo, **where one has a remote** — `fetch` exits 0
+   and establishes nothing in a repo that has none, so it proves nothing on its own. Check
+   `git -C <repo> remote` first and say which repos could not be refreshed. The gather in section 3
+   prints the base ref it actually used, which is what makes a stale or local-only base visible.
 
 ## 1. Choose the rulebooks
 
@@ -89,7 +97,30 @@ while IFS= read -r r; do
   _pfx=$(git -C "$r" rev-parse --show-prefix 2>/dev/null) && [ -z "$_pfx" ] \
     || { echo "NOT A REPO ROOT: $r — run that rev-parse by hand to see why"; continue; }
   echo "=== $r ($(git -C "$r" branch --show-current))"; git -C "$r" status --short
-  git -C "$r" diff origin/<integration>...HEAD; git -C "$r" diff HEAD
+  _base=""                          # two quoted literals, not a path list: `for` is right here
+  for cand in "origin/<integration>" "<integration>"; do
+    git -C "$r" rev-parse --verify -q "$cand" >/dev/null && { _base="$cand"; break; }
+  done
+  if ! git -C "$r" rev-parse --verify -q HEAD >/dev/null; then
+    echo "--- NO COMMITS YET — nothing is committed in this repo, so there is nothing to diff"
+  elif [ -z "$_base" ]; then
+    echo "--- NO BASE REF: neither origin/<integration> nor <integration> exists."
+    echo "    Showing the whole branch history instead — this is NOT a diff of the change."
+    git -C "$r" log --oneline --stat HEAD
+  elif [ "$(git -C "$r" rev-parse "$_base")" = "$(git -C "$r" rev-parse HEAD)" ]; then
+    echo "--- HEAD IS $_base — the work was committed ON the base, not on a branch off it,"
+    echo "    so there is no committed diff to show. Everything to review is either uncommitted"
+    echo "    below or already in $_base. ASK which commits are the change before reviewing."
+  else
+    echo "--- committed, vs $_base"; git -C "$r" diff "$_base...HEAD"
+  fi
+  echo "--- uncommitted"
+  if git -C "$r" rev-parse --verify -q HEAD >/dev/null; then
+    git -C "$r" diff HEAD
+  else                         # no HEAD to diff against, so take the two halves separately
+    git -C "$r" diff --cached  # the empty tree vs the index: this is where staged files show
+    git -C "$r" diff           # the index vs the working tree
+  fi
   git -C "$r" ls-files --others --exclude-standard | while IFS= read -r f; do
     echo "--- NEW: $r/$f"; cat "$r/$f"
   done
@@ -98,6 +129,25 @@ done <<'REPOS'
 REPOS
 )
 ```
+
+**The base ref is resolved and printed, never assumed.** `origin/<integration>` does not exist in
+a repo with no remote, and the old line `diff origin/<integration>...HEAD; diff HEAD` lost exactly
+the committed half: the `;` meant the uncommitted diff, the status and the untracked files still
+printed, so the gather looked like it had worked while the one thing a reviewer most needs — what
+the branch actually changed — was replaced by a `fatal:` higher up the output. It now falls back to the local `<integration>` and says which it used, because the two are not the
+same thing: the local ref is this machine's last-fetched view, so a diff against it can hide
+commits someone else has pushed. With neither ref present it prints `NO BASE REF` and shows the
+branch history instead, labelled as **not** a diff of the change — a reviewer told that is a
+reviewer who knows to ask for the base, which is the whole point of naming it.
+
+Two more states are named rather than shown as emptiness, because an empty committed diff is
+exactly what "I have nothing to review" looks like. **`HEAD IS <base>`**: on a local-only project
+the work is often committed straight onto the integration branch, so `<base>...HEAD` is empty
+while the change is right there in the history — ask which commits are the change. **`NO COMMITS
+YET`**: an unborn repo, where `log HEAD` and `diff HEAD` both exit 128. There the uncommitted half
+is taken in two pieces, because `git diff` alone is the **index against the working tree** and
+would hide everything already staged — `git diff --cached` is the empty tree against the index, and
+on a first-commit repo that is most of the change.
 
 Read line by line, and quote every `$r`: a workspace path containing a space word-splits under
 bash, every `git -C` fails on a fragment, and this block still prints a `===` heading and an

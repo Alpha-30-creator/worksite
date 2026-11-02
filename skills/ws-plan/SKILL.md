@@ -22,8 +22,38 @@ while IFS= read -r r; do
   [ -n "$r" ] || continue
   _pfx=$(git -C "$r" rev-parse --show-prefix 2>/dev/null) && [ -z "$_pfx" ] \
     || { echo "NOT A REPO ROOT: $r — run that rev-parse by hand to see why"; continue; }
-  git -C "$r" fetch --all --prune -q
-  printf '%-24s behind/ahead %s\n' "$r" "$(git -C "$r" rev-list --left-right --count origin/<integration>...HEAD)"
+  if [ -z "$(git -C "$r" remote)" ]; then
+    _against="NO REMOTE"
+  elif ! git -C "$r" fetch --all --prune -q; then
+    _against="FETCH FAILED"
+  else
+    _against=""
+  fi
+  if git -C "$r" rev-parse --verify -q "origin/<integration>" >/dev/null; then
+    _ref="origin/<integration>"
+  elif git -C "$r" rev-parse --verify -q "<integration>" >/dev/null; then
+    _ref="<integration>"
+  else
+    _ref=""
+  fi
+  if [ "$_ref" = "origin/<integration>" ]; then
+    _how=""
+  elif [ -n "$_ref" ]; then
+    _how="LOCAL REF ONLY (origin/<integration> absent, so this may be behind others' work)"
+  else
+    _how=""                     # reset on every path: a stale clause would read as this repo's
+  fi
+  if [ -n "$_ref" ]; then
+    if _c=$(git -C "$r" rev-list --left-right --count "$_ref...HEAD" 2>/dev/null); then
+      _cmp="behind/ahead vs $_ref $(printf '%s' "$_c" | tr '\t' '/')"
+    else
+      _cmp="CANNOT COMPARE against $_ref — HEAD does not resolve (unborn or orphan branch)"
+    fi
+    printf '%-24s %s%s%s\n' "$r" "${_against:+$_against · }" "${_how:+$_how · }" "$_cmp"
+  else
+    printf '%-24s %sNO INTEGRATION BRANCH <integration> — nothing to compare against\n' \
+      "$r" "${_against:+$_against · }"
+  fi
   git -C "$r" status --short | head -5
 done <<'REPOS'
 <repo paths, one per line>
@@ -38,12 +68,30 @@ empty row. **That line is not a result** — fix the fill and run it again. It i
 fatal, so read the output rather than the exit status.
 
 Read the code you plan around **as it is on the integration branch**, without checking anything
-out:
+out. Resolve which ref you can actually read first, and say which one you used — `origin/…` does
+not exist in a repo with no remote, and `show` and `grep` both die at exit 128 rather than
+degrading:
 
 ```bash
-git -C <repo> show origin/<integration>:<path>
-git -C <repo> grep -n "<term>" origin/<integration> -- src/
+ref=""                       # reset it: a value left over from an earlier run would be used silently
+# two quoted literals, not a path list — `for` is correct here, unlike over repo paths
+for cand in "origin/<integration>" "<integration>"; do
+  git -C <repo> rev-parse --verify -q "$cand" >/dev/null && { ref="$cand"; break; }
+done
+if [ -z "$ref" ]; then
+  echo "NO INTEGRATION REF — neither origin/<integration> nor <integration> exists."
+  echo "Read the working tree instead, and say in the plan that that is what you did."
+else
+  echo "reading at: $ref"
+  git -C <repo> show "$ref:<path>"
+  git -C <repo> grep -n "<term>" "$ref" -- src/
+fi
 ```
+
+Falling back to the local `<integration>` is a real degrade, not an equivalent: it is this
+machine's last-fetched view, so the plan may be built against code someone else has already
+changed. **Say so in the plan** rather than letting the reader assume the remote was read. With no
+ref at all, read the working tree and say that is what you did.
 
 ## 2. Read the sources
 
@@ -116,9 +164,22 @@ Show the plan (and mockup) and **wait for a yes**. Then, per repo touched — as
 uncommitted work first, never discarding it:
 
 ```bash
-git -C <repo> switch <integration> && git -C <repo> pull --ff-only
-git -C <repo> switch -c <branch>
+( git -C <repo> switch <integration> || exit 1   # a subshell: a bare exit would close a persistent terminal
+  if git -C <repo> rev-parse --verify -q '@{u}' >/dev/null; then
+    git -C <repo> pull --ff-only || echo "PULL FAILED — branching from a stale <integration>"
+  else
+    echo "no usable upstream for <integration> (never pushed, or [gone]) — branching from the"
+    echo "local tip, which may be behind"
+  fi
+  git -C <repo> switch -c <branch> )
 ```
+
+The `pull` is guarded because the unguarded pair ran the second command regardless: the pull failed
+at exit 1 with `no tracking information`, and the branch was created anyway from whatever the local
+tip happened to be. A branch cut from a stale base is the kind of thing nobody notices until the
+merge. **The branch is still created when the pull is skipped or fails** — that is deliberate, and
+it is why the reason is printed: stopping would leave the agent with nowhere to work, so it
+continues and the plan records which base it got. Only a failed `switch` aborts.
 
 With `worktrees: true`, the worktree and branch already exist from `ws-start`; work there.
 
