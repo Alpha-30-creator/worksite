@@ -707,7 +707,7 @@ third signal that it is not worth a track.
   `ws-setup` warning when it generates one. Both are schema work with no behaviour yet behind
   them, and the alias makes the leak harmless whatever the key says.
 
-## [ ] p8.37 — `ws-refine`'s own audit cannot be run as delivered, and part 3b then reports zero
+## [~] p8.37 — `ws-refine`'s own audit cannot be run as delivered, and part 3b then reports zero @Alpha-30-creator · 2026-11-03
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
