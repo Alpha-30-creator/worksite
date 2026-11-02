@@ -8,8 +8,26 @@
 set -uo pipefail
 
 cd "$(dirname "$0")/.."
-MODE="${1:-}"
+MODE=""
+SKIP_OBJECT_STORE=0
+for arg in "$@"; do
+  case "$arg" in
+    --staged) MODE="--staged" ;;
+    # Only the publish path passes this, and only for the throwaway clone it assembles. A local
+    # `git clone` copies the whole object store but NOT the reflogs, and `git fsck` treats reflog
+    # entries as roots — so every object the source's reflog was holding arrives in the clone with
+    # nothing reaching it. Measured 2026-11-03: this repo reports 29 unreachable blobs and 0
+    # undeclared, while a clone of it reports 46 blobs, 105 trees and 51 commits unreachable, one
+    # of them a pre-p2.2 skill version that is REACHABLE in main's history and therefore correctly
+    # ignored here. Section 6 is about one machine's local hygiene; inside a candidate clone it
+    # measures the source's reflog history and gates the publish on it (p8.38).
+    --no-object-store) SKIP_OBJECT_STORE=1 ;;
+    "") ;;
+    *) printf '%s\n' "unknown argument: $arg" >&2; exit 2 ;;
+  esac
+done
 FAIL=0
+SKIPPED=""
 # Coverage is defined entirely by scripts/leak-patterns.txt: `#` comments, `!` allowlist
 # entries, and one extended regex per remaining line. Nothing is forgiven by a literal in this
 # script — before p8.31 one string was, and auditing coverage meant reading both files.
@@ -288,7 +306,15 @@ fi
 # A fresh clone has no unreachable objects at all and must say that it looked, per ADR 0004.
 say "== 6. object store (unreachable objects) =="
 BASE="scripts/object-store-baseline.txt"
-if ! git rev-parse --git-dir >/dev/null 2>&1; then
+if [ "$SKIP_OBJECT_STORE" -eq 1 ]; then
+  # Said here AND in the closing summary. A section that quietly does not run is the defect this
+  # repo keeps fixing, so opting out is louder than running.
+  say "  SKIPPED by --no-object-store — this is a throwaway clone, whose unreachable objects are"
+  say "  an artifact of cloning (reflogs are not copied), not of the content under test."
+  say "  Sections 1-5 above DID run on this content. The object store of the real repo is checked"
+  say "  by its own run of this script, by the pre-commit hook and by CI."
+  SKIPPED="section 6 (object store)"
+elif ! git rev-parse --git-dir >/dev/null 2>&1; then
   say "  skipped — not a git repo, so there is no object store to read"
 else
   # The baseline is read before anything is scanned, and "absent" and "unreadable" are told
@@ -400,5 +426,10 @@ UNREACHABLE_TREES
 fi
 
 say ""
-[ "$FAIL" -eq 0 ] && say "all checks passed" || say "checks FAILED"
+if [ -n "$SKIPPED" ]; then
+  [ "$FAIL" -eq 0 ] && say "all checks passed EXCEPT $SKIPPED, which was skipped by request" \
+                    || say "checks FAILED (and $SKIPPED was skipped by request)"
+else
+  [ "$FAIL" -eq 0 ] && say "all checks passed" || say "checks FAILED"
+fi
 exit "$FAIL"
