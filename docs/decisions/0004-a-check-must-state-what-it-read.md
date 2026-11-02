@@ -31,10 +31,14 @@ about, that shape failed two ways, and **both of them read as success**:
 The second is the sharper one and it is not hypothetical: it was reproduced twice independently,
 once from the fixture trail and once by hand, before this ADR was written.
 
-The general shape, which [`tier1-universal.md`](../../skills/ws-shared/review/tier1-universal.md)
-now carries as its own entry 15: where a check greps, globs, parses or queries for a condition, a
-missing input, an unreadable one, an empty glob and a failed call all return the same nothing as a
-real negative — and the branch that nothing falls to is the permissive one.
+The general shape, written down once as entry 15 of the pack's universal review checks — in the
+**library** copy of `tier1-universal.md`, which is the one agents load. The
+[received copy in this repo](../../skills/ws-shared/review/tier1-universal.md) ends at entry 14
+until a publish carries the change across, and keeping those two copies distinct is what
+[ADR 0001](0001-library-is-the-source-of-truth.md) is for. The shape: where a check greps, globs,
+parses or queries for a condition, a missing input, an unreadable one, an empty glob and a failed
+call all return the same nothing as a real negative — and the branch that nothing falls to is the
+permissive one.
 
 ## Decision
 
@@ -114,6 +118,14 @@ before, only louder.
 - **The audit now has two outcomes that are not "pass" and "fail": it also has "aborted".** An
   abort is not a finding about the change; it is the audit declining to have an opinion. Anyone
   reading a report has to tell the three apart, which is why the verdict line names its counts.
+- **The fix reproduced the defect once, and the shape of that is the argument for this ADR.** The
+  per-agent check runs inside a command substitution, so a `SystemExit` in it ends that subshell
+  and not the audit. Review found that a dead check therefore left the verdict printing
+  `0 missing under an agent` at exit 0 — a zero produced by a check that did not run, which is this
+  task's own sentence inside this task's own fix. It is closed in shell, by asserting the check's
+  output line was printed before the verdict is allowed to count it. The lesson generalises past
+  this block: **a check that cannot fail the thing it reports into must assert its own output**,
+  because "no findings" and "no run" are the same text otherwise.
 - **The first run of the new audit over its own source happens under the new audit.** There is no
   way around that for a check living inside the thing it checks. The regress is closed by fixtures
   **independent of the library** — a failed `cd`, the published artifact, a gutted store, a
