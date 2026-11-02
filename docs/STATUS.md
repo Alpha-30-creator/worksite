@@ -43,6 +43,7 @@ ADR 0004 that had rejected this shape, and accepts the one objection that still 
 | id | title | claimed | where it is |
 |---|---|---|---|
 | p8.37 | `ws-refine`'s audit cannot be run as delivered | 2026-11-03 @Alpha-30-creator | claimed |
+| p8.38 | §6 blocks every publish — a local clone has no reflogs | 2026-11-03 @Alpha-30-creator | claimed, blocking p8.37's publish |
 
 **p8.31 shipped 2026-11-03** ([PR #17](https://github.com/Alpha-30-creator/worksite/pull/17)):
 `scripts/check.sh` grew sections 5 and 6 — the state dir's ignore rule is asserted rather than

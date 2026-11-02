@@ -743,6 +743,39 @@ third signal that it is not worth a track.
   that. The workaround is the evidence: an audit that cannot be used as delivered is an audit
   most invocations will skip.
 
+## [~] p8.38 — Section 6 blocks every publish, because a local clone has no reflogs @Alpha-30-creator · 2026-11-03
+
+- **Repos:** worksite
+- **Depends on:** —
+- **Found 2026-11-03 by p8.37's own publish**, which is the first publish to run against a `main`
+  carrying section 6 (it reached `main` in 8563b7c, after p8.31's own publishes had already run
+  against the four-section script).
+- **Why:** `scripts/publish.sh` assembles the candidate in `git clone --no-hardlinks` of the
+  target and runs `scripts/check.sh` **inside that clone**. A local clone copies the whole object
+  store but **does not copy reflogs**, and `git fsck` treats reflog entries as roots — so every
+  object the source's reflog was holding arrives in the candidate with nothing reaching it.
+  Measured: the source reports 29 unreachable blobs and 0 undeclared; the candidate clone of the
+  same repo reports **46 unreachable blobs, 105 trees and 51 unreachable commits**, with 22 refs.
+  One of those blobs is a pre-p2.2 skill version carrying the private project abbreviations — real
+  content, **reachable in `main`'s history** from 10177fb and therefore correctly ignored by
+  section 6 in the source, and flagged in the candidate.
+- **So the publish path now refuses on something that is not about the bytes being published.**
+  Fail-safe rather than fail-open, and still a full stop: the library cannot reach the public repo
+  at all, so `skills/` goes stale and section 4 stays drifted indefinitely.
+- **Acceptance:**
+  - [ ] the candidate scan stops gating on the local object store, and the way it stops is
+        **explicit in the output** — a section that silently does not run is the defect class this
+        repo keeps fixing, so `check.sh` must say which sections it skipped and why
+  - [ ] section 6 still runs, and still fails, on the target repo's own preflight, on its staged
+        tree, in the pre-commit hook and in CI. Only the throwaway clone opts out
+  - [ ] proven by running a real publish end to end, not by reading
+  - [ ] the reflog interaction is stated where section 6's coverage is defined, since it now cuts
+        both ways: a reflog **hides** residue from the source and **invents** it in a clone
+- **Notes:** the mechanism was already recorded in
+  [records/known-limitations.md](../records/known-limitations.md) as a blind spot of section 6 —
+  "a reflog keeps an abandoned commit reachable, so section 6 is weakest right after the mistake".
+  The same sentence read from the other end predicts this, and nobody read it from that end.
+
 ## [ ] p8.32 — A retired track leaves its parent directory behind, and the root it lives under is undefined
 
 - **Repos:** worksite (pack)
