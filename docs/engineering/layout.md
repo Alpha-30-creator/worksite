@@ -87,6 +87,96 @@ Publish commits land on `main` directly rather than through a pull request. That
 residual risk and the mechanism's rejected alternatives are
 [ADR 0002](../decisions/0002-publishing-is-a-guarded-copy-from-the-library.md).
 
+### How the graph audit composes
+
+`ws-refine` ends with a graph audit, and every pack change is required to run it — so it is the
+one check whose own correctness is load-bearing for all the others. It runs as **one bash block**,
+whole: the later parts read counts the earlier parts established, and half of it produces a verdict
+that has not been earned.
+
+It reads three things, from three places, and the distinction matters because two of them are not
+in this repo:
+
+| It reads | From | Which copy that is |
+|---|---|---|
+| the pack's own Markdown — frontmatter, skill references, links, `What next?` sections | `~/.agent-sync/store/skills/` | the **library**: the working copy, which is what the audit is *about* |
+| whether each referenced file reached each agent | the deployed trees, one per agent | the **deployed copies**, written by `agent-sync save` |
+| whether anything is unapplied | `agent-sync status --json` → `operations[]` | neither copy — the deployment's own state |
+
+**Nothing in the audit reads this repo.** `skills/` here is a received copy
+([ADR 0001](../decisions/0001-library-is-the-source-of-truth.md)) and auditing it would answer
+about files no agent loads — which is exactly the failure the first two parts exist to refuse.
+
+Two **gates** decide whether a verdict is available at all, then five checks run, then a verdict
+line names its own counts:
+
+1. **Is it deployed?** Any `agent-sync` operation on a `skill/ws-*` ref aborts the audit —
+   `conflicted` by name, anything else as pending. Run before `agent-sync save` this gate
+   **always** aborts, because the library has moved and the deployed copies have not. That is
+   correct: the run that certifies a change is the one *after* the save.
+2. **Is this the library?** The resolved working directory is compared against the store path
+   `agent-sync` itself reports — not against the string the block just used to `cd`, which would be
+   a comparison of a value with itself. Then a readable `ws-shared/SKILL.md` as a marker and a floor
+   of ten readable `ws-*/SKILL.md`, which catch the right directory holding the wrong contents.
+3. **Frontmatter**, **forward coverage** (every skill named **anywhere in the pack** exists — it
+   greps whole `SKILL.md` files, not only `What next?` sections, which is wider than the heading
+   on it suggests and is the safe direction), and **links**,
+   now over all of the pack's Markdown rather than only each `SKILL.md`, each link resolved against
+   the directory of the file that holds it. Its character class includes `_` and `A-Z` because
+   without them a `new_device.md`- or `README.md`-shaped target is invisible to the check rather
+   than reported by it — a silent pass inside the check that exists to find silent passes.
+4. **Reverse coverage** — every exit the *prose* offers is listed in that skill's `What next?`.
+5. **The deployed check, per agent**, printed even when clean — and the block then **asserts that
+   line was printed** before the verdict counts it. That assertion is not decoration: the check
+   runs inside a command substitution, so its own failure cannot end the block, and without the
+   assertion a dead check left the verdict printing `0 missing under an agent` at exit 0. A zero
+   from a check that did not run is the defect this whole block exists to kill, and it was found
+   in review *inside the fix*.
+
+**Every count in the verdict is earned, and that is the point of the design rather than a detail.**
+Parts 3 to 6 each do their work in a plain loop and end without an `exit`, so a part that read
+nothing leaves its findings variable empty — which is the same text as "no findings". So each part
+carries a **denominator** into the verdict and the block asserts it before printing: how many
+`SKILL.md` were parsed, how many skill names were resolved, how many files and links were read, and
+how many skills were both *checked* and *actually scanned*. A denominator of zero, or a mismatch
+between two parts' counts, aborts instead of certifying. Three consequences worth knowing:
+
+- **`0 findings` and `0 read` are now different outputs.** Before this, a `grep` writing
+  `Permission denied` to stderr still produced `0 missing skill` in the verdict.
+- **A `ws-*` directory whose `SKILL.md` cannot be read is reported, not dropped.** Directories that
+  *exist* and directories that are *readable* are counted separately and the difference is a
+  finding, because noticing the gap by knowing today's count by heart is exactly the bookkeeping
+  the preflight's floor refuses to be.
+- **`set -e` is deliberately not used, and would be actively harmful.** A clean part ends on
+  `[ -n "$x" ] && printf …`, which returns **non-zero precisely when there are no findings**, so
+  under `set -e` the block would abort exactly when the audit is clean. Positive counts are the
+  only route. This is written down because it is the first thing anyone will reach for.
+
+**One failure mode this design caught in its own author's work**, recorded because it is the
+argument for it: part 3 was first written using a variable name that part 1 already held the
+`agent-sync` JSON in. Part 3 clobbered it, part 7 silently received nothing — and the completion
+sentinel added one revision earlier is what surfaced it, rather than a verdict reading `0 missing
+under an agent`.
+
+**What it does not cover**, so the absence is not read as coverage:
+
+| Blind spot | Consequence |
+|---|---|
+| reverse coverage is anchored on backticks **and** an offer verb | an exit offered in prose that names no skill in backticks, or through a verb outside the anchor list, is invisible. The anchor list is a sample of the pack's current idiom, not a grammar |
+| **precision** is 3 candidates, 2 of them real, on the pack as it stands | roughly one false positive per pack-wide run. Each finding is read and judged, never auto-fixed, and it does not fail the audit — a comparison reads exactly like an offer and only a reader can tell them apart |
+| **recall is the weaker half, and the larger number**: 33 distinct prose mentions of a sibling, 9 survive the verb filter, **12 unlisted pairs are never reported** | the check narrows the pack to a line or two worth reading. It is **not** a coverage guarantee in either direction. The figures and the misses are [the dated record](../records/2026-11-02-reverse-coverage-precision.md) |
+| **fenced code blocks are excluded from the scan** | the check is about what the *prose* offers, and a comment inside a shell block is not prose — it tripped on one in the audit's own text. The cost is one-directional: an exit offered **only** inside a fenced example is missed |
+| reverse coverage only looks at `SKILL.md` files | shared reference material sends readers to skills by name and has no `What next?`. Skills without one are **counted and the count printed**, not silently skipped |
+| the identity assertion fires first on any wrong directory | the marker and the floor can only ever fire on the real library path, so testing them needs identity satisfied by construction |
+| a skill whose entire body before `What next?` is fenced code | reported as `NO PROSE EXTRACTED` and **aborts**, because it is indistinguishable from a file whose frontmatter never closed. Legitimate-but-pathological input therefore stops the audit rather than being waved through |
+| it depends on `agent-sync` being runnable | on a machine with no deployment the audit **aborts** rather than running a narrower version of itself |
+| that an agent *obeys* `AUDIT ABORTED` is not proved | the shell makes the abort unavoidable within the snippet; the claim is only that a clean verdict is unreachable without the counts being printed |
+
+Why a verdict has to state its subject at all, the alternative that was tried and disproved, and
+why `ok`, `exitCode` and `targets[]` are not read from `agent-sync status`, are
+[ADR 0004](../decisions/0004-a-check-must-state-what-it-read.md). The measured precision behind the
+reverse check is [a dated record](../records/2026-11-02-reverse-coverage-precision.md).
+
 ## The docs tree here
 
 The pack's shared reference holds the generic docs structure and the living/immutable property
