@@ -65,6 +65,32 @@ Afterwards: recreate any worktrees you removed, from the new tip. Anyone who had
 still holds the old objects — for this repo that was nobody, which is worth confirming rather
 than assuming.
 
+## The unreachable case — residue, not a leak
+
+Everything above is about a name that reached a **commit**. There is a second, quieter case, and
+it is the common one: `git add` writes a blob into `.git/objects` **before** any hook can refuse
+the commit, so a commit the guard **refused** still leaves its content in the object store. The
+object is unreachable — no commit points at it — and that distinction is the whole of the
+difference:
+
+| | reachable | unreachable |
+|---|---|---|
+| pushed to the remote? | yes | **never** — git sends only what the ref graph reaches |
+| in a fresh clone? | yes | **no** |
+| remedy | the procedure above: rewrite, force-with-lease, confirm who else holds the old objects | declare it, or remove it locally — there is nothing published to undo |
+
+So an unreachable object carrying a private name is **local residue on one machine**, not a leak,
+and it needs none of the destructive procedure above. It still gets asserted rather than assumed:
+section 6 of `scripts/check.sh` reads the unreachable objects and fails on any hit not declared
+in [`scripts/object-store-baseline.txt`](../../scripts/object-store-baseline.txt).
+
+**Do not clear residue with `git gc --prune=now`.** A workspace running the loop has live
+worktrees sharing one object store, and their unreachable objects are wanted — a bare prune
+destroys work in progress that is not residue at all. On this repo the decision taken on
+2026-11-02 was to **leave the measured residue in place and assert it**; the baseline file carries
+that decision and the reason. Revisit it only when no worktree is live, and then by the procedure
+above rather than by a prune.
+
 ## What this does not fix
 
 **The leak reached the remote because a check did not catch it.** Purging history is cleanup, not

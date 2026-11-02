@@ -3,8 +3,15 @@
 # is generic by design, so any of them appearing in a committed file is a bug.
 #
 # scripts/check.sh and this file are excluded from the scan, as is LICENSE
-# (the copyright holder's name belongs there) and any match for the public npm
-# scope @abdur-codes, which is a real install command.
+# (the copyright holder's name belongs there).
+#
+# A line beginning with `!` is an ALLOWLIST entry: that substring is blanked out of every
+# line before the patterns are matched, case-insensitively. It is stripped from the line
+# rather than used to drop the line — a private name sharing a line with an allowlisted
+# string is still caught. Allowlist entries live here, with the patterns, so this file alone
+# is the whole definition of what the scan covers (p8.31; before it, one string was inline in
+# check.sh, and auditing coverage meant reading both).
+!abdur-codes
 vinpit
 makerspark
 aetea

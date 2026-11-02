@@ -16,8 +16,10 @@ a link written inside prose or inside a fenced code block is resolved as a real 
 the build; a page that documents the link checker cannot show a broken link.
 
 **Section 3 resolves relative links only.** It never resolves an anchor, never a line number, and
-never its own coverage — the inline allowlisted string in section 1 is part of what the scan
-excludes and is not in `scripts/leak-patterns.txt`.
+never its own coverage. Section 1's allowlist used to be part of that gap — one string was inline
+in the script rather than in `scripts/leak-patterns.txt`, so the pattern file did not describe the
+whole scan. It does now (p8.31); what remains outside it is the excluded-files table in
+[../engineering/layout.md](../engineering/layout.md).
 
 **`LICENSE`'s exclusion from section 1 is whole-file.** It is applied before the file's content is
 read, in both modes, rather than being scoped to the copyright line that needed it, so a line that
@@ -88,6 +90,35 @@ pushed by another route, and the operator's escape is to override it knowingly.
 **An `artifacts: in-repo` project's journal does not travel between machines.** `in-repo`
 relocates the plan and only the plan, and the journal mirror is exempt on that layout, so a track
 resumed on a second machine resumes from the plan and the tracker.
+
+## The leak guard
+
+**Section 6 reads unreachable objects only; no section reads reachable history.** Section 1 scans
+the current tree, so a private name in an old commit is invisible to the whole suite. That case is
+the [purge runbook](../runbooks/purge-a-leak-from-history.md)'s, and it is the operator's to
+notice.
+
+**A reflog hides residue from section 6 for as long as it holds it.** `git fsck` treats reflog
+entries as roots, so the blobs and trees of a commit just dropped by `reset` or `amend` are still
+*reachable* and the section cannot see them — it becomes able to only when the reflog expires,
+typically 90 days later. The section is therefore at its weakest in the minutes after the mistake
+it would catch. Measured 2026-11-02: an abandoned commit's tree appeared to section 6 only after
+`git reflog expire --expire=now --all`.
+
+**Section 6 does not scan unreachable commit objects.** A commit header always carries the
+committer's name and email, so a pattern list that includes the author's name matches every commit
+and nothing can distinguish that from a leak. The number of unscanned commits is printed, so the
+gap is visible rather than implied.
+
+**Section 6's baseline is a list of hashes, so it is machine-local by nature.** A fresh clone has
+none of those objects and reads zero; the declaration protects the machine that measured it and
+nothing else. It cannot distinguish residue from a worktree's work in progress either, which is
+why the decision not to prune lives in the file rather than in the check.
+
+**The journal's device alias is not a secret.** It is `dev-` plus six hex of the device name's
+sha256, so anyone who guesses the name confirms it. The claim is narrower than privacy: a mirror
+pushed to a public repo stops carrying a name nobody chose to publish. A hand-written override in
+the state dir is the author's to keep non-identifying; nothing checks it.
 
 ## The docs and the pack
 
