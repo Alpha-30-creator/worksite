@@ -95,16 +95,19 @@ The workspace root **is** the repo — a single-repo project. That matters twice
 
 - Always `git -C .` from the root; there is no sibling repo to confuse it with.
 - The state dir is normally uncommittable because the workspace root is not a git repo. Here it
-  is, so `.worksite/` is protected by `.gitignore` alone. **Do not remove that line.**
+  is, so `.worksite/` is protected by `.gitignore` alone. **Do not remove that line** — and since
+  p8.31, removing it is a **check** rather than a reminder: `scripts/check.sh` section 5 reads
+  `state_dir` from this file and asserts `git check-ignore` matches it.
 
 | Path | Role |
 |---|---|
 | `skills/` | the pack as published: the thirteen workflow skills plus `ws-shared`, a plain copy out of the library ([ADR 0001](../decisions/0001-library-is-the-source-of-truth.md)) |
 | `examples/` | worked examples a stranger can read: two whole cartridges, `device.yaml`, `manifest.tsv`, a tracker example. Exists — the second cartridge landed with p8.5 |
 | `docs/` | STATUS, roadmap, decisions, worklog and this cartridge, plus the reference pages — the cartridge schema under `integration/`, the concepts page under `product/`, sync direction under `engineering/` — and `records/` for what a validation run found, `runbooks/` for procedures to follow under pressure, including purging a leak from history |
-| `scripts/check.sh` | the whole test suite: leak scan, frontmatter, links, library parity |
+| `scripts/check.sh` | the whole test suite: leak scan, frontmatter, links, library parity, the state-dir ignore assertion, the object store |
 | `scripts/publish.sh` | copies the `ws-*` skills out of the agent-sync library into the repo it sits in, behind the guard — the only way skills reach this repo ([ADR 0002](../decisions/0002-publishing-is-a-guarded-copy-from-the-library.md)). Which workspaces get published into is resolved by `ws-refine` from configuration that is never published, because a workspace path is itself a private name |
-| `scripts/leak-patterns.txt` | the patterns section 1 scans for. A private name that is not in here is invisible to the guard |
+| `scripts/leak-patterns.txt` | the patterns section 1 scans for, **and the `!` allowlist entries it strips before matching** — this file alone defines the scan's coverage. A private name that is not in here is invisible to the guard |
+| `scripts/object-store-baseline.txt` | the unreachable objects known to carry a pattern, with the measurement and the decision not to prune. Section 6 fails on any undeclared hit |
 | `.githooks/pre-commit` | runs the leak scan on staged content |
 | `.worksite/` | tracks, journal, scratch. Gitignored |
 
@@ -119,7 +122,7 @@ The workspace root **is** the repo — a single-repo project. That matters twice
 | **What each check actually covers, and what it misses** | [../engineering/layout.md](../engineering/layout.md) — the only page with the per-section blind spots, and it was unreachable from here until 2026-11-02 |
 | Limitations that are recorded rather than tracked | [../records/known-limitations.md](../records/known-limitations.md) |
 | What a shipped task left behind | [worklog/](worklog/) — one file per track, written by `ws-ship` at harvest |
-| An in-flight track's journal | `.worksite/tracks/<id>/journal.md` — **local only** here, not mirrored. `.gitignore` carries the reason: the entry header embeds the device name and this repo is public. Enforced there, not by memory; the alias is p8.31 |
+| An in-flight track's journal | `.worksite/tracks/<id>/journal.md` — **local only** here, not mirrored. The entry header carries a derived device **alias** since p8.31, so the mirror is no longer the leak it was; `.gitignore` keeps it local anyway, because a journal records what was done on which machine and this repo is public. The reason is in the ignore file, not in memory |
 
 ## Rules that override defaults
 
@@ -152,4 +155,6 @@ The workspace root **is** the repo — a single-repo project. That matters twice
   pre-commit hook is no longer the only guard — a contributor who never ran
   `git config core.hooksPath .githooks` is now caught at the PR. The honest half is unchanged:
   both run the same `scripts/leak-patterns.txt`, so a private name nobody has added to that file
-  passes every one of them. The pattern list is the limit of what either guard can catch.
+  passes every one of them. The pattern list is the limit of what either guard can catch. There
+  are **five** automated run sites in all, enumerated in [SECURITY.md](../../SECURITY.md); the
+  count said four until p8.31 corrected it.

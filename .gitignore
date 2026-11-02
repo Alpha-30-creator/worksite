@@ -1,9 +1,12 @@
 # Workspace state — tracks, journals, scratch. Never committed.
 .worksite/
 
-# The journal mirror. Normally committed so a track can be resumed on another
-# machine; not here, because the journal's own format embeds the device name and
-# this repo is public. See p8.8. The journal stays local for this project.
+# The journal mirror. Normally committed so a track can be resumed on another machine; not here.
+# The entry header now carries a derived device ALIAS rather than the device name (p8.31), so the
+# mirror is no longer the leak it was under p8.8 — but a journal still records what was done on
+# which machine and when, and this repo is public, so the journal stays local for this project.
+# scripts/check.sh section 5 asserts the .worksite/ rule above; this line has no such check,
+# because an untracked mirror is indistinguishable from one that was never created.
 docs/agent/journal/
 
 # OS / editor

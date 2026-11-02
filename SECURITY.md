@@ -21,15 +21,31 @@ case-insensitively against the extended regexes in
 of every hit. **Which files it enumerates depends on the mode:** run with no arguments it reads the
 whole working tree, tracked and untracked alike; run with `--staged` it reads
 `git diff --cached --diff-filter=ACM`, so only staged additions and modifications — a file that is
-untracked, or tracked and unmodified, is not read at all in that mode. It runs in four places:
+untracked, or tracked and unmodified, is not read at all in that mode. It runs automatically in
+**five** places — three of them on the publish path, two of them in `--staged` mode:
 
-- in a throwaway clone on the publish path, before a byte is written here;
-- again on this repo's staged tree, which is what is actually about to be committed (`--staged`);
-- once more in the pre-commit hook, on exactly those staged bytes (`--staged`);
-- and, since this file was written, in CI — [`.github/workflows/check.yml`](.github/workflows/check.yml)
-  runs the whole suite on every pull request into `main` and on every push to `main`, the second
-  of which exists because publish commits land on `main` directly
+- as a **preflight on this repo before the publish starts** (`scripts/publish.sh`:181, working-tree
+  mode), which refuses to publish into a tree whose guard is already failing — so a pre-existing
+  leak is never buried under a publish commit;
+- in a throwaway clone of the candidate, before a byte is written here (`publish.sh`:277,
+  working-tree mode);
+- again on this repo's staged tree, which is what is actually about to be committed
+  (`publish.sh`:321, `--staged`);
+- once more in the pre-commit hook, on exactly those staged bytes
+  ([`.githooks/pre-commit`](.githooks/pre-commit), `--staged`) — which fires on the publish commit
+  too, since `publish.sh` never passes `--no-verify`;
+- and in CI — [`.github/workflows/check.yml`](.github/workflows/check.yml):24 runs the whole suite
+  on every pull request into `main` and on every push to `main`, the second of which exists because
+  publish commits land on `main` directly
   ([ADR 0002](docs/decisions/0002-publishing-is-a-guarded-copy-from-the-library.md)).
+
+Plus one documented manual run, at [`CONTRIBUTING.md`](CONTRIBUTING.md):62.
+
+**Five sites, six invocation lines.** `publish.sh`:181 and :184 are the same preflight: when it
+fails, the second line re-runs it without `>/dev/null` so the output is visible. Someone counting
+`bash scripts/check.sh` finds six and should not "correct" the five.
+
+This count was **four** until 2026-11-02, omitting the preflight (p8.31).
 
 The one thing that is guaranteed, stated no wider than it holds: in a file that is neither
 excluded nor caught by the inline allowlist, a string matching a pattern in
@@ -39,18 +55,19 @@ cannot be committed on a clone where the hook is installed.
 **The push-to-`main` run reports after the fact.** The commit has already landed by the time it
 starts, so it cannot block anything — not even with branch protection, which gates merges rather
 than pushes. It is a signal, not a gate. The publish path that uses that route is not therefore
-unguarded: it keeps its own three runs of the guard, the first of them in a throwaway clone
-before a byte is written here, and the CI run is a fourth look at bytes those three have already
-passed.
+unguarded: it keeps its own three runs of the guard — a preflight on this repo, then a throwaway
+clone before a byte is written here, then this repo's staged tree — the hook fires on the publish
+commit as a fourth, and the CI run is a fifth look at bytes those four have already passed.
 
 ## What it does not protect
 
 1. **It is a regex scan over a fixed list.** A private name nobody has added to
-   `scripts/leak-patterns.txt` is invisible to every run, because all four read the same file.
-   Coverage is the listed patterns, **minus the files excluded in
-   [docs/engineering/layout.md](docs/engineering/layout.md)'s table, minus one string allowlisted
-   inline in `check.sh` itself** — so auditing coverage means reading both the pattern file and the
-   script. Green means "no known pattern". It has never meant "no private data".
+   `scripts/leak-patterns.txt` is invisible to every run, because all five read the same file.
+   Coverage is the patterns listed there **minus its own `!` allowlist entries, minus the files
+   excluded in [docs/engineering/layout.md](docs/engineering/layout.md)'s table** — so the pattern
+   file plus that one table is the whole of it. Until 2026-11-02 one allowlisted string was inline
+   in `check.sh`, and auditing coverage meant reading the script too (p8.31). Green means "no known
+   pattern". It has never meant "no private data".
 2. **It is not a secret scanner.** A key, a token, a password or a credential file is not a name
    and passes every run. The hook's own comment says this; this is the file it points at. What
    does cover credentials on this repo is GitHub's secret scanning and push protection, which are

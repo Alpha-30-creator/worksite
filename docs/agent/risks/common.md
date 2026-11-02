@@ -54,7 +54,7 @@ was.
   than a proxy for it, and treat a number appearing twice in one file as a claim about arithmetic.
 - A sentence describing what a check covers that is true of **one mode** of that check and reads as
   true of all of them. `scripts/check.sh` enumerates the whole working tree with no arguments and
-  only staged additions with `--staged`, and it runs in four places, two of them staged — so
+  only staged additions with `--staged`, and it runs in five places, two of them staged — so
   "section 1 reads tracked and untracked files" is right about one run and wrong about two. Four of
   the five findings on p4.3 were this shape. Name the mode in the clause, not in a later paragraph.
 - A paragraph written to manage citation drift that is **itself incomplete**, which reads exactly

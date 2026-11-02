@@ -89,6 +89,23 @@ pushed by another route, and the operator's escape is to override it knowingly.
 relocates the plan and only the plan, and the journal mirror is exempt on that layout, so a track
 resumed on a second machine resumes from the plan and the tracker.
 
+## The leak guard
+
+**Section 6 reads unreachable objects only; no section reads reachable history.** Section 1 scans
+the current tree, so a private name in an old commit is invisible to the whole suite. That case is
+the [purge runbook](../runbooks/purge-a-leak-from-history.md)'s, and it is the operator's to
+notice.
+
+**Section 6's baseline is a list of hashes, so it is machine-local by nature.** A fresh clone has
+none of those objects and reads zero; the declaration protects the machine that measured it and
+nothing else. It cannot distinguish residue from a worktree's work in progress either, which is
+why the decision not to prune lives in the file rather than in the check.
+
+**The journal's device alias is not a secret.** It is `dev-` plus six hex of the device name's
+sha256, so anyone who guesses the name confirms it. The claim is narrower than privacy: a mirror
+pushed to a public repo stops carrying a name nobody chose to publish. A hand-written override in
+the state dir is the author's to keep non-identifying; nothing checks it.
+
 ## The docs and the pack
 
 **`file:line` citations anywhere in these docs are advisory.** The published copy they anchor to
