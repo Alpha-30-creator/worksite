@@ -144,6 +144,52 @@ prints `set: pipefail: invalid option name` and the script *continues* without `
 `pipefail` — measured, exit 0. The library copy has no CRLF and nothing asserts that it stays that
 way; `scripts/check.sh` does not scan `.sh` files for line endings.
 
+**The repo-path loops are a shape, not an executed rule.** p8.13 replaced the three
+`for r in <repos>` loops with the heredoc `while IFS= read -r r` form and proved all three by
+execution under bash against a workspace path containing a space. What ships is still a
+**template**: the heredoc body reads `<repo paths, one per line>` and an agent fills it. So the
+rule is enforced by the shape being hard to fill wrongly, not by anything that runs. Nothing in
+`scripts/check.sh` or in `ws-refine`'s audit looks for `for r in` in a skill body, and a future
+block written fresh in the old shape would ship.
+
+What holds is narrower than this paragraph first claimed. A `for` list can perfectly well be
+quoted — `for r in "$root" "$root"/*/`, quoted in the `ws-sync` paragraph below, is one — so the
+claim is not about `for`. It is about the **template**: `<repos>` is a single placeholder, giving
+the filling agent no per-path slot, while each heredoc line is one path by construction and is read
+whole. A second guard covers the rest: `git -C "$r" rev-parse --show-prefix` with an emptiness test
+on each path, measured empty at a repo root, a linked worktree root, a bare repo and through a
+symlink, and non-empty only in a **work-tree** subdirectory. A wrong *fill* — a stray leading or
+trailing space, a tab, a CRLF, a glob character, an unexpanded `~`, every path on one line, a
+subdirectory rather than a repo root, or the placeholder left in verbatim — now prints a named
+`NOT A REPO ROOT` line instead of one more reassuring `0 changed`. Twelve fillings were run before
+and after, with the raw output kept. The subdirectory case is the one worth knowing about:
+`rev-parse --git-dir`, which the first version of the guard used, succeeds there by discovery, so
+the path was accepted and git reported on the **parent** repo under the subdirectory's label, with
+no error printed anywhere.
+
+**The guard is loud but not fatal.** `continue` leaves the exit status at 0, so a fill in which
+every path is wrong still exits 0 — the output is the signal, not the status. It also prints
+`NOT A REPO ROOT` for a directory git cannot read, or refuses under its dubious-ownership check,
+and `2>/dev/null` hides git's own reason; the message points at the command rather than asserting
+the fill was wrong. `--show-prefix` is also empty **inside** the git directory, so `<repo>/.git`
+passes the guard and `git status` then fails with `fatal: this operation must be run in a work
+tree`. Left alone: unlike the subdirectory case, that one prints an error.
+
+**The four skill loops quote the delimiter (`<<'REPOS'`); `ws-shared/tracks.md`'s do not, and
+should not.** The first draft of this change left the delimiter unquoted and justified it by
+claiming that quoting would break `tracks.md` — which was simply false, since those are separate
+blocks in a different file. The skills' heredocs hold literal paths, so quoting them is right and
+they are now quoted: a path containing `$` or a backtick reaches `read` unaltered. The retirement
+block in `tracks.md` fills its loops with `$repos` from a variable and its `done <<REPOS` must stay
+unquoted for that to expand, while the `repos=$(cat <<'REPOS' … )` that *builds* the variable is
+quoted. Two different jobs, two correct answers — stated because they look inconsistent.
+
+**`ws-sync`'s two loops were deliberately left as `for`.** `for p in $(projects)` is safe only
+because the `sed` that produces the ids constrains them to `[a-z0-9-]`, and
+`for r in "$root" "$root"/*/` is glob-based and quoted. Both are correct and neither is a finding
+— stated here because they look like the bug p8.13 fixed and the next reader will want to "fix"
+them.
+
 **The pack's gates are desk-verified, not live-verified.** Every description, collision matrix and
 refusal has been checked by reading and by composition against fixtures; nothing yet proves that
 the loop's triggers fire in ordinary use, and the author of a description is the worst judge of

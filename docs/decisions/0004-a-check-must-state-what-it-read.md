@@ -110,7 +110,9 @@ of it; and ADR 0002's own rejection of "a script shipped inside the library" app
 Recorded so the next reader does not re-propose it as new.
 
 **Making the reverse coverage check a hard failure.** Its measured precision is two true positives
-in three findings on the pack as it stands. A hard failure at that rate blocks a legitimate change
+in three findings on the pack as it stood when this was decided (p8.13 later listed both true
+positives, so a run today yields one finding and none real — the ratio this paragraph reasons from
+is the one that was measured, not a standing fact). A hard failure at that rate blocks a legitimate change
 roughly once per pack-wide run, and a gate people learn to step over is worse than one that
 reports. It prints `UNLISTED EXIT` and the prose requires each finding to be read and judged.
 
