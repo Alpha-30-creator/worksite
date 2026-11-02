@@ -77,6 +77,7 @@ today, so they do not have to wait for P1–P7.
 | p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
 | p8.36 | The loop assumes a git remote and dies without one | four of five loop skills; the situation a stranger is actually in |
 | p8.30 | One rule for who may push the library | resolved by hand in the last batch, written down nowhere |
+| p8.37 | `ws-refine`'s audit cannot be run as delivered | its own positional parameters are substituted at delivery; part 3b then reports zero having scanned nothing |
 | p7.2 | Tag and announce | cut to one criterion — the README's claims verified against the tagged tree, the part that can fail silently |
 
 ## Shipped

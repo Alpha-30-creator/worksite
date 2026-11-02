@@ -707,6 +707,42 @@ third signal that it is not worth a track.
   `ws-setup` warning when it generates one. Both are schema work with no behaviour yet behind
   them, and the alias makes the leak harmless whatever the key says.
 
+## [ ] p8.37 — `ws-refine`'s own audit cannot be run as delivered, and part 3b then reports zero
+
+- **Repos:** worksite (pack)
+- **Depends on:** —
+- **Found 2026-11-03 while running p8.31's required audit**, by needing the block and not being
+  able to use it.
+- **Why:** the audit block contains **four `$0` references inside fenced awk programs**, and a
+  skill's body has the caller's argument string substituted into its positional parameters before
+  an agent ever sees it (p8.35). Invoked as `/ws-refine <anything>`, the delivered copy arrives
+  with `if($0!="---")` rewritten to `if(<first word of the argument>!="---")`, which awk cannot
+  parse. The failure is not loud:
+  - part 3's `fmst` awk dies, so every skill gets a spurious `FRONTMATTER` finding — noisy, but
+    visible;
+  - **part 3b's scanner dies and the part reports no findings at all**, while `npos` is
+    incremented *before* the awk runs. So the positional-parameter check passes with its
+    denominator intact and its scanner never executed. That is the exact shape p8.24 exists to
+    kill, inside the part added to catch it.
+- **And the audit cannot see this about itself.** p8.35's part 3b deliberately excludes `$0`,
+  because fenced awk programs use it as a field reference — a correct exclusion that makes this
+  blind spot structural rather than an oversight.
+- **Acceptance:**
+  - [ ] the audit is runnable from a skill invoked **with** an argument, proven by invoking it
+        that way and diffing the delivered block against the library file — not by reading
+  - [ ] part 3b cannot report zero having scanned nothing: its count is incremented only after
+        its scanner has produced a result, or the scanner's failure is asserted separately
+  - [ ] whatever fixes this does not reintroduce `$0` in a fenced program. The likely shape is a
+        reference **file** the audit runs by path, since nothing substitutes into a plain read —
+        which would also fix it for every other skill that ships an executable block
+  - [ ] every other `ws-*` skill is checked for the same hazard in a block an agent is expected
+        to run, and the result stated as a count
+  - [ ] changed through `ws-refine`, with its graph audit — which here means the audit must be
+        run to certify a change to itself, so say which copy was run and why
+- **Notes:** worked around for p8.31 by extracting the block from the library file and running
+  that. The workaround is the evidence: an audit that cannot be used as delivered is an audit
+  most invocations will skip.
+
 ## [ ] p8.32 — A retired track leaves its parent directory behind, and the root it lives under is undefined
 
 - **Repos:** worksite (pack)
