@@ -120,6 +120,8 @@ done
 #   .md                                 the pack itself — published silently
 #   the data extensions below           the pack's own reference data — published, and LISTED
 #                                       on every run, because a secret can wear any extension
+#   a path named in PACK_EXEC below     the pack's own executable files — published, and LISTED,
+#                                       by EXACT relative path and never by extension
 #   a dotfile or dot-directory          REFUSED
 #   anything else                       REFUSED
 #
@@ -127,6 +129,16 @@ done
 # listing is the point: these files are few and the list is short enough to read each time.
 EXTRA=""
 DATA=""
+EXEC=""
+# Executable files the pack legitimately ships, by EXACT relative path. Deliberately not a
+# `*.sh` glob: a stray install script or a credential-bearing helper dropped into the library
+# would then publish itself, which is the whole failure this classification exists to prevent.
+# Adding a file here is a decision, and it is made once, in the open, in this list.
+#
+# ws-refine/audit.sh is a file rather than a fenced block in its SKILL.md because a skill's body
+# has the caller's argument substituted into its positional parameters on delivery, which broke
+# the awk programs inside it (p8.37). Nothing substitutes into a file run by path.
+PACK_EXEC="ws-refine/audit.sh"
 for s in "${SRC[@]}"; do
   while IFS= read -r f; do
     [ -n "$f" ] || continue
@@ -140,8 +152,15 @@ for s in "${SRC[@]}"; do
       *.md) ;;
       *.tsv|*.csv|*.yaml|*.yml|*.json|*.txt) DATA="$DATA$rel
 " ;;
-      *) EXTRA="$EXTRA$rel
-" ;;
+      *)
+        # A whole-field match against the list, so "ws-refine/audit.sh.bak" is NOT forgiven.
+        if printf '%s\n' "$PACK_EXEC" | grep -qxF -- "$rel"; then
+          EXEC="$EXEC$rel
+"
+        else
+          EXTRA="$EXTRA$rel
+"
+        fi ;;
     esac
   done < <(find "$s" ! -type d 2>/dev/null)
 done
@@ -219,6 +238,10 @@ done
 if [ -n "$DATA" ]; then
   say "publish: reference data files included in this publish — read the list, the guard cannot:"
   printf '%s' "$DATA" | sed 's|^|  |'
+fi
+if [ -n "$EXEC" ]; then
+  say "publish: executable pack files in this publish — code, so read the diff and not just the name:"
+  printf '%s' "$EXEC" | sed 's|^|  |'
 fi
 
 # ---------------------------------------------------- 2. assemble the candidate in a clone
