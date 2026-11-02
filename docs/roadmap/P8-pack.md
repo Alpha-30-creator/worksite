@@ -988,7 +988,7 @@ third signal that it is not worth a track.
   measurement in
   [`records/2026-11-02-stranger-install-dry-run.md`](../records/2026-11-02-stranger-install-dry-run.md).
 
-## [~] p8.36 — The loop assumes a git remote, and dies rather than degrading without one
+## [r] p8.36 — The loop assumes a git remote, and dies rather than degrading without one
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
