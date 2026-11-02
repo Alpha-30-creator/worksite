@@ -27,13 +27,9 @@ guarded plain copy, its commits land directly on `main`, with the residual risk 
 
 ## In progress
 
-| id | what it is doing | where |
-|---|---|---|
-| p8.24 | the graph audit's silent-pass gates — built and reviewed twice, not shipped | library: `ws-refine`, `ws-setup`, `ws-shared/review/`, `ws-shared/trackers/` |
-
-p8.24 is held back from this batch's ship. Its second review found a Must — the fix reproduced the
-defect it exists to kill, one part over — and closing it surfaced a **third** instance. The library
-is ahead of the published `skills/` until it ships, which is why §4 reports three differences.
+Nothing claimed. A three-track batch shipped 2026-11-02: p1.2, p3.4 and p8.24. The graph audit now
+earns every count it prints, so a pack change is no longer certified by a check that may not have
+run — which was the argument for doing p8.24 before any other P8 task.
 
 ## Blocked
 
@@ -93,6 +89,7 @@ today, so they do not have to wait for P1–P7.
 | p4.2 | `INSTALL.md`, written for the agent that will run it | 2026-11-02 |
 | p1.2 | Prove the leak guard actually refuses a commit | 2026-11-02 |
 | p3.4 | An index for the docs tree | 2026-11-02 |
+| p8.24 | Gates that read an empty result as a pass | 2026-11-02 |
 
 ## Phases
 

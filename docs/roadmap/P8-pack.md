@@ -503,7 +503,7 @@ defect by this phase's new goal line.
 
 **Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`.
 
-## [r] p8.24 — Gates that read an empty result as a pass, and the graph audit has two of them · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/15
+## [x] p8.24 — Gates that read an empty result as a pass, and the graph audit has two of them · 2026-11-02 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/15
 
 - **Repos:** worksite (pack)
 - **Depends on:** p8.17
@@ -546,18 +546,18 @@ defect by this phase's new goal line.
   else holds; and `ws-setup`:22-24, where an empty `find` means "no cartridge" or "could not
   descend", picking **new** over **upgrade**. The second is mitigated by its show-and-wait gate.
 - **Acceptance:**
-  - [ ] the graph audit establishes it actually read something before reporting clean, and gains the
+  - [x] the graph audit establishes it actually read something before reporting clean, and gains the
         reverse check: every skill a `What next?` section's prose sends the agent to is listed
-  - [ ] the two adapter/setup sites distinguish "read it, the answer is no" from "could not read it"
-  - [ ] the class is written down once, in `ws-shared/review/tier1-universal.md`, as a universal
+  - [x] the two adapter/setup sites distinguish "read it, the answer is no" from "could not read it"
+  - [x] the class is written down once, in `ws-shared/review/tier1-universal.md`, as a universal
         rather than per-site: **a gate whose input is unreadable must not fall to the unsafe
         default** — establish that the input was read before branching on what it said
-  - [ ] *(from p8.9)* the audit checks the **deployed** copies, not only the library: for every
+  - [x] *(from p8.9)* the audit checks the **deployed** copies, not only the library: for every
         file a skill references, confirm it exists under each agent this project deploys to, and
         report **per agent**, since a file can reach two of three
-  - [ ] *(from p8.9)* the audit fails loudly when `agent-sync status` shows any `ws-*` artifact
+  - [x] *(from p8.9)* the audit fails loudly when `agent-sync status` shows any `ws-*` artifact
         conflicted or pending, rather than auditing a library that was never deployed
-  - [ ] changed through `ws-refine`, with its graph audit — **after** that audit is the thing fixed
+  - [x] changed through `ws-refine`, with its graph audit — **after** that audit is the thing fixed — **certified 2026-11-02** by the lead's post-deploy run: `auditing 14 of 14`, every denominator present, `deployed check: claude 45/45 · codex 45/45 · cursor 45/45`, exit 0
 - **Notes:** one task and three sub-items deliberately, decided when p8.17 was planned. The graph
   audit first, because until it is fixed every other pack change is certified by a check that may
   not have run. p8.9's own trigger is worth keeping: a deployment skipped because the artifact was
