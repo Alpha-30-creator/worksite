@@ -26,8 +26,9 @@ was.
 - A doc asserting a capability the pack does not have yet, because the README was written from
   the plan rather than from the tree. Every README claim is checkable against the repo.
 - A publish that lands a private name the pattern file does not know — `scripts/publish.sh` runs
-  the guard three times (in a throwaway clone, on the staged tree, then in the pre-commit hook),
-  but every run reads the same `scripts/leak-patterns.txt`, so a new private name passes all of
+  the guard three times — a preflight on the target repo, then a throwaway clone of the candidate,
+  then the target's staged tree — and the pre-commit hook fires on the publish commit as a fourth.
+  But every run reads the same `scripts/leak-patterns.txt`, so a new private name passes all of
   them. A green publish means "no known pattern", never "no private data"; the content still
   needs a human read before it is published.
 - Anything that is not a pack file sitting inside a skill directory — an `.env`, a credential
@@ -55,8 +56,8 @@ was.
 - A sentence describing what a check covers that is true of **one mode** of that check and reads as
   true of all of them. `scripts/check.sh` enumerates the whole working tree with no arguments and
   only staged additions with `--staged`, and it runs in five places, two of them staged — so
-  "section 1 reads tracked and untracked files" is right about one run and wrong about two. Four of
-  the five findings on p4.3 were this shape. Name the mode in the clause, not in a later paragraph.
+  "section 1 reads tracked and untracked files" is right about the three working-tree runs and
+  wrong about the two staged ones. Four of the five findings on p4.3 were this shape. Name the mode in the clause, not in a later paragraph.
 - A paragraph written to manage citation drift that is **itself incomplete**, which reads exactly
   like a complete one. p8.5 deferred re-deriving the numbers its own insertions moved, named
   `ws-fanout`, `ws-shared/tracks.md` and `ws-shared/reference.md`, and omitted `ws-setup` — the file

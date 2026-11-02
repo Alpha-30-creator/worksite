@@ -48,7 +48,8 @@ fails, the second line re-runs it without `>/dev/null` so the output is visible.
 This count was **four** until 2026-11-02, omitting the preflight (p8.31).
 
 The one thing that is guaranteed, stated no wider than it holds: in a file that is neither
-excluded nor caught by the inline allowlist, a string matching a pattern in
+excluded nor blanked by one of the pattern file's own `!` allowlist entries, a string matching a
+pattern in
 `scripts/leak-patterns.txt` cannot reach `main` through a pull request without CI going red, and
 cannot be committed on a clone where the hook is installed.
 

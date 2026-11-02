@@ -27,10 +27,18 @@ ALLOW="$(sed -n 's/^!//p' scripts/leak-patterns.txt)"
 # awk, not `sed .../I`: BSD sed has no case-insensitive flag, and this repo is read on macOS.
 # It consumes left to right rather than rescanning, so an allowlist entry that appears in the
 # replacement token cannot loop.
+#
+# The list arrives through the ENVIRONMENT, not through `awk -v`, and both halves of that matter:
+#   * BSD awk REFUSES a literal newline in a -v assignment ("awk: newline in string"). With -v,
+#     the filter died the moment a SECOND `!` line was added to the pattern file — emitting
+#     nothing, so `grep` downstream saw empty input and §1 reported ok on a real leak. A
+#     fail-OPEN silent pass, in the guard, triggered by using the pattern file as documented.
+#   * `awk -v` also expands escape sequences, so an allowlist entry containing a literal
+#     backslash-t would have matched a tab instead of itself. ENVIRON does neither.
 strip_allowlisted() {
   [ -n "$ALLOW" ] || { cat; return; }
-  awk -v allow="$ALLOW" '
-    BEGIN { n = split(allow, A, "\n"); for (i = 1; i <= n; i++) L[i] = tolower(A[i]) }
+  ALLOW="$ALLOW" awk '
+    BEGIN { n = split(ENVIRON["ALLOW"], A, "\n"); for (i = 1; i <= n; i++) L[i] = tolower(A[i]) }
     { line = $0
       for (i = 1; i <= n; i++) {
         if (L[i] == "") continue
@@ -94,6 +102,9 @@ BAD=0
 if [ -d skills ]; then
   SKILLS=0; NOINVOKE=""
   for d in skills/*/; do
+    # An unmatched glob stays literal in sh, so without this guard an EMPTY skills/ counts one
+    # directory named "skills/*/" and the "holds no skill directory" branch below is dead code.
+    [ -d "$d" ] || continue
     d="${d%/}"; n="$(basename "$d")"; f="$d/SKILL.md"
     SKILLS=$((SKILLS + 1))
     [ -f "$f" ] || { say "  $n: no SKILL.md"; BAD=$((BAD + 1)); continue; }
@@ -102,7 +113,12 @@ if [ -d skills ]; then
     [ "$name" = "$n" ] || { say "  $n: frontmatter name is '$name'"; BAD=$((BAD + 1)); }
     sed -n 's/^description: *//p' "$f" | head -1 | grep -q . || { say "  $n: no description"; BAD=$((BAD + 1)); }
     # Collected rather than tested inline: the claim is about the SET, not about one skill.
-    sed -n 's/^disable-model-invocation: *//p' "$f" | head -1 | grep -qx 'true' \
+    # Scoped to the frontmatter block, so a skill that DOCUMENTS the key at the start of a line
+    # in its body is not mistaken for one that sets it. (`ws-refine` discusses the key today,
+    # mid-line, so nothing fires yet — which is exactly when to scope it.)
+    awk 'NR==1 && /^---$/ { infm = 1; next } infm && /^---$/ { exit } infm' "$f" \
+      | sed -n 's/^disable-model-invocation:[[:space:]]*//p' | head -1 \
+      | sed 's/[[:space:]]*$//' | grep -qx 'true' \
       && NOINVOKE="$NOINVOKE $n"
   done
 
@@ -211,15 +227,31 @@ if [ ! -r "$CART" ]; then
 elif ! git rev-parse --git-dir >/dev/null 2>&1; then
   say "  skipped — read $CART, but this is not a git repo, so nothing can be committed from here"
 else
-  SD="$(sed -n 's/^state_dir: *//p' "$CART" | head -1)"
+  SD="$(sed -n 's/^state_dir:[[:space:]]*//p' "$CART" | head -1)"
+  SDRAW="$SD"
+  SD="${SD%%#*}"                                            # a trailing YAML comment
+  SD="$(printf '%s' "$SD" | sed 's/[[:space:]]*$//')"       # and the space before it
+  case "$SD" in
+    \"*\") SD="$(printf '%s' "$SD" | sed 's/^"\(.*\)"$/\1/')" ;;
+    \'*\') SD="$(printf '%s' "$SD" | sed "s/^'\(.*\)'$/\1/")" ;;
+  esac
   if [ -z "$SD" ]; then
     say "  FAIL — read $CART and it declares no state_dir. UNKNOWN, not a pass."
+    FAIL=1
+  elif printf '%s' "$SD" | grep -q '[[:space:]]'; then
+    # Said as a parse failure, not as "not ignored". A quoted value, a trailing comment or a
+    # path with a space all used to reach the branch below and print "restore the .gitignore
+    # line" while the .gitignore line was present and correct — a true FAIL with a false reason,
+    # which sends the reader to fix the wrong file.
+    say "  FAIL — could not parse state_dir from $CART: read [$SDRAW], got [$SD]. UNKNOWN."
     FAIL=1
   elif git check-ignore -q "${SD%/}/" || git check-ignore -q "${SD%/}"; then
     say "  ok — read $CART; '$SD' is matched by an ignore rule"
   else
-    say "  FAIL — '$SD' is NOT ignored by git. The journal's entry header carries a device"
-    say "         identifier and this repo is public; restore the .gitignore line."
+    say "  FAIL — state_dir '$SD', parsed from $CART, is NOT matched by any git ignore rule."
+    say "         The track files and the journal live there and this repo is public."
+    say "         Restore the .gitignore line — or, if '$SD' is not the path you expected,"
+    say "         the cartridge's state_dir is wrong rather than the ignore file."
     FAIL=1
   fi
 fi
@@ -238,39 +270,93 @@ BASE="scripts/object-store-baseline.txt"
 if ! git rev-parse --git-dir >/dev/null 2>&1; then
   say "  skipped — not a git repo, so there is no object store to read"
 else
-  BL=""
-  if [ -r "$BASE" ]; then
-    BL="$(grep -oE '^[0-9a-f]{40}' "$BASE" || true)"
+  # The baseline is read before anything is scanned, and "absent" and "unreadable" are told
+  # apart: an unreadable baseline makes every declared hit look undeclared, which would FAIL
+  # loudly rather than quietly — but it would blame the hashes instead of the file, so it says so.
+  BL=""; BLSTATE="absent"
+  if [ -e "$BASE" ]; then
+    if [ -r "$BASE" ]; then
+      # A whole-field match, so a 64-hex sha256 row cannot have its first 40 characters taken
+      # as a sha1 and declare the wrong object.
+      BL="$(awk '/^[0-9a-f]{40}([[:space:]]|$)/ { print $1 }' "$BASE")"; BLSTATE="read"
+    else
+      say "  FAIL — $BASE exists and is not readable, so nothing below is declared. UNKNOWN."
+      FAIL=1; BLSTATE="unreadable"
+    fi
   fi
+
   FSCK="$(git fsck --unreachable --no-progress 2>/dev/null)"; FRC=$?
-  if [ "$FRC" -ne 0 ] && [ -z "$FSCK" ]; then
-    say "  FAIL — git fsck failed and printed nothing, so the object store was NOT read. UNKNOWN."
+  # `git fsck` exits 0 when it merely finds unreachable objects — measured. So ANY non-zero exit
+  # means it stopped early or found a real error, and the list in hand may be partial. A partial
+  # list read as complete is the whole defect class this section belongs to, so it refuses.
+  if [ "$FRC" -ne 0 ]; then
+    say "  FAIL — git fsck exited $FRC, so its object list may be partial. UNKNOWN, not a pass."
     FAIL=1
   else
-    BLOBS="$(printf '%s\n' "$FSCK" | awk '$1 == "unreachable" && $2 == "blob" { print $3 }')"
+    BLOBS="$(printf '%s\n' "$FSCK" | awk '$1 == "unreachable" && $2 == "blob"  { print $3 }')"
+    TREES="$(printf '%s\n' "$FSCK" | awk '$1 == "unreachable" && $2 == "tree"  { print $3 }')"
+    NCOMMIT="$(printf '%s\n' "$FSCK" | awk '$1 == "unreachable" && $2 == "commit"' | grep -c . || true)"
     NBLOB="$(printf '%s\n' "$BLOBS" | grep -c '^[0-9a-f]\{40\}$' || true)"
-    SCANNED=0; KNOWN=0; NEW=0
+    NTREE="$(printf '%s\n' "$TREES" | grep -c '^[0-9a-f]\{40\}$' || true)"
+
+    SCANNED=0; KNOWN=0; NEW=0; UNREAD=0
+    scan_object() {   # $1 = sha, $2 = how to render it as text
+      # NOT `grep -q`. grep -q exits on the first match and closes the pipe; awk upstream then
+      # dies of SIGPIPE, and under `set -o pipefail` the pipeline status is 141 — so a `|| continue`
+      # keyed on it SKIPS the hit. Measured: a large object with its match on line 1 was silently
+      # passed over while the section still counted it as scanned. `grep -c` reads to the end.
+      git cat-file -e "$1" 2>/dev/null || { UNREAD=$((UNREAD + 1)); return 2; }
+      hits="$(eval "$2" 2>/dev/null | strip_allowlisted | grep -cEi "$PATTERNS" || true)"
+      [ "${hits:-0}" -gt 0 ]
+    }
+    classify() {      # $1 = sha, $2 = kind, for the message
+      if printf '%s\n' "$BL" | grep -qx "$1"; then
+        KNOWN=$((KNOWN + 1))
+      else
+        say "  FAIL — unreachable $2 $1 carries a private name and is not declared in $BASE"
+        NEW=$((NEW + 1))
+      fi
+    }
+
     while IFS= read -r o; do
       case "$o" in '' | *[!0-9a-f]* ) continue ;; esac
       SCANNED=$((SCANNED + 1))
-      git cat-file blob "$o" 2>/dev/null | strip_allowlisted | grep -qEi "$PATTERNS" || continue
-      if printf '%s\n' "$BL" | grep -qx "$o"; then
-        KNOWN=$((KNOWN + 1))
-      else
-        say "  FAIL — unreachable object $o carries a private name and is not declared in $BASE"
-        NEW=$((NEW + 1))
-      fi
-    done <<UNREACHABLE
+      scan_object "$o" 'git cat-file blob "$1"' && classify "$o" blob
+    done <<UNREACHABLE_BLOBS
 $BLOBS
-UNREACHABLE
-    # Two independent counts of the same set. A section that counts with one method and scans
-    # with another must not be allowed to agree with itself (ADR 0004) — the whole class of
-    # defect p8.24 was about is a part that reports on work it never did.
-    if [ "$SCANNED" -ne "$NBLOB" ]; then
-      say "  FAIL — counted $NBLOB unreachable blob(s) but scanned $SCANNED. The scan is UNKNOWN."
+UNREACHABLE_BLOBS
+
+    # Trees carry FILENAMES, and a filename is as much a private name as a line of content —
+    # a path like src/<private-project>/ leaks exactly the same string. The criterion says "no
+    # unreachable OBJECT", so blobs alone did not meet it.
+    TSCANNED=0
+    while IFS= read -r o; do
+      case "$o" in '' | *[!0-9a-f]* ) continue ;; esac
+      TSCANNED=$((TSCANNED + 1))
+      scan_object "$o" 'git ls-tree --name-only "$1"' && classify "$o" tree
+    done <<UNREACHABLE_TREES
+$TREES
+UNREACHABLE_TREES
+
+    # Not an independent count — both come from $FSCK — so this does NOT prove the list was
+    # complete; that is what the fsck exit check above is for. What it catches is the gap between
+    # counting and scanning: a `case` filter that rejects more than intended, or a loop that
+    # exits early, which would otherwise print a verdict over a subset. Said plainly, because an
+    # earlier draft of this comment claimed independence and was simply false.
+    if [ "$SCANNED" -ne "$NBLOB" ] || [ "$TSCANNED" -ne "$NTREE" ]; then
+      say "  FAIL — counted $NBLOB blob(s)/$NTREE tree(s) but scanned $SCANNED/$TSCANNED. UNKNOWN."
       FAIL=1
     fi
-    say "  read $NBLOB unreachable blob(s): $KNOWN declared in $BASE, $NEW undeclared"
+    if [ "$UNREAD" -gt 0 ]; then
+      say "  FAIL — $UNREAD object(s) could not be read, so they were never scanned. UNKNOWN."
+      FAIL=1
+    fi
+    say "  read $NBLOB unreachable blob(s) and $NTREE tree(s) (baseline $BLSTATE): $KNOWN declared, $NEW undeclared"
+    # Commit objects are deliberately NOT scanned: every commit header carries the committer's
+    # name and email, so a pattern list that includes the author's name matches all of them and
+    # no check can tell that from a leak. Recorded as a blind spot in docs/engineering/layout.md
+    # rather than papered over with a baseline the size of the history.
+    [ "$NCOMMIT" -gt 0 ] && say "  ($NCOMMIT unreachable commit(s) not scanned — see layout.md)"
     if [ "$NEW" -gt 0 ]; then
       say "  Do NOT run 'git gc --prune=now' to clear these: this object store is shared with"
       say "  live worktrees whose unreachable objects are wanted. See docs/runbooks/purge-a-leak-from-history.md."
