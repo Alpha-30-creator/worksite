@@ -1,6 +1,6 @@
 # Known limitations
 
-**Recorded 2026-11-02.** Thirteen mechanisms in this repo and in the pack that work, and the
+**Recorded 2026-11-02.** Fourteen mechanisms in this repo and in the pack that work, and the
 boundary each one stops at. Each entry names the mechanism in one clause and its boundary in the
 next. This is a record, not a task list: an entry changes only when the mechanism does, and then
 it changes in the same commit.
@@ -43,6 +43,12 @@ left rather than removing it.
 **`tracker.lists` names the open and in-progress lists only.** On a three-list board the agent
 has nowhere to record where a finished card goes, so it asks, every task, for the life of the
 project.
+
+**`tracker.statuses` is declared schema-less.** An adapter needing a board's column names has no
+shape to read, so it states that need in its own text rather than relying on one the pack does not
+define. Recorded here on 2026-11-02 after p8.33's merge note said it had been — it had not, and
+`engineering/trackers.md` was the only file mentioning it, pointing at a task id that no longer
+exists.
 
 ## The cartridge
 

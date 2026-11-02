@@ -108,7 +108,7 @@ should.
   offenders *and* 682 exemplary docstrings, so any length or density rule would have destroyed the
   good ones and missed the actual defect.
 
-## [ ] p8.3 — Close the ws-setup profile gap
+## [-] p8.3 — Close the ws-setup profile gap — merged into p8.34; body kept below
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -726,7 +726,7 @@ third signal that it is not worth a track.
 - **Notes:** 9.6M of orphaned build output on a real project, invisible to both sweep passes, is
   what this costs when the shell left behind is later filled.
 
-## [ ] p8.33 — The cartridge promises five things it does not deliver
+## [-] p8.33 — The cartridge promises five things it does not deliver — merged into p8.34; body kept below
 
 - **Repos:** worksite (pack)
 - **Depends on:** p3.1
@@ -747,10 +747,58 @@ third signal that it is not worth a track.
         entitled to with no error and no prompt *(p8.20)*
   - [ ] the schema states that `machine:` carries **notes only**, so nobody writes
         `machine.<device>.repos[].dir` and gets silence *(p8.21)*
-  - [ ] one of the two disagreeing `lite` sentences changes — `ws-setup`:54 says a `lite` profile
+  - [ ] one of the two disagreeing `lite` sentences changes — `ws-setup`:64 says a `lite` profile
         gets no tracker, `ws-shared/trackers/tasks-file.md`:3 calls itself the `lite` default — so
         the pack says one thing *(p8.22)*
   - [ ] p3.1's affected gap rows updated or closed to match what the pack then does
   - [ ] changed through `ws-refine`, with its graph audit
 - **Notes:** every item here is a place where an author writes something reasonable and is never
   told it was ignored, which is this phase's goal line applied to a data format.
+
+## [ ] p8.34 — `ws-setup`'s profiles, and the cartridge keys it writes
+
+- **Repos:** worksite (pack)
+- **Depends on:** p3.1
+- **Merged 2026-11-02** from **p8.3** (the profile gap) and **p8.33** (five cartridge keys that
+  promise what nothing delivers). Both bodies are kept above; this is the shipping unit.
+- **Why one task, and it is a dependency rather than a resemblance.** p8.3 decides what the
+  profiles *are*; p8.33 fixes what they *promise*. Its fifth criterion asks which of two
+  disagreeing `lite` sentences changes — and the answer depends on whether a third profile exists
+  and what it gets, which is p8.3's second criterion. Fixing p8.33 first means guessing; fixing
+  p8.3 first rewrites p8.33's criterion underneath it. The contradiction, verified on 2026-11-02:
+
+  | | |
+  |---|---|
+  | `ws-setup`:64 | "Then generate and stop. **No tracker**, no journal, no rule skills, no risks file." |
+  | `ws-shared/trackers/tasks-file.md`:3 | "The **`lite` default**, and right for anything small." |
+
+  They also share their whole surface: both edit `ws-setup`'s mode table and its cartridge
+  template, both touch [`integration/cartridge-schema.md`](../integration/cartridge-schema.md),
+  and both end in one `ws-refine` run — so merging saves an audit, a deploy and a publish.
+- **Acceptance** — the profile decisions first, because the key work depends on them:
+  - [ ] profile is chosen by a question the user actually answers, not inferred from folder shape
+        *(p8.3)*
+  - [ ] a third profile, or an explicit rule, for the long-lived single-repo case: tracker and
+        cartridge yes, the full docs tree no *(p8.3)*
+  - [ ] **the two `lite` sentences above agree**, resolved against whatever the criterion above
+        decides rather than by picking one *(p8.33, now dependent)*
+  - [ ] the generator creates a docs folder **when there is something to put in it**, matching
+        the pack's own living-docs rule, instead of seeding empty folders with READMEs *(p8.3)*
+  - [ ] `merge_style` is given a value in `ws-setup`'s cartridge template, or `ws-ship` stops
+        reading it — a key whose only behaviour is its fallback is worse than no key *(p8.33)*
+  - [ ] the rule-skill prefix gets a cartridge key. It is already load-bearing in `ws-setup`'s
+        own generator in four places — `:69`, `:138`, `:157`, `:181` — and `ws-fanout` briefs
+        builders to read `<prefix>-<area>` skills on a value it cannot look up *(p8.33)*
+  - [ ] `house_rules.owned_by`'s degrade to `me` — the **permissive** branch — is reversed, or
+        warned about where it is read *(p8.33)*
+  - [ ] the schema states that `machine:` carries **notes only**, so nobody writes
+        `machine.<device>.repos[].dir` and gets silence *(p8.33)*
+  - [ ] p3.1's affected gap rows updated or closed to match what the pack then does *(p8.33)*
+  - [ ] changed through `ws-refine`, with its graph audit
+- **Notes:** ten criteria makes this the second-largest open task after p8.31, and that is accepted
+  deliberately — the alternative is the two-task dependency this merge exists to remove. If it has
+  to be split later, the line is after the fourth criterion: the profiles are a decision, the
+  remaining keys are plumbing that follows from it. **Also fixed on merging:** p8.33 cited
+  `ws-setup`:54 for the no-tracker sentence, which p8.24's new mode-table row moved to `:64` the
+  same morning — the citation drift this project keeps paying for, inside a task about the pack
+  promising things it does not deliver.

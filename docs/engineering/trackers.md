@@ -160,8 +160,9 @@ plus the rejected-push retry, and in the note answer, which becomes a line in th
 
 ## Known limits you will meet while writing one
 
-Both of these are open, filed as **p8.20**. An adapter must work around them rather than assume
-they are solved:
+Neither of these is an open task. Both were weighed in the 2026-11-02 triage and **deliberately
+recorded as boundaries** instead, in [`records/known-limitations.md`](../records/known-limitations.md),
+because each is an honest ask rather than a wrong answer. An adapter works around them:
 
 - **A board's column names have no documented shape in the cartridge.** `tracker.statuses` is
   declared schema-less, so an adapter that needs column names states that need in its own text
@@ -173,8 +174,9 @@ they are solved:
 
 There is also an open contradiction about what a `lite` profile does with a tracker — one file
 in the pack says a `lite` project gets no tracker, while the single-file adapter calls itself the
-`lite` default. Filed as **p8.22**; it is not resolved here, and a new adapter should not lean on
-either reading.
+`lite` default. That contradiction **is** open, as a criterion on **p8.34**, where it is resolved
+against the profile decision rather than by picking one of the two sentences. It is not resolved
+here, and a new adapter should not lean on either reading.
 
 ## An unknown kind is not an error
 

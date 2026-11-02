@@ -9,21 +9,28 @@
 out of the private library behind the leak guard, and the pack has reached this repo that way
 since 2026-11-01. The reference documentation exists — the cartridge schema at
 `docs/integration/cartridge-schema.md`, the concepts page at `docs/product/overview.md`, the three
-extension guides under `docs/engineering/`, two ADRs under `docs/decisions/` — and `check.sh` is
+extension guides under `docs/engineering/`, four ADRs under `docs/decisions/` — and `check.sh` is
 green on every section. **CI runs it** on every pull request and every push to `main`, so a
 contributor who never ran `git config core.hooksPath .githooks` is still caught; both the hook and
 CI read the same `scripts/leak-patterns.txt`, which is the limit of what either can catch.
 
-**Still not installable, and no stranger has run it.** There is no `INSTALL.md` (p4.2), so there
-is nothing to point an agent at, and `docs/` has no index (p3.4). What is known not to be covered
-is written down once, in [records/known-limitations.md](records/known-limitations.md), rather than
-carried as open tasks.
+**Installable, and still unproven by a stranger.** [`INSTALL.md`](../INSTALL.md) is the entry
+point an agent is pointed at, and [`docs/README.md`](README.md) maps this tree — both shipped
+2026-11-02, p4.2 and p3.4. **What has not happened is anyone who is not the author running it**:
+that is p7.1, and it is the one thing left that no amount of writing can substitute for. What is
+known not to be covered is written down once, in
+[records/known-limitations.md](records/known-limitations.md), rather than carried as open tasks.
 
 **Decided:** ADR 0001 (`docs/decisions/0001-library-is-the-source-of-truth.md`) — the agent-sync
 library stays the working copy, this repo is a published artifact, and publishing is a step inside
 `ws-refine`. ADR 0002
 (`docs/decisions/0002-publishing-is-a-guarded-copy-from-the-library.md`) — that publish is a
 guarded plain copy, its commits land directly on `main`, with the residual risk recorded.
+ADR 0003 (`docs/decisions/0003-shared-external-stores-are-declared-in-the-cartridge.md`) — a place
+the work reaches that no worktree isolates is declared in the cartridge, so `ws-fanout`'s gate can
+reason about it. ADR 0004
+(`docs/decisions/0004-a-check-must-state-what-it-read.md`) — a self-checking check may certify only
+what it stated it read, which is why the graph audit now names its own counts.
 
 ## In progress
 
@@ -56,10 +63,9 @@ today, so they do not have to wait for P1–P7.
 |---|---|---|
 | p8.31 | The leak surface has three uncovered edges | the repo is public and permanent, and the one guarantee that holds it rests on a bold reminder |
 | p8.13 | `for r in <repos>` survives in three skills | it prints success with the work still there, on a workspace whose path contains a space — this one |
-| p8.3 | Close the `ws-setup` profile gap | the first thing `INSTALL.md` will point a stranger's agent at |
 | p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
 | p8.32 | A retired track leaves its parent directory behind | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |
-| p8.33 | The cartridge promises five things it does not deliver | an author writes something reasonable and is never told it was ignored |
+| p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
 | p8.30 | One rule for who may push the library | resolved by hand in the last batch, written down nowhere |
 | p7.1 | Dry-run the install as a stranger | the install is unproven by anyone who is not the author; needs p4.2 |
 | p7.2 | Tag and announce | cut to one criterion — the README's claims verified against the tagged tree, the part that can fail silently |
