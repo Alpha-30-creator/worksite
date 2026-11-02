@@ -79,7 +79,9 @@ you are reading arrived.
 A stranger has now run it. Two agents with none of this project's history installed the pack from
 `INSTALL.md` alone and then ran the loop end to end on a real task — 44 points where they had to
 guess, ask or improvise, [recorded with the date](docs/records/2026-11-02-stranger-install-dry-run.md)
-and each turned into a fix or a written limitation rather than a note to self.
+and each one closed as a fix, a written limitation or a filed task rather than a note to self: five
+`INSTALL.md` fixes, three limitations, two tasks that have both since shipped, and one criterion
+added to the third row below.
 
 The gaps a reader would still hit, each carried as a task:
 
@@ -89,8 +91,8 @@ The gaps a reader would still hit, each carried as a task:
 | a project with no git remote has no documented way to retire a finished track; the guard that refuses is correct, the workaround is undocumented | p8.40 |
 | `ws-refine` ends by pushing the whole library while `ws-fanout` forbids its subagents to push, so a library track inside a fanout batch is instructed both ways | p8.30 |
 
-Four more open tasks are authoring quality rather than anything a reader would meet; they are on
-the board below.
+Four more open tasks are about this repo's own authoring and tooling rather than anything a reader
+would meet; [docs/STATUS.md](docs/STATUS.md) has them.
 
 **To install it**, point your agent at [INSTALL.md](INSTALL.md) — it is written for the agent
 rather than for you, and it stops rather than guessing whenever only you can answer. If you would

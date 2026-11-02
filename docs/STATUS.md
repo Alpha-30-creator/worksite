@@ -8,8 +8,8 @@
 **Publishing works**: `ws-refine` ends by running `scripts/publish.sh`, which copies the skills
 out of the private library behind the leak guard, and the pack has reached this repo that way
 since 2026-11-01. The reference documentation exists — the cartridge schema at
-`docs/integration/cartridge-schema.md`, the concepts page at `docs/product/overview.md`, the three
-extension guides under `docs/engineering/`, four ADRs under `docs/decisions/` — and `check.sh` is
+`docs/integration/cartridge-schema.md`, the concepts page at `docs/product/overview.md`, the four
+extension guides under `docs/engineering/`, five ADRs under `docs/decisions/` — and `check.sh` is
 green on every section. **CI runs it** on every pull request and every push to `main`, so a
 contributor who never ran `git config core.hooksPath .githooks` is still caught; both the hook and
 CI read the same `scripts/leak-patterns.txt`, which is the limit of what either can catch.
