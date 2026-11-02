@@ -48,7 +48,7 @@ or `jq` — neither is installed, and the Windows laptop would need them too:
 
 ```bash
 D="$HOME/.agent-secrets"
-# $proj, not $1: a positional parameter inside a skill body is replaced by the caller's
+# $proj, and never a positional parameter: one inside a skill body is replaced by the caller's
 # argument before an agent ever sees it. Set proj, then call ws_root with no arguments.
 ws_root() { sed -n '/^projects:/,$p' "$HOME/.agent-sync/device.yaml" | sed -n "s|^  $proj: *||p" | head -1; }
 
