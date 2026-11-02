@@ -36,7 +36,15 @@ what it stated it read, which is why the graph audit now names its own counts.
 
 ## In progress
 
-Nothing claimed. **p7.1 shipped 2026-11-02: the install has now been run by agents that had never
+| id | what it is doing | where |
+|---|---|---|
+| p8.35 | the `$1` substitution that breaks `ws_root()`, and `ws-sync`'s blind sweep | library: `ws-env`, `ws-sync` |
+
+Taken ahead of p8.31 because p7.1 changed the ordering: this one is broken on this machine today, in
+the skill that handles credentials, and `ws-env` is invoked with arguments routinely. p8.31's leak
+surface is a latent risk on a tree that is currently clean.
+
+Previously, nothing claimed. **p7.1 shipped 2026-11-02: the install has now been run by agents that had never
 seen this project, and the loop ran end to end unaided.** 44 guess-points, five `INSTALL.md` fixes,
 three defects — the sharpest being that a `$1` in a skill body is replaced by the caller's argument,
 so a credential sync reports every project "not linked on this device" and writes nothing. What is
@@ -70,7 +78,6 @@ today, so they do not have to wait for P1–P7.
 | p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
 | p8.32 | A retired track leaves its parent directory behind | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |
 | p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
-| p8.35 | `ws-env` and `ws-sync` each give a confidently wrong answer | a credential sync reports every project "not linked on this device" and writes nothing, in the skill that handles secrets |
 | p8.36 | The loop assumes a git remote and dies without one | four of five loop skills; the situation a stranger is actually in |
 | p8.30 | One rule for who may push the library | resolved by hand in the last batch, written down nowhere |
 | p7.2 | Tag and announce | cut to one criterion — the README's claims verified against the tagged tree, the part that can fail silently |

@@ -811,7 +811,7 @@ third signal that it is not worth a track.
   same morning — the citation drift this project keeps paying for, inside a task about the pack
   promising things it does not deliver.
 
-## [ ] p8.35 — `ws-env` and `ws-sync` each give a confidently wrong answer and exit clean
+## [~] p8.35 — `ws-env` and `ws-sync` each give a confidently wrong answer and exit clean · @Alpha-30-creator · 2026-11-02
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
