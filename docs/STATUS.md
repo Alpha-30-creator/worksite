@@ -14,10 +14,12 @@ green on every section. **CI runs it** on every pull request and every push to `
 contributor who never ran `git config core.hooksPath .githooks` is still caught; both the hook and
 CI read the same `scripts/leak-patterns.txt`, which is the limit of what either can catch.
 
-**Installable, and still unproven by a stranger.** [`INSTALL.md`](../INSTALL.md) is the entry
-point an agent is pointed at, and [`docs/README.md`](README.md) maps this tree — both shipped
-2026-11-02, p4.2 and p3.4. **What has not happened is anyone who is not the author running it**:
-that is p7.1, and it is the one thing left that no amount of writing can substitute for. What is
+**Installable, and now run by strangers.** [`INSTALL.md`](../INSTALL.md) is the entry point an
+agent is pointed at, and [`docs/README.md`](README.md) maps this tree — both shipped 2026-11-02,
+p4.2 and p3.4. **Two agents with none of this project's history have now followed it end to end**
+(p7.1), which cost 44 guess-points, five fixes and three defects, and the board one net row. What
+that does not establish is that the install is *clear* — two agents are not a population, and their
+`--store` was forced, which a real first install would not be. What is
 known not to be covered is written down once, in
 [records/known-limitations.md](records/known-limitations.md), rather than carried as open tasks.
 
@@ -34,17 +36,11 @@ what it stated it read, which is why the graph audit now names its own counts.
 
 ## In progress
 
-| id | what it is doing | where |
-|---|---|---|
-| p7.1 | the stranger's dry-run of the install: a fresh library in a temp store, a throwaway project, and the loop end to end | `docs/records/`, nothing in the pack |
-
-The stranger is a subagent with none of this project's history, briefed only as a user pointing an
-agent at `INSTALL.md`. The author cannot un-know the pack, so independence is the only honest
-simulation of a first install. The real library is never touched — the run uses a `--store` override.
-
-Previously: A three-track batch shipped 2026-11-02: p1.2, p3.4 and p8.24. The graph audit now
-earns every count it prints, so a pack change is no longer certified by a check that may not have
-run — which was the argument for doing p8.24 before any other P8 task.
+Nothing claimed. **p7.1 shipped 2026-11-02: the install has now been run by agents that had never
+seen this project, and the loop ran end to end unaided.** 44 guess-points, five `INSTALL.md` fixes,
+three defects — the sharpest being that a `$1` in a skill body is replaced by the caller's argument,
+so a credential sync reports every project "not linked on this device" and writes nothing. What is
+still unproven is clarity, not followability: two agents are not a population.
 
 ## Blocked
 
@@ -102,6 +98,7 @@ today, so they do not have to wait for P1–P7.
 | p4.3 | Repo furniture: contributing, security, conduct and CI | 2026-11-02 |
 | p8.5 | Shared external stores are declared in the cartridge | 2026-11-02 |
 | p4.2 | `INSTALL.md`, written for the agent that will run it | 2026-11-02 |
+| p7.1 | Dry-run the install as a stranger | 2026-11-02 |
 | p1.2 | Prove the leak guard actually refuses a commit | 2026-11-02 |
 | p3.4 | An index for the docs tree | 2026-11-02 |
 | p8.24 | Gates that read an empty result as a pass | 2026-11-02 |
