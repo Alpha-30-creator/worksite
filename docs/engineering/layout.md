@@ -118,18 +118,29 @@ line names its own counts:
    `agent-sync` itself reports — not against the string the block just used to `cd`, which would be
    a comparison of a value with itself. Then a readable `ws-shared/SKILL.md` as a marker and a floor
    of ten readable `ws-*/SKILL.md`, which catch the right directory holding the wrong contents.
-3. **Frontmatter**, **forward coverage** (every skill a `What next?` names exists), and **links**,
+3. **Frontmatter**, **forward coverage** (every skill named **anywhere in the pack** exists — it
+   greps whole `SKILL.md` files, not only `What next?` sections, which is wider than the heading
+   on it suggests and is the safe direction), and **links**,
    now over all of the pack's Markdown rather than only each `SKILL.md`, each link resolved against
-   the directory of the file that holds it.
+   the directory of the file that holds it. Its character class includes `_` and `A-Z` because
+   without them a `new_device.md`- or `README.md`-shaped target is invisible to the check rather
+   than reported by it — a silent pass inside the check that exists to find silent passes.
 4. **Reverse coverage** — every exit the *prose* offers is listed in that skill's `What next?`.
-5. **The deployed check, per agent**, printed even when clean.
+5. **The deployed check, per agent**, printed even when clean — and the block then **asserts that
+   line was printed** before the verdict counts it. That assertion is not decoration: the check
+   runs inside a command substitution, so its own failure cannot end the block, and without the
+   assertion a dead check left the verdict printing `0 missing under an agent` at exit 0. A zero
+   from a check that did not run is the defect this whole block exists to kill, and it was found
+   in review *inside the fix*.
 
 **What it does not cover**, so the absence is not read as coverage:
 
 | Blind spot | Consequence |
 |---|---|
 | reverse coverage is anchored on backticks **and** an offer verb | an exit offered in prose that names no skill in backticks, or through a verb outside the anchor list, is invisible. The anchor list is a sample of the pack's current idiom, not a grammar |
-| its precision is **two true in three** on the pack as it stands | roughly one false positive per pack-wide run. Each finding is read and judged, never auto-fixed, and it does not fail the audit — a comparison reads exactly like an offer and only a reader can tell them apart |
+| **precision** is 3 candidates, 2 of them real, on the pack as it stands | roughly one false positive per pack-wide run. Each finding is read and judged, never auto-fixed, and it does not fail the audit — a comparison reads exactly like an offer and only a reader can tell them apart |
+| **recall is the weaker half, and the larger number**: 33 distinct prose mentions of a sibling, 9 survive the verb filter, **12 unlisted pairs are never reported** | the check narrows the pack to a line or two worth reading. It is **not** a coverage guarantee in either direction. The figures and the misses are [the dated record](../records/2026-11-02-reverse-coverage-precision.md) |
+| **fenced code blocks are excluded from the scan** | the check is about what the *prose* offers, and a comment inside a shell block is not prose — it tripped on one in the audit's own text. The cost is one-directional: an exit offered **only** inside a fenced example is missed |
 | reverse coverage only looks at `SKILL.md` files | shared reference material sends readers to skills by name and has no `What next?`. Skills without one are **counted and the count printed**, not silently skipped |
 | the identity assertion fires first on any wrong directory | the marker and the floor can only ever fire on the real library path, so testing them needs identity satisfied by construction |
 | it depends on `agent-sync` being runnable | on a machine with no deployment the audit **aborts** rather than running a narrower version of itself |
