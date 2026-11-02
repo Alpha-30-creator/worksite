@@ -76,8 +76,9 @@ shared_stores:
 
 **Nesting the store inside `repos:`.** The taxonomic argument is tempting — it is a place with
 files, like a repo. The decisive argument is mechanical: several skills loop over `repos:` and run
-git and the project's `verify` in each entry. `ws-plan` and `ws-start` both iterate it
-(`for r in <repos>; do`), and `ws-verify`'s first section is "The repos' own checks". A store
+git and the project's `verify` in each entry. `ws-plan` and `ws-start` both iterate it — as
+`for r in <repos>; do` when this was decided, as a `while IFS= read -r r` loop over the repo paths
+since p8.13 — and `ws-verify`'s first section is "The repos' own checks". A store
 placed in that list would be fetched, branched, worktree'd and verified as if it were the
 project's code. The key's only meaning is "this is **not** one of the repos", so nesting it inside
 the list of them inverts it.

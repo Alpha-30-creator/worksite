@@ -80,6 +80,18 @@ comment inside a shell block is not prose. Measured: the exclusion drops exactly
 and keeps both true positives, which sit in ordinary prose. Precision returns to **3 candidates, 2
 real, 1 false**.
 
+> **2026-11-03 (p8.13).** Both true positives were `What next?` gaps in `ws-plan` and `ws-start`,
+> and p8.13 listed them. A pack-wide run now reports **1 candidate, 0 real**. That one candidate
+> is **not** the false positive this section is about — that one was `ws-refine`'s own comment, and
+> the fenced-code exclusion removed it. It is the other one, from the table above: `ws-ship` →
+> `ws-review`, "offer any new risk class … as `ws-review` does". Same idiom, different site, and
+> the fenced-code exclusion cannot reach it because it sits in prose.
+> The recall figures above are unchanged — **33 / 9 / 12**, re-measured. The reason is not merely
+> that p8.13's new prose names no sibling in backticks (it does not): it is that both pairs it
+> listed were already **inside the 9**, verb-anchored and reported. Listing them moved the
+> unlisted-and-reported count from 3 to 1 and the listed count from 6 to 8; the 12, which are the
+> pairs the verb filter never sees at all, were untouched.
+
 **The exclusion has a one-directional cost and it is not hypothetical:** an exit genuinely offered
 inside a fenced example is now invisible to the check. That trade was taken because a worked example
 is not an offer, and a check that cannot tell them apart would make every future explanation of its
