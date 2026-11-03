@@ -488,22 +488,32 @@ a decision about its safety rules — but if a second safety-rule change comes u
   built a wrong tree; and `cd <repo> && npm …` exits **0** in the first fragment, because bash's
   `cd` silently ignores extra arguments — so the checks run in the wrong directory and report.
 
-## [ ] p8.40 — A local-only project can never retire a track
+## [ ] p8.40 — A local-only project has no documented way to retire a track
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
 - **Found 2026-11-03 by p8.36's review**, as the consequence that outlives it.
-- **Why:** *Retiring a track* refuses a **worktree** whose branch has no upstream, because those
-  commits exist nowhere else, and that guard is correct and must not be weakened. On a project with
-  no remote there is no obvious way to satisfy it, so `ws-start`'s sweep goes on offering the same
-  stale tracks at every session and nothing documents a way out. **Measured 2026-11-03, correcting
-  this entry's first draft:** it is *not* true that such a track can never be retired. Setting a
-  local upstream (`git branch --set-upstream-to=main <branch>`) satisfies the check once the work is
-  merged, and a track configured `worktrees: false` is never checked at all, because the guard only
-  loops over the track's worktrees. So the gap is narrower than "impossible": it is undocumented,
-  and the workaround is one nobody is told about. p8.36 made the loop usable without a remote; this
-  is where "degrade, never fail" and "never discard work" meet, so it wants a written decision
-  rather than a patch.
+- **Why:** *Retiring a track* refuses a **worktree** holding commits that are on no remote, because
+  those commits exist nowhere else, and that guard is correct and must not be weakened. On a project
+  with no remote there is no obvious way to satisfy it, so `ws-start`'s sweep goes on offering the
+  same stale tracks at every session and nothing documents a way out. p8.36 made the loop usable
+  without a remote; this is where "degrade, never fail" and "never discard work" meet, so it wants a
+  written decision rather than a patch.
+- **Amended 2026-11-03 by p8.32, which changed what satisfies this guard.** This entry previously
+  carried a **Measured** claim that setting a local upstream
+  (`git branch --set-upstream-to=main <branch>`) satisfies the check once the work is merged. **That
+  is no longer true.** p8.32 replaced the upstream test with a count of commits reachable from
+  `HEAD` and from no remote-tracking ref — because testing for an upstream's *existence*
+  over-refused every branch that was created and never committed to. The new test never consults
+  an upstream, so a local upstream satisfies nothing: measured in a remoteless fixture on a branch
+  with `main` as its upstream, the old test returned 0 and the new one returns 1.
+  **What does satisfy it, and this is the interesting part, is a push to a local bare mirror** —
+  measured: 2 commits on no remote, `git push` to a `--bare` repo on the same disk, count 0. No
+  network and no hosting service, and unlike the old upstream trick it satisfies the guard's
+  *meaning* rather than its letter, because the commits really are in a second place. So this task
+  is **not** "the guard became impossible": it is "the guard now has one honest answer, and nothing
+  tells anybody about it". A track configured `worktrees: false` is still never checked at all,
+  since the guard only loops over the track's worktrees.
 - **Acceptance:**
   - [ ] a written decision on how a remoteless project retires a track without the guard losing
         its meaning — a bundle, an explicit acknowledgement, or a stated refusal with a reason
@@ -941,7 +951,7 @@ third signal that it is not worth a track.
   "a reflog keeps an abandoned commit reachable, so section 6 is weakest right after the mistake".
   The same sentence read from the other end predicts this, and nobody read it from that end.
 
-## [~] p8.32 — A retired track leaves its parent directory behind, and the root it lives under is undefined
+## [r] p8.32 — A retired track leaves its parent directory behind, and the root it lives under is undefined
 
 - **Repos:** worksite (pack)
 - **Depends on:** —

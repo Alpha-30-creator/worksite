@@ -157,6 +157,7 @@ worktrees: true
 | `artifacts` | `workspace-state` \| `in-repo` | no | `workspace-state` — stated (`ws-shared/tracks.md`) | `ws-plan`, `ws-review`, `ws-ship` | `workspace-state` — plans and journals in `<state_dir>`, never in a repo (`ws-plan`) |
 | `agents_file` | `copy` \| `include` \| `symlink`. **Never `symlink`**: *"Do not use a symlink even on macOS. Windows git checks a symlink out as a text file containing the path, silently, and the agent then has no rules"* (`ws-setup`) | no | none — *template ships* `copy` | `ws-sync` | the deployed `AGENTS.md` is not refreshed or drift-checked — *inferred* |
 | `worktrees` | boolean | no | none — *template ships* `true`, and an absent key is **not** `true` | `ws-start`, `ws-plan`, `ws-fanout` | `ws-fanout` tests that the cartridge is **readable**, then greps `^worktrees:` (`ws-fanout`). Three outcomes, all stated rather than inferred: `true` proceeds; an **absent key reads as not-`true`**, so it takes the `false` branch and will not fan out without hard per-repo ownership; an **unreadable cartridge is a stop**, not that branch — spawn nothing, and the "different repos" option is disqualified by name because its own precondition is the unread `repos:` list (`ws-fanout`). **A worktree isolates the repos in `repos:` and nothing else** — a place outside them is declared in [`shared_stores`](#shared_stores) |
+| `worktree_root` | path — absolute, `~`-relative, or relative **to the workspace root** | no | `<workspace root>/../<project>-tracks`, the workspace root's **sibling** — stated (`ws-shared/tracks.md`) | `ws-start`, `ws-shared/tracks.md` (retirement), `ws-setup` | the default is used, which is stated behaviour rather than a degrade. The value is **resolved to an absolute path once per session** and echoed; a relative value read against cwd instead of the workspace root is the defect this key exists to remove, since `../<project>-tracks` has two readings and **both exist in the wild**. The sibling is the default because on a **single-repo** project the workspace *is* the repo, so the other reading puts every track worktree inside it (`ws-setup`). Retirement substitutes it to find the `<id>/` directory git leaves behind, and to refuse to call a retirement `clean` while that directory is still there; with the key absent **and** `worktrees: false` there is no root and that step does nothing |
 
 **`artifacts: in-repo` relocates the plan, and only the plan.** It goes to
 `<repo>/implementation_plans/<id>/plan.md`, committed on the task branch, which is also how it
@@ -620,6 +621,8 @@ docs_home: docs/agent           # single repo, so the docs live in it. Always en
 artifacts: workspace-state      # workspace-state (default) | in-repo
 agents_file: copy               # copy | include | symlink. copy — never symlink
 worktrees: true                 # each track its own checkout; required for ws-fanout
+worktree_root:                  # optional. Default: <workspace>/../<project>-tracks — the
+                                # workspace root's sibling, resolved absolutely once per session
 
 shared_stores:                  # places the work edits that are NOT repos below. [] = none, the
   - id: agent-library           # usual answer. ws-fanout runs one track per declared store per batch

@@ -306,9 +306,11 @@ Finally, the boundary that makes all of this safe to clean up. **Retiring** a tr
 its session state — the track directory, the worktrees it was given, and `tracks/current` if it
 names that track. **It never touches a branch, a commit, a pushed PR or the tracker item.** Four
 callers need it and all four point at one definition rather than keeping a copy. Before removing
-anything it refuses outright if a worktree holds uncommitted work, unpushed commits, or no
-upstream at all — in that last case the commits exist nowhere else — then shows what will go and
-waits for a yes. The operator mechanics live with the skill that owns them; the guarantee is the
+anything it refuses outright if a worktree holds uncommitted work, or commits that are on no
+remote — those exist nowhere else — then shows what will go and waits for a yes. It also removes
+the directory the worktrees sat in when that leaves it empty, and refuses to call the retirement
+clean while anything is still there. The operator mechanics live with the skill that owns
+them; the guarantee is the
 part worth knowing from here.
 
 ## What this is not
