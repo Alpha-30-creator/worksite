@@ -65,3 +65,16 @@ the cwd is a git root.
 ## Rules that override defaults
 
 ## Open questions
+
+<!-- Writing the prose above so it survives the next few tasks:
+     * Prefer a LINK TO A DECISION RECORD over a task id. "(p3.2)" says which task changed a
+       paragraph, not why, and it stops resolving once the roadmap entry is archived. Keep a bare
+       id only where no record exists — it is then a signal the reasoning was never written down.
+     * Write what is true NOW. A path named before it exists never fails, because a bare path in a
+       table cell is not a link and no link check sees it. If a path is aspirational, say so.
+     * Keep "Open questions" to actual questions. It is the section that silently becomes a list
+       of settled statements, each one still accurate, which is why `ws-ship` asks whether a row
+       READS correctly rather than whether it is true.
+     `ws-ship`'s DOCS step — section 4, before the merge, not the harvest — re-reads anything here
+     naming a task id, a phase, a not-yet-existing path or a count, and its closing line reports
+     whether it did. Fewer of those is less to re-read. -->

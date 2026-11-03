@@ -55,8 +55,8 @@ agent/         the cartridge: reference.md, risks/, rules/, workspace/, worklog/
 | `product/`, `design/` | living, slow | drift |
 | `roadmap/`, `agent/` | living | the plan; or skills read nothing |
 | `runbooks/` | living | **dangerous** — someone follows it |
-| `decisions/` | **immutable** | never edited; superseded by a newer ADR |
-| `records/` | **immutable, dated** | cannot be stale — it records a moment |
+| `decisions/` | **immutable in substance** | a decision is superseded by a newer ADR, never rewritten — but an **item inside** one may be amended in place, with the date and the task in the header, and that is how a narrowed rule stays one rule instead of two |
+| `records/` | **immutable, dated** — except a standing record, which is **living** | a dated report cannot be stale: it records a moment. A **standing** record — a limitations list — is the exception: it is living, so keep it clearly named and expect to edit it when a limitation closes or its stated cause turns out to be wrong |
 
 Keep dated reports in `records/`, never loose among the reference docs. Mixing them is what makes
 a whole docs tree feel untrustworthy.

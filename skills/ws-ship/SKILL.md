@@ -1,6 +1,6 @@
 ---
 name: ws-ship
-description: Close out one finished track - commit, open the PR, merge it, mark the task done on the tracker, update the docs it touched, harvest the plan and journal into one durable worklog entry that keeps the rejected alternatives, then delete every ephemeral artefact and remove the worktree. Ends with the work merged, the record written and nothing ephemeral left behind. Also handles a release from the integration branch to production on an explicit go. Use only on an explicit instruction to ship, merge or release - never inferred from work merely looking finished, since it merges and closes the task.
+description: Close out one finished track - commit, open the PR, merge it, mark the task done on the tracker, update the docs it touched and re-read the cartridge rows it invalidated without touching, harvest the plan and journal into one durable worklog entry that keeps the rejected alternatives, then delete every ephemeral artefact and remove the worktree. Ends with the work merged, the record written and nothing ephemeral left behind. Also handles a release from the integration branch to production on an explicit go. Use only on an explicit instruction to ship, merge or release - never inferred from work merely looking finished, since it merges and closes the task.
 ---
 
 # Ship one finished track
@@ -81,6 +81,12 @@ Then mark the task in-review via the adapter.
 
 ## 3. Merge
 
+**§4 first.** The docs a task changed — and the cartridge rows it invalidated without touching —
+are repo changes that belong in *this* PR, so they are written and pushed to the branch **before**
+this step. They are numbered after it because they are the smaller job, which is a numbering
+mistake it is cheaper to warn about than to renumber: an agent reading top to bottom merges, then
+reaches §4 and finds the PR it was told to put them in already closed.
+
 Only after CI is green and any required review is in. Use the project's merge style
 (`merge_style` in the cartridge). **Check `deploy_branches` before merging and say out loud
 whether this merge deploys, and to where.** If it does, that needs an explicit go.
@@ -91,7 +97,60 @@ and **a migration reaches the database before the code that needs it**.
 ## 4. Docs
 
 The task is not done until the docs it touched are updated: contracts, schema, setup, design,
-decisions. These are repo changes and ship in **this** PR, not a later one.
+decisions. These are repo changes and ship in **this** PR, not a later one — **which means they are
+written before §3 merges it**, whatever the numbering suggests. Where a merge has already happened,
+the fix is its own commit on the integration branch and §7's closing line says so; that is
+recovery, not the route.
+
+### Then the cartridge, which this task may have invalidated without touching
+
+`<docs_home>/reference.md` is the first file every agent reads, and the only doc whose rot is
+caused by edits made **somewhere else** — so "the docs it touched" misses it by construction, and
+nothing else in the loop ever looks. A project cartridge was once found stale in **nine** places
+after five tasks shipped around it, none of which had edited it.
+
+Do this with the rest of the docs above, under the same ordering: **before** §3 merges. What is
+not acceptable is finding a stale row and leaving it, because the next agent reads it as current.
+These edits are committed by **§1's** mechanics — explicit paths, the diff shown, and the wait for
+a yes — which is one more reason they belong before the merge rather than after it.
+
+Re-read the rows in these four classes. Not the whole file — a re-read with no scope is the thing
+that gets skipped — and three of the four have a handle, so start there rather than at the top:
+
+| Class | Handle | Why it rots |
+|---|---|---|
+| anything naming a **task id** | whatever this tracker's ids look like — `grep -nE '\bp?[0-9]+\.[0-9]+\b'` for a dotted phase.task scheme, `\b[A-Z]{2,}-[0-9]+\b` for a `PROJ-123` one, and a card-titled tracker has no grepable id at all, so there the whole file is the scope | the task closes and the row keeps describing work as pending, or cites an id whose reasoning now lives in a decision record |
+| anything naming a **phase** | the same grep, plus the project's own phase names | phases close as wholes, so a row naming one is wrong the moment the last task in it ships |
+| any **count or enumeration** | `grep -nE '\b(one|two|three|four|five|six|seven|eight|nine|ten|[0-9]+)\b'` | "three checks", "the four cases" — each is a claim the next task can break without touching the sentence. An enumeration with no number is the harder half: a list reads as exhaustive whether or not it says so |
+| anything naming a **path that does not exist yet** | no handle — `ls` every backticked path | written aspirationally, and nothing fails when it never arrives. A bare path in a table cell is not a link, so a relative-link check cannot see it |
+
+**The question is "does this row still read correctly", not "is this row still true."** That
+distinction is the whole step, and asking the weaker question is measurably not enough: when this
+step was written, of the six defects found in one real cartridge **five were not false
+statements**, and four of those had survived a deliberate re-read looking for false ones. The two
+shapes to name, because they are the ones a truth check passes over:
+
+- **Tense.** An `## Open questions` section holding three settled statements. Every sentence in it
+  accurate; the heading stopped describing its contents some tasks ago.
+- **Completeness.** A row reading `the reference pages — the schema under <dir-a>/, the concepts
+  page under <dir-b>/, sync direction under <dir-c>/`, where `<dir-c>/` has since grown to four
+  pages and the cartridge links one of the missing ones two rows later. Every clause true.
+  The worst instance of this class is a rule with an exhaustive clause: *"`LICENSE` and the public
+  package scope are allowed to contain the author's name. **Nothing else is**"* — while the leak
+  scan's own exclusion list had three more entries. A security rule, stated as complete, read past.
+
+**Prefer a link to a decision record over a task id**, where the project has one. A closed task
+survives only as long as its roadmap entry; a decision record is a document with a name, and it
+says *why* rather than *which task*. Where a row's id has no record behind it, leave the id — it
+is then a signal the reasoning was never written down.
+
+**The same four classes apply to whatever else the project states about itself** — a status view,
+a front page, a README that counts open tasks. Those are usually fewer rows and often have a check
+behind them; the cartridge is singled out here because it has neither a check nor an owner. Where
+the tracker adapter already updates a status file, that stays its job.
+
+If a row is wrong for a reason this task did not cause, fix it anyway and say so in the worklog
+entry rather than widening the task.
 
 ## 5. Harvest
 
@@ -165,11 +224,21 @@ stop here.
 Via the adapter, with the PR urls. Then confirm it actually moved — tracker automation does not
 always fire.
 
-Then the last thing the skill outputs: one line, the track id and five facts.
+Then the last thing the skill outputs: one line, the track id and six facts.
 
 ```
-shipped p3.2 — merged <prs> · worklog <path> · track removed · 2 worktrees removed · tracker [x]
+shipped p3.2 — merged <prs> · worklog <path> · cartridge re-read · track removed · 2 worktrees removed · tracker [x]
 ```
+
+**The cartridge fact is in that line because nothing else gates on §4.** §7 waits for §6 and §6
+waits for the harvest commit, so a skipped docs step costs nothing and is invisible — which is the
+objection that retired the "last reviewed date" alternative, and it applies to a prompt too. Here
+it has to be *said*: `cartridge re-read` when it was, `cartridge re-read, 2 rows fixed` when rows
+changed, `cartridge re-read AFTER THE MERGE, <sha> on <branch>` when §4 ran late and its fix is a
+commit of its own rather than part of the PR, and `cartridge NOT re-read` when it was skipped. The
+third spelling exists because without it the recovery path reports as the route, which is the one
+thing this line is for. Per the rule below, the untrue version goes in the same line rather than
+being left out.
 
 Any fact that is not true says so **in that same line** — `track NOT REMOVED: …`,
 `tracker not confirmed`. The failure this defends against is a session that ends mid-way and
