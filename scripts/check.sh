@@ -455,28 +455,38 @@ else
     say "  note — these claims are read from the WORKING TREE, not from the staged tree, because"
     say "  the checker opens files on disk. Where the two differ, what section 7 says below is"
     say "  about the version on disk and not about the version being committed."
-    # `git status --porcelain`, not `git diff --name-only`. A review broke the first version three
-    # ways, and all three mattered because the claims are read from whatever is on disk:
-    #   * README.md staged for DELETION but still on disk — `git diff` is empty, so §7 certified
-    #     39 claims out of a file the commit removes and announced that the trees agreed;
+    # The question is narrow and it took three tries to ask it: for which paths do the INDEX —
+    # which is what is being committed — and the WORKING TREE — which is what the claims are read
+    # from — hold different content?
+    #
+    # `git diff --name-only` alone was the first answer and misses two cases that matter:
+    #   * README.md staged for DELETION but still on disk. There is no index entry to diff
+    #     against, so `git diff` is silent and §7 certified 39 claims out of a file the commit
+    #     removes, announcing that the trees agreed. `ls-files --others` names it, because
+    #     removing it from the index is exactly what makes it untracked.
     #   * an UNTRACKED file the checker reads — an extra roadmap file or skill directory changes
-    #     the counts and refuses every commit, and `git diff` never names it;
-    #   * a CONFLICTED path, which `git diff --name-only` prints twice.
-    # status --porcelain is the one question that answers all three at once and de-duplicates.
+    #     what the counts measure, and refuses every commit in the repo until it is dealt with.
+    # `git status --porcelain` was the second answer and is too WIDE: it reports a staged,
+    # worktree-clean file (`M `) as uncommitted, and that is the one case where the index and the
+    # working tree agree exactly. During this task's own commit it listed all seven staged files
+    # as differing from the commit they were in. A label that is wrong on the ordinary case is a
+    # label nobody reads by the time it is right.
+    # So: content differences, then untracked, de-duplicated — `git diff` prints an unmerged path
+    # more than once.
     if ! git rev-parse --git-dir >/dev/null 2>&1; then
       # Said, not assumed. Sections 5 and 6 both test this; the first version of this branch
       # asserted "the two trees agree" where there was no index to agree with.
       say "    not a git repo, so there is no index to compare against and nothing below is"
       say "    about a staged tree at all."
     else
-      DIFFERS="$(git status --porcelain 2>/dev/null)"
+      DIFFERS="$( { git diff --name-only; git ls-files --others --exclude-standard; } 2>/dev/null | sort -u )"
       if [ -n "$DIFFERS" ]; then
-        say "    git reports these paths as not matching a clean commit — any one of them that the"
-        say "    checker reads is read in its on-disk form:"
+        say "    the index and the working tree hold different content for these paths, so any one"
+        say "    of them the checker reads, it read in its on-disk form and not as committed:"
         printf '%s\n' "$DIFFERS" | sed 's|^|      |'
       else
-        say "    git reports nothing uncommitted, so the tree on disk and the tree being"
-        say "    committed are the same."
+        say "    the index and the working tree agree on every path, so the tree the claims were"
+        say "    read from is the tree being committed."
       fi
     fi
   fi

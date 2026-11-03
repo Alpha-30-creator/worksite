@@ -232,15 +232,20 @@ whether it fires.
 **What section 7 of `check.sh` does not cover, after p7.3.** The gate now refuses a false README
 claim, and the limits of that are worth stating in the same breath. It reads the **working tree**
 in every mode, `--staged` included, because its checks open files with `cat` and `grep` and
-`--staged` cannot redirect them. It asks `git status --porcelain` and prints every path git
-reports, so the mismatch is named rather than glossed — but naming it does not remove it, and it
-cuts **both ways**. The hook can certify a README nobody is committing: with `README.md` staged
+`--staged` cannot redirect them. It asks which paths the index and the working
+tree hold different content for, and prints them, so the mismatch is named rather than glossed —
+but naming it does not remove it, and it cuts **both ways**. The hook can certify a README nobody is committing: with `README.md` staged
 for deletion and still on disk, section 7 reads the on-disk copy and reports that every claim
 holds. And symmetrically, **it refuses a commit over a working-tree claim nobody is staging** — an
 unstaged README edit, or an untracked extra roadmap file or skill directory, changes what the
-counts measure and blocks every commit in the repo until it is dealt with. The first version of
-this section asked `git diff --name-only`, which names none of those three cases (and prints a
-conflicted path twice); all four were found by a reviewer reproducing them rather than by reading.
+counts measure and blocks every commit in the repo until it is dealt with. Asking that question precisely took three attempts, and the two
+wrong ones fail in opposite directions. `git diff --name-only` alone names none of the three cases
+above and prints a conflicted path twice — a reviewer found all four by reproducing them.
+`git status --porcelain` then named *too much*: it reports a staged, worktree-clean file as
+uncommitted, which is the one case where the index and the working tree agree exactly, so this
+task's own commit announced that all seven of its staged files differed from the commit they were
+in. A label that is wrong on the ordinary case is a label nobody still reads by the time it is
+right, which is why the noisy version is recorded here as a defect and not as a cautious choice.
 It reads **the quantities it enumerates**, not every number in the README: the thirteen is stated
 four times and only two of those are claims it reads, so a stale figure at `README.md`:48 or :49
 passes. Widening that is cheap and deliberately not done here — it is claim coverage, which is
