@@ -441,9 +441,45 @@ a decision about its safety rules — but if a second safety-rule change comes u
         word-splitting rows p8.13 added
   - [ ] proven by execution against a workspace path containing a space, per p8.13's precedent
   - [ ] changed through `ws-refine`, with its graph audit
-- **Notes:** it **fails loudly** (`fatal:`), unlike p8.13's loops, which printed a reassuring row at
-  exit 0 — so it wastes a run rather than lying about one. That is why it was filed rather than
-  fixed inside p8.36.
+- **Notes, as filed:** "it **fails loudly** (`fatal:`), unlike p8.13's loops, which printed a
+  reassuring row at exit 0 — so it wastes a run rather than lying about one. That is why it was
+  filed rather than fixed inside p8.36."
+- **That note is wrong, and it was the reason the task was deferred.** Measured 2026-11-03 against
+  a fixture at `<base>/My Projects/`, **three of the five shapes are silent and a fourth is loud
+  and then falsely reassuring**. Only the first is the simple loud failure the note described:
+  - `git -C <repo> status --porcelain` inside `$( )` — the row still prints, **`0 changed`**, at
+    exit 0, with the `fatal:` on a stream the table does not include. p8.13's exact shape, reached
+    through the placeholder instead of the loop.
+  - `cat <state_dir>/tracks/current 2>/dev/null` — empty output. The `2>/dev/null` is there for
+    "the file is absent" and suppresses "you split my path" identically, so `ws-start` reads **no
+    current track** and offers a fresh claim instead of resuming.
+  - `ls <state_dir>/tracks/ 2>/dev/null` — reads as **no tracks on this machine**, so the stale
+    sweep finds nothing.
+  - `state_dir=<state_dir>` in *Retiring a track* — the worst, and the one shape that is **not**
+    silent. An unquoted assignment does not split into two arguments: bash reads
+    `state_dir=/x/My Projects/.p` as a prefix assignment for the **command** `Projects/.p`, which
+    fails with `bash: Projects/.p: No such file or directory` and exits 127 — and a prefix
+    assignment does not persist, so `state_dir` is left **empty**.
+    `rm -rf "$state_dir/tracks/$id"` is then **one** argument, `/tracks/$id`, at the filesystem
+    root: it exits 0, the verification that follows checks that same wrong path, finds nothing and
+    prints **`clean: track p3.2 removed`** with the track fully intact. So it is loud and then
+    falsely reassuring, which is arguably harder to catch than silence — the error scrolls past
+    before the success line arrives. **It does not reach the first fragment**, and an earlier draft
+    of this entry said it destroyed an unrelated file there; that was measured on a *different*
+    shape, an unquoted **use** such as `rm -rf <state_dir>/tracks/"$id"`, and no `rm` anywhere in
+    the pack has that form — every one is already `rm -rf "$state_dir/…"`. Corrected after review.
+  So this is not a wasted run. It is *reports success while doing the wrong thing* and *work would
+  be lost*, two of the three things *Where a finding belongs* calls worth interrupting a board for.
+  The block's own comments guard the **id** against exactly this and never guard the **state_dir**,
+  which reaches the same place.
+- **And it is not hypothetical.** Three of the five workspace paths in the author's own
+  `device.yaml` contain a space, and so does the path this repo is developed at — which means every
+  `git -C <repo>` an agent filled in for this very project would have split.
+- **Three more shapes were fixed that the five above do not count**, two of them genuinely silent:
+  `printf '%s\n' "$id" > <state_dir>/tracks/current` exits 0 having written into a file named `My`
+  while `tracks/current` is never created; `mkdir -p <state_dir>/tracks/"$id"/verify` exits 0 having
+  built a wrong tree; and `cd <repo> && npm …` exits **0** in the first fragment, because bash's
+  `cd` silently ignores extra arguments — so the checks run in the wrong directory and report.
 
 ## [ ] p8.40 — A local-only project can never retire a track
 
