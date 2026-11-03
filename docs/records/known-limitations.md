@@ -359,3 +359,34 @@ silence a later reader would have to re-derive. An earlier draft of this sentenc
 `verify/01-inventory.txt`, which is gitignored and is deleted when the track is retired: a
 permanent record must not point at an ephemeral one, and that is the second time this task pointed
 a reader at something they could never open.
+
+**Deploying a shared store is not publishing it, and conflating the two produced a rule nothing
+could follow.** `agent-sync apply` writes each agent's copy of the library and commits and pushes
+nothing; `agent-sync save` does that *and* commits and pushes the whole store. p8.30's first draft
+treated them as one step and concluded that only the lead may run it, once, after review — which
+is unsatisfiable for exactly the changes `ws-refine` exists to make, because its own *Verify in
+two runs, and the first one must fail* requires deploying a skill-body change before it can be
+verified at all, and verification precedes review. The change proved this against itself: it was
+deployed to all three agents before its own review, because it had to be. The rule now separates
+the two, and the general form is worth keeping — **when a command does two things with different
+costs, a rule about "the command" will be wrong about one of them.**
+
+**What a shared store still costs, after p8.30.** The rule is stated once and pointed at from six
+places, but the mechanism underneath it has not changed and cannot be fixed from the pack: both
+halves act on the **whole** store, so there is no way to deploy or publish one track's library
+change. A lead that deploys mid-batch to verify track A necessarily deploys track B's unfinished
+edits to every agent on the machine — local and reversible, but real — and `save` would push them
+to every machine. The pack's answer is procedural (one track per store per batch, the command
+forbidden by name in every brief, the lead runs it) because a procedural answer is the only kind
+available to a document. A tool that could publish one artifact would make the rule unnecessary,
+and that is agent-sync's problem rather than the pack's.
+
+**The highest-read-priority file was the last one to be corrected.** Four of p8.30's six
+contradicting sites were skills; the other two were `docs/agent/reference.md` — which `AGENTS.md`
+orders every agent to read *before anything else* — and ADR 0003 item 5, with status `accepted`.
+The first draft fixed the skills and left both, so the file every agent reads first still stated
+the retired rule. The lesson generalises past this task: **a sweep for a contradiction has to
+include the records that stated the old rule, not only the files that execute it**, and an
+accepted ADR gets amended in its own text rather than quietly outvoted by a newer skill. ADR 0003
+now carries `item 5 amended 2026-11-03 (p8.30)` in its header, which is the first use of that
+field in this repo.
