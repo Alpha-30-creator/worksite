@@ -422,7 +422,7 @@ a decision about its safety rules — but if a second safety-rule change comes u
   path that executes it. Found by the lead's own grep after the review, which had declared it
   skimmed `ws-start` outside the diff hunks. A coverage gap honestly declared, not a miss.
 
-## [~] p8.39 — `git -C <repo>` is unquoted in the pack's placeholder idiom, so a bare fill word-splits
+## [r] p8.39 — `git -C <repo>` is unquoted in the pack's placeholder idiom, so a bare fill word-splits
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
