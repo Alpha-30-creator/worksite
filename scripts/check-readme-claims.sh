@@ -7,10 +7,19 @@
 # acceptance criterion was "the README's claims all verified against the tagged tree", and kept
 # here rather than in that task's scratch so the next tag does not re-derive it by hand.
 #
-# THIS IS NOT THE PROJECT'S `verify`. That is `scripts/check.sh` and there is deliberately only
-# one (AGENTS.md). This script is evidence tooling for one criterion; nothing runs it
-# automatically, which is a gap, and p7.3 is filed to fold it into check.sh as a section so that
-# a stale README claim fails the same gate everything else does.
+# THIS IS NOT A SECOND `verify`. There is one gate, `scripts/check.sh` (AGENTS.md), and since
+# p7.3 this script IS one of its sections — section 7 calls it, indents its output and fails the
+# gate on a non-zero exit. It stays a separate file because 250 lines of claim-reading inside
+# check.sh would make the gate unreadable, not because it is optional. Run it directly against
+# any tree (`bash scripts/check-readme-claims.sh <dir>`) to check a tag or a candidate clone.
+#
+# THREE DISPOSITIONS, and the difference between the last two is the whole point:
+#   ok         the claim was read out of README.md and holds against the tree;
+#   FAIL       it was read and does not hold — OR no claim matching the pattern was found at all,
+#              which means the README moved out from under the check and is never forgiven;
+#   UNCHECKED  a TOOL this check needs is absent here, so it did not look. Counted, named in the
+#              result line, and not a failure — otherwise CI, where `agent-sync` is not installed,
+#              goes red on a README that is perfectly true (p7.3).
 #
 # DIRECTION, which the first draft got wrong. Every quantity is read **out of README.md** and
 # compared to the tree. The first version hard-coded the numbers in this file and only checked the
@@ -36,7 +45,14 @@ FLAT=$(tr '\n' ' ' < README.md | tr -s ' ')
 ok()  { printf '  ok     %s\n' "$*"; }
 bad() { printf '  FAIL   %s\n' "$*"; fail=1; }
 note(){ printf '  note   %s\n' "$*"; }
-hdr() { printf '\n== %s ==\n' "$*"; }
+hdr() { printf '\n-- %s --\n' "$*"; }
+# A claim this environment cannot check. NOT a failure, and NOT silent: see the header.
+unchecked=0; UNCHECKED_NAMES=""
+unknown(){ printf '  UNCHECKED  %s\n' "$*"; unchecked=$((unchecked+1))
+           UNCHECKED_NAMES="$UNCHECKED_NAMES
+  - $1"; }
+# The two interpreters the checks below need. Absence makes a claim UNCHECKED, never ok.
+HAVE_PY=0; command -v python3 >/dev/null 2>&1 && HAVE_PY=1
 
 # word2num: the README spells quantities as words. Return -1 for anything unrecognised so a
 # missing claim is a failure rather than a silent 0.
@@ -84,6 +100,9 @@ diff <(grep -oE '^\| \[`ws-[a-z]+`\]' README.md | tr -d '|[`] ' | sort) \
   || bad "the table and the skill directories disagree"
 
 hdr "3. each table row's 'Ends with' against that skill's own description"
+if [ "$HAVE_PY" -eq 0 ]; then
+  unknown "the skill-table paraphrases: python3 is not on PATH, so all 13 rows went unread"
+else
 python3 - <<'PY' || fail=1
 import io, re, sys
 md = io.open("README.md", encoding="utf-8").read()
@@ -111,6 +130,7 @@ for name, ends in rows:
         print(f"  ok     {name}")
 sys.exit(bad)
 PY
+fi
 
 hdr "4. the opinions, as the README counts them"
 said=$(w2n "$(printf '%s' "$FLAT" | grep -oE 'opinionated in ([a-z]+) ways' | awk '{print $3}')")
@@ -144,10 +164,15 @@ hdr "8. the gap table: every id open, and every row describing its own task"
 tbl=$(awk '/^The gaps a reader would still hit/{f=1} f&&/^\| /{print} f&&/^$/&&NR>1{if(seen)exit} f&&/^\| /{seen=1}' README.md)
 ids=$(printf '%s\n' "$tbl" | grep -oE '\| p[0-9]+\.[0-9]+ \|' | tr -d '| ' | sort -u)
 [ -n "$ids" ] || bad "no task ids found in the gap table"
+# `[ ]` open, `[~]` claimed, `[r]` in review are all STILL OPEN to a reader, which is who the gap
+# table is for. Until p7.3 only `[ ]` counted, so merely claiming a gap-table task failed this
+# group — measured on a copy with p8.30 marked `[~]`. Only `[x]` done and `[-]` dropped are closed.
 for id in $ids; do
   st=$(grep -hoE "^## \[.\] ${id} —" docs/roadmap/*.md | head -1 | sed 's/^## \[\(.\)\].*/\1/')
   case "$st" in
     " ") ok "$id is open" ;;
+    "~") ok "$id is open (claimed, [~])" ;;
+    "r") ok "$id is open (in review, [r])" ;;
     "")  bad "$id is in the gap table but not on the roadmap" ;;
     *)   bad "$id is marked [$st] on the roadmap, but the README lists it as an open gap" ;;
   esac
@@ -155,7 +180,11 @@ done
 
 hdr "9. the 'N more open tasks' count against the board minus the gap table"
 said=$(w2n "$(printf '%s' "$FLAT" | grep -oE '([A-Za-z]+) more open tasks' | awk '{print $1}')")
-n_open=$(grep -hcE '^## \[ \] p[0-9]+\.[0-9]+' docs/roadmap/*.md | paste -sd+ - | bc)
+# Same marker set as group 8, and for the same reason: claiming ANY task used to drop this count
+# by one and fail the gate (measured — marking p7.3 `[~]` turned "README says 4, tree has 3").
+# awk rather than `bc`: bc is an undeclared dependency, and where it is absent the sum comes back
+# EMPTY, which reaches `claim` as a measurement rather than as "I could not count".
+n_open=$(grep -hcE '^## \[[ ~r]\] p[0-9]+\.[0-9]+' docs/roadmap/*.md | awk '{t += $1} END {print t + 0}')
 n_gap=$(printf '%s\n' "$ids" | grep -c .)
 claim "open tasks not in the gap table" "$said" "$((n_open - n_gap))"
 
@@ -185,14 +214,22 @@ claim "guess-points, README vs the record it cites" \
 # the Node floor the README states, against agent-sync's own engines field
 said=$(printf '%s' "$FLAT" | grep -oE 'Node ([0-9]+)\+' | head -1 | grep -oE '[0-9]+')
 as_pkg=""
-if as_bin=$(command -v agent-sync 2>/dev/null); then
+if [ "$HAVE_PY" -eq 1 ] && as_bin=$(command -v agent-sync 2>/dev/null); then
   d=$(dirname "$(python3 -c 'import os,sys;print(os.path.realpath(sys.argv[1]))' "$as_bin")")
   while [ "$d" != "/" ]; do [ -f "$d/package.json" ] && { as_pkg="$d/package.json"; break; }; d=$(dirname "$d"); done
 fi
-if [ -n "$as_pkg" ]; then
+# The README's Node floor is checked against agent-sync's OWN `engines` field, so this claim is
+# only checkable where agent-sync is installed. It is UNCHECKED elsewhere, not false: it was a
+# hard failure until p7.3, and section 7 of check.sh would then have turned CI — which has no
+# agent-sync — red on a README that holds. The tool's absence is reported by name instead.
+if [ -z "$said" ]; then
+  bad "Node floor: no 'Node N+' claim found in README.md to check"
+elif [ "$HAVE_PY" -eq 0 ]; then
+  unknown "Node floor: python3 is not on PATH, so agent-sync's engines field went unread"
+elif [ -n "$as_pkg" ]; then
   claim "Node floor" "$said" "$(python3 -c 'import json,io,sys,re;e=(json.load(io.open(sys.argv[1])).get("engines") or {}).get("node","");print(re.sub(r"[^0-9]","",e) or -1)' "$as_pkg")"
 else
-  bad "Node floor: agent-sync is not on PATH, so the README's 'Node ${said}+' could not be checked"
+  unknown "Node floor: agent-sync is not on PATH, so the README's 'Node ${said}+' went unread"
 fi
 # the licence the README names, against LICENSE itself
 said=$(printf '%s' "$FLAT" | grep -oE '(MIT|Apache-2\.0|BSD-[0-9]-Clause|GPL-[0-9.]+) — see \[LICENSE\]' | awk '{print $1}')
@@ -205,6 +242,18 @@ grep -qi 'publish' skills/ws-refine/SKILL.md && ok "ws-refine has a publish step
 grep -qi 'answer only the user can give' INSTALL.md && ok "INSTALL.md stops for what only the user can answer" \
   || bad "README says INSTALL.md stops; no such stop found"
 
-printf '\n== result ==\n'
-if [ "$fail" -eq 0 ]; then echo "  every checkable README claim holds against $R"; exit 0
+printf '\n-- result --\n'
+# ADR 0004: certify only what was stated as read. The unchecked set is printed on both paths —
+# on the failing path too, because "one claim failed" over a partially-read README is a different
+# statement from "one claim failed" over a fully-read one.
+if [ "$unchecked" -gt 0 ]; then
+  echo "  $unchecked claim(s) NOT checked here, for want of a tool:$UNCHECKED_NAMES"
+fi
+if [ "$fail" -eq 0 ]; then
+  if [ "$unchecked" -gt 0 ]; then
+    echo "  every OTHER checkable README claim holds against $R"
+  else
+    echo "  every checkable README claim holds against $R"
+  fi
+  exit 0
 else echo "  AT LEAST ONE CLAIM FAILED against $R"; exit 1; fi

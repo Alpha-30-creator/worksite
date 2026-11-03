@@ -73,9 +73,9 @@ reports 46 blobs, 105 trees and 51 commits unreachable, one of them a superseded
 is *reachable in `main`'s history* and therefore correctly ignored here. Gating a publish on that
 gates it on the author's reflog rather than on the bytes being published. The opt-out is explicit:
 `check.sh` names the section it did not run and why, and its closing line says `all checks passed
-EXCEPT …`, so a publish log cannot read as a clean six-section pass. **Sections 1 to 5 still run on
-the candidate**, and the target repo's own object store is still checked by its preflight, its
-`--staged` run, the hook and CI.
+EXCEPT …`, so a publish log cannot read as a clean seven-section pass. **Sections 1 to 5 and
+section 7 still run on the candidate**, and the target repo's own object store is still checked by
+its preflight, its `--staged` run, the hook and CI.
 
 This count was **four** until 2026-11-02, omitting the preflight (p8.31).
 

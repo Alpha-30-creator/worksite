@@ -228,3 +228,37 @@ silence.
 refusal has been checked by reading and by composition against fixtures; nothing yet proves that
 the loop's triggers fire in ordinary use, and the author of a description is the worst judge of
 whether it fires.
+
+**What section 7 of `check.sh` does not cover, after p7.3.** The gate now refuses a false README
+claim, and the limits of that are worth stating in the same breath. It reads the **working tree**
+in every mode, `--staged` included, because its checks open files with `cat` and `grep` and
+`--staged` cannot redirect them; it names each file that differs from the index rather than
+pretending otherwise, so the hook can certify a version nobody is committing — loudly, but it can.
+It reads quantities and named facts, never prose: whether `docs/product/overview.md`'s argument
+persuades is not checkable, and a skill-table cell that paraphrases its skill's own `Ends with`
+sentence fairly is reported as a `note` — three of the thirteen are, today — with only a cell
+sharing no content word at all failing. And it covers `README.md` alone. `CONTRIBUTING.md`,
+`SECURITY.md` and `docs/engineering/layout.md` state counts too, including the count of this
+script's own sections, and **nothing reads a claim out of those files**; the arithmetic in them has
+now been wrong twice (the "three shell scripts" that were five, p7.2; the six sections that are
+seven, this task). That is the same shape one document further out, and it is recorded here rather
+than filed, because a second claim checker aimed at three more files earns less than it costs.
+
+**An `UNCHECKED` claim is not a claim that holds.** Section 7 distinguishes "this claim is false"
+from "a tool this machine lacks means I did not look", and the second is deliberately not a
+failure: the Node floor is read out of `agent-sync`'s own `engines` field, so a hard failure there
+would turn CI — which has no `agent-sync` — red on a README that is perfectly true. The cost is
+that a green gate on a reader's machine or in CI certifies **one claim fewer** than a green gate
+here. That is why the count is printed in the section, each one named, and repeated in the closing
+summary: the narrowing is visible rather than inferred. The line this draws is that only a missing
+*tool* is `UNCHECKED` — "no claim of that shape found in `README.md`" stays a failure, because it
+means the README moved out from under the check rather than the machine being short of something.
+
+**Two of the claim checker's ten groups were only ever correct on an idle board**, and nothing
+could have found that until something ran it. Groups 8 and 9 read the roadmap's status markers and
+counted only `[ ]` as open, so *claiming any task* — marking it `[~]` — dropped the open count by
+one and failed the gate; measured both ways on 2026-11-03 before fixing it, with `[~]` on p7.3 for
+group 9 and on p8.30, a gap-table row, for group 8. `[ ]`, `[~]` and `[r]` now all count as open,
+which is what a reader means by an open gap. The general form is worth keeping: a check written as
+evidence for one task is written against the tree as it stood that day, and the states it never
+saw are the ones it gets wrong the moment it starts running on every commit.

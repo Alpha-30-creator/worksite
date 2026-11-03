@@ -306,9 +306,13 @@ say "publish: running the leak guard on the candidate"
 # gating it on the author's reflog rather than on the bytes being published (p8.38).
 #
 # The target repo's own object store is NOT let off: the preflight above and the --staged run
-# below both run the full six sections against it, as do the pre-commit hook and CI. And the
+# below both run the full seven sections against it, as do the pre-commit hook and CI. And the
 # skip announces itself — check.sh prints which section it did not run and why, and its closing
-# line says so too, so a publish log can never read as a clean six-section pass.
+# line says so too, so a publish log can never read as a clean seven-section pass.
+#
+# Section 7 (the README's own claims, p7.3) DOES run on the candidate, and that is deliberate: the
+# candidate is the tree about to become this repo, so a README whose counts no longer match the
+# skills being published is exactly what should stop a publish.
 if ! ( cd "$CAND" && bash scripts/check.sh --no-object-store ); then
   say ""
   say "publish: refused — the candidate does not pass scripts/check.sh."
