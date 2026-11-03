@@ -180,6 +180,13 @@ its default, and `lite` has no tracker at all. A new adapter aimed at small proj
 
 ## An unknown kind is not an error
 
+**`none` is not an unknown kind**, and the distinction matters because the two paths are opposite:
+an unknown kind gets the four questions and an offer to write an adapter, while `none` has no
+adapter by design and must not be offered one. It is what a `lite`-profile project is generated
+with. The four fixed answers are in
+[`skills/ws-shared/trackers/README.md`](../../skills/ws-shared/trackers/README.md), and
+`ws-start`, `ws-task`, `ws-wrap` and `ws-ship` each carry one line pointing there.
+
 A `tracker.kind` with no adapter does not stop the loop. Ask the user the four questions, do the
 work with the answers, and offer to write the adapter afterwards. That behaviour is stated in
 [the adapter index](../../skills/ws-shared/trackers/README.md); the pack's general
