@@ -18,7 +18,9 @@ the page itself or the folder that contains it.
 ## The pages
 
 Each row gives the page, the question it answers, and the kind of the folder it sits in — living
-means it is maintained and can drift; immutable means it is never edited once written. Folder links
+means it is maintained and can drift; immutable means it is not rewritten once written — which is
+not the same as never touched: an ADR's *item* may be amended in place with the date and task in
+its header, and the one standing record here is edited whenever a limitation closes. Folder links
 are deliberate where, and only where, a collection grows by file: the ADRs, the eight roadmap
 phase files, the dated records and the worklog entries, whose list here would go stale by the next
 merge. A *fixed* reference page is always linked directly even when it sits inside such a folder —
@@ -76,21 +78,22 @@ about a folder's contents or provenance, layout.md is right and this page is sta
 | [agent/workspace/AGENTS.md](agent/workspace/AGENTS.md) | The source of the root `AGENTS.md` — edit this one, never the generated copy. | living |
 | [agent/worklog/](agent/worklog/) | What was shipped, and what was rejected on the way? One entry per track, written at harvest. | living, append-mostly |
 
-### `decisions/` — immutable; never edited, superseded by a newer ADR
+### `decisions/` — immutable in substance; superseded by a newer ADR, not rewritten
 
 | Page | The question it answers | Kind |
 |---|---|---|
-| [decisions/](decisions/) | Why is it this way rather than the obvious alternative? The ADRs, numbered. | immutable |
+| [decisions/](decisions/) | Why is it this way rather than the obvious alternative? The ADRs, numbered. A decision is superseded rather than rewritten; an item inside one may be amended in place, dated and attributed in the header (ADR 0003's item 5 was). | immutable in substance |
 
-### `records/` — immutable, dated; cannot be stale, because it records a moment
+### `records/` — dated reports that cannot go stale, plus one standing record that can
 
-An ADR and a record are both immutable, for different reasons: an ADR is superseded by a later ADR,
-while a dated record simply cannot go stale — it says what was true on a day.
+A dated record cannot go stale: it says what was true on a day. An ADR is immutable for a different
+reason — it is superseded rather than rewritten. The standing limitations list is neither: it is
+**living**, and it is the one file here you should expect to be edited.
 
 | Page | The question it answers | Kind |
 |---|---|---|
 | [records/](records/) | What did a point-in-time review or audit find, and when? Dated reports. | immutable, dated |
-| [records/known-limitations.md](records/known-limitations.md) | What is known not to be covered, mechanism by mechanism? The one standing record — undated in its filename and reference-shaped, but still a record: an entry changes only when the mechanism does, and then in the same commit. | immutable in the same sense |
+| [records/known-limitations.md](records/known-limitations.md) | What is known not to be covered, mechanism by mechanism? The one standing record — undated in its filename and reference-shaped. **Living**: an entry is edited when the mechanism changes, when a limitation closes, and when its stated cause turns out to be wrong — all three have happened. | living |
 
 ### Outside `docs/`
 

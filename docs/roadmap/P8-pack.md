@@ -1210,7 +1210,7 @@ third signal that it is not worth a track.
 
 ## [ ] p8.41 — A path named in the cartridge's prose has no check, so a row can name a directory that never existed
 
-- **Repos:** worksite (pack, and this repo's `scripts/`)
+- **Repos:** worksite — this repo's `scripts/` only. **No pack change**, so no `ws-refine` and no graph audit
 - **Depends on:** —
 - **Found 2026-11-03 by p8.25**, and deferred by it deliberately rather than built inline.
 - **Why:** `scripts/check.sh` section 3 checks **relative links**, so a path written as
@@ -1234,5 +1234,9 @@ third signal that it is not worth a track.
         control where the section runs and certifies nothing
 - **Notes:** the generic half — whether the pack should say anything about paths in cartridge prose
   beyond `ws-ship`'s prompt — is already answered in `cartridge-schema.md` §1 ("write what is true
-  now"). This row is the executing half, and it is **this repo's** `check.sh`, so it ships no pack
-  change and needs no `ws-refine` audit.
+  now"). This row is the executing half.
+- **Recorded as well as tracked, deliberately**, which the cartridge's rule 1 normally forbids: the
+  entry under *The cartridge* in
+  [`records/known-limitations.md`](../records/known-limitations.md) describes the gap **as it is
+  today**, because a reader meets it today, and this row is the work that closes it. The two
+  reference each other; when this ships, the entry goes rather than being left to contradict it.

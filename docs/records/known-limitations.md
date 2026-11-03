@@ -1,9 +1,11 @@
 # Known limitations
 
-**Recorded 2026-11-02.** Seventeen mechanisms in this repo and in the pack that work, and the
-boundary each one stops at. Each entry names the mechanism in one clause and its boundary in the
-next. This is a record, not a task list: an entry changes only when the mechanism does, and then
-it changes in the same commit.
+**Started 2026-11-02 with seventeen entries; it has grown with every task since** — 49 now, under
+six headings. Each names a mechanism in this repo or in the pack that works, and the boundary it
+stops at: the mechanism in one clause, the boundary in the next. This is a record rather than a
+task list, and it is the one **living** file in `records/` — an entry is edited when the mechanism
+changes, when a limitation closes, and when its stated cause turns out to have been wrong. All
+three have happened, more than once, and an entry that was corrected says so.
 
 These were filed as roadmap tasks and triaged out on 2026-11-02 by the owner, after an
 independent audit. A limitation that is written down costs a reader one sentence; the same
@@ -85,7 +87,7 @@ than a check — the honest distinction, since a prompt depends on an agent doin
 does not. (Section 3 also reads link syntax out of **inline code**, which this entry discovered by
 writing an example of a link into it and watching the gate fail on the example. Worth knowing
 before quoting link syntax in any page this gate reads.) A `check.sh` section asserting that every
-backticked path in the cartridge exists would close it, and is not written.
+backticked path in the cartridge exists would close it; that is **p8.41**, and this entry goes when it ships.
 
 **There is no way to say "this command exists, do not run it".** A `null` command means the repo
 does not have one, which is a different claim; the do-not-run case is enforced by briefing the

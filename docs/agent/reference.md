@@ -139,14 +139,23 @@ The workspace root **is** the repo — a single-repo project. That matters twice
   those are `null` on purpose. A repo of Markdown does not get an invented test runner.
 - **No AI attribution** in any commit or PR. No `Co-Authored-By`, no "Generated with".
 - **Where the author's name may appear, in full.** `LICENSE` and the public npm scope
-  `@abdur-codes/...` are the two places it belongs. The leak scan's own exclusion list is wider,
-  and reading it as the rule is the mistake to avoid: `excluded()` in `scripts/check.sh` exempts
-  `LICENSE`, `scripts/check.sh` itself, `scripts/leak-patterns.txt` and **all of `.githooks/*`**,
-  because a pattern file and the scanner that reads it necessarily contain the patterns. Those
-  exemptions are a scanning necessity, **not permission** — a name added to a hook or to the
-  scanner is published and unscanned. Everywhere else, a name is a defect. (This bullet said
-  "Nothing else is" until p8.25 measured the list: a security rule with an exhaustive clause and
-  three entries missing.)
+  `@abdur-codes/...` are the two places it *belongs*. What the scan will let through is wider, by
+  **two independent mechanisms**, and reading either as permission is the mistake:
+
+  1. **`excluded()`** in `scripts/check.sh` skips four paths whole — `LICENSE`, `scripts/check.sh`
+     itself, `scripts/leak-patterns.txt` and **all of `.githooks/*`** — because a pattern file and
+     the scanner that reads it necessarily contain the patterns.
+  2. **The `!` allowlist** in `scripts/leak-patterns.txt` — currently the one entry
+     `!abdur-codes` — is blanked out of **every line of every scanned file** before matching
+     (`strip_allowlisted`). So that literal passes the scan *anywhere in the repo*, not only inside
+     an `@abdur-codes/...` scope and not only in the four files above.
+
+  Both are scanning necessities, **not permission**: a name added to a hook, to the scanner, or
+  anywhere at all in the allowlisted spelling is published and unscanned. Everywhere else, a name
+  is a defect — and "everywhere else" is now the honest size of the rule. (This bullet read
+  "Nothing else is" until p8.25 measured `excluded()`; its replacement then presented that list as
+  the whole surface, and review found the allowlist. Two exhaustive clauses, one after the other,
+  in a security rule.)
 
 ## Open questions
 
