@@ -147,9 +147,14 @@ The workspace root **is** the repo — a single-repo project. That matters twice
   worktree cannot isolate is work in the agent-sync library, which is not in `repos:`, so the
   library is **declared** in `shared_stores:` above rather than remembered as a rule
   ([ADR 0003](../decisions/0003-shared-external-stores-are-declared-in-the-cartridge.md)).
-  `ws-fanout`'s gate reads that declaration and runs **one track per declared store per batch**;
-  `agent-sync save` belongs to that one track and is forbidden by name in every other brief,
-  because it publishes the whole store and not one track's changes.
+  `ws-fanout`'s gate reads that declaration and runs **one track per declared store per batch** —
+  which gives that track exclusive *write* access to the store and nothing more. **`agent-sync
+  save` belongs to no track at all: it is the lead's**, forbidden by name in **every** brief
+  including the owner's, because it acts on the whole store rather than one track's changes. Its
+  deploying half (`agent-sync apply`) is the lead's too, though that one is local and reversible
+  and may run as often as verification needs. The rule, and why the graph audit follows the
+  deploy, is stated once in `ws-refine`'s *Who may run what* (p8.30, which corrected this
+  paragraph).
 - **No environments and nothing deploys.** `environments: {}` is accurate, not unfinished.
 - **CI runs `scripts/check.sh`** on every pull request and on pushes to `main` (p4.3), so the
   pre-commit hook is no longer the only guard — a contributor who never ran

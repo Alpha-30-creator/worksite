@@ -1,7 +1,7 @@
 # 0003 — A shared external store is declared in the cartridge, as a top-level `shared_stores:` list
 
 **Date:** 2026-11-02
-**Status:** accepted
+**Status:** accepted — **item 5 amended 2026-11-03 (p8.30)**, see below
 **Supersedes:** —
 **Builds on:** [ADR 0001](0001-library-is-the-source-of-truth.md)
 
@@ -65,9 +65,20 @@ shared_stores:
 4. **Two scopes of stop, kept distinct.** An unreadable cartridge stops the **whole batch**, which
    is existing behaviour and unchanged. A track whose store usage cannot be determined drops
    **that track**.
-5. **`publish:` is forbidden by name in every other brief in the batch**, including the briefs of
-   tracks that touch no store at all. The failure arrives from a track nobody thought was involved:
-   one that never edits the store but runs its publish command for an unrelated reason.
+5. **`publish:` is forbidden by name in every brief in the batch** — including the briefs of
+   tracks that touch no store at all, and, **as amended by p8.30, including the owner's.** The
+   failure arrives from a track nobody thought was involved: one that never edits the store but
+   runs its publish command for an unrelated reason.
+
+   **Amended 2026-11-03 (p8.30).** As accepted, this item said "every *other* brief", which left
+   the store's owning track holding the command — and `ws-fanout` said so in three places that did
+   not agree with each other or with `ws-refine`. Owning a store is exclusive *write* access and
+   nothing more: the `publish:` command is the **lead's**, run after review, because it acts on the
+   whole store and a builder runs before review. The amendment also separates a **deploy**
+   (`agent-sync apply` — local, reversible, commits and pushes nothing) from a **publish**
+   (`save`'s commit-and-push half), because this ADR's original wording treated them as one step
+   while `ws-refine` *requires* a deploy before a skill-body change can be verified at all. The
+   rule now lives in one place, `ws-refine`'s *Who may run what*.
 6. **`ws-setup` asks for it**, with **none** as its recommendation, and its template ships
    `shared_stores: []`. The key has one reader, one writer and one definition site
    (`ws-shared/reference.md` and `ws-shared/tracks.md`).
@@ -86,7 +97,7 @@ the list of them inverts it.
 **A boolean `shared_library:`.** Cheapest possible change, and enough for this project, which has
 exactly one such place. Rejected because it carries no path and no command, so the gate could
 refuse a batch but could not tell any builder *what* to avoid — and the forbidden-by-name line in
-every other brief is where the sharper failure is actually prevented. A boolean also cannot
+every brief (see the amendment to item 5) is where the sharper failure is actually prevented. A boolean also cannot
 express two stores, and a project with a shared design store and a shared fixture bucket is not
 exotic.
 
