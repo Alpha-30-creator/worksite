@@ -99,13 +99,14 @@ The workspace root **is** the repo — a single-repo project. That matters twice
 - The state dir is normally uncommittable because the workspace root is not a git repo. Here it
   is, so `.worksite/` is protected by `.gitignore` alone. **Do not remove that line** — and since
   p8.31, removing it is a **check** rather than a reminder: `scripts/check.sh` section 5 reads
-  `state_dir` from this file and asserts `git check-ignore` matches it.
+  `state_dir` from this file and asserts `git check-ignore` matches it, and says so in its output
+  rather than passing silently ([ADR 0004](../decisions/0004-a-check-must-state-what-it-read.md)).
 
 | Path | Role |
 |---|---|
-| `skills/` | the pack as published: the thirteen workflow skills plus `ws-shared`, a plain copy out of the library ([ADR 0001](../decisions/0001-library-is-the-source-of-truth.md)). All Markdown except `ws-refine/audit.sh`, the graph audit — the one executable the pack ships, published by name and not by extension |
-| `examples/` | worked examples a stranger can read: two whole cartridges, `device.yaml`, `manifest.tsv`, a tracker example. Exists — the second cartridge landed with p8.5 |
-| `docs/` | STATUS, roadmap, decisions, worklog and this cartridge, plus the reference pages — the cartridge schema under `integration/`, the concepts page under `product/`, sync direction under `engineering/` — and `records/` for what a validation run found, `runbooks/` for procedures to follow under pressure, including purging a leak from history |
+| `skills/` | the pack as published: the thirteen workflow skills plus `ws-shared`, a plain copy out of the library ([ADR 0001](../decisions/0001-library-is-the-source-of-truth.md)). Markdown apart from three files, and `scripts/publish.sh` classifies the two kinds differently: `ws-refine/audit.sh` is allowed by **exact relative path** (its `PACK_EXEC` list, deliberately not a `*.sh` glob), while `ws-shared/examples/manifest.tsv` and `ws-shared/examples/device.yaml` are allowed as **data extensions** and listed on every run. The audit is the only script here, is mode 644, and is run as `bash audit.sh` rather than executed ([ADR 0005](../decisions/0005-the-graph-audit-is-a-script-in-the-library.md)) |
+| `skills/ws-shared/examples/` | worked examples a stranger can read — six files: two whole cartridges, `device.yaml`, `manifest.tsv`, a tracker example, and the `README.md` that indexes them. **There is no top-level `examples/`**, and git history shows there never was — this row named one until p8.25 measured it |
+| `docs/` | every page is reachable from [`docs/README.md`](../README.md), which is the index and is the answer to "what is in here" — this row is a tour, not an inventory. `STATUS.md` and `roadmap/`; `decisions/` (ADRs); `integration/` (the cartridge schema); `product/` (the concepts page); `engineering/`, four pages, of which `layout.md` says what each check covers and misses; `records/` for dated findings **and** the standing `known-limitations.md`; `runbooks/` for procedures to follow under pressure; and `agent/` — this cartridge, plus `risks/`, `workspace/` and `worklog/` |
 | `scripts/check.sh` | the whole test suite, and the only thing any gate runs: leak scan, frontmatter, links, library parity, the state-dir ignore assertion, the object store, and the README's own claims (section 7 calls `scripts/check-readme-claims.sh`, p7.3) |
 | `scripts/publish.sh` | copies the `ws-*` skills out of the agent-sync library into the repo it sits in, behind the guard — the only way skills reach this repo ([ADR 0002](../decisions/0002-publishing-is-a-guarded-copy-from-the-library.md)). Which workspaces get published into is resolved by `ws-refine` from configuration that is never published, because a workspace path is itself a private name |
 | `scripts/leak-patterns.txt` | the patterns section 1 scans for, **and the `!` allowlist entries it strips before matching** — this file alone defines the scan's coverage. A private name that is not in here is invisible to the guard |
@@ -122,6 +123,7 @@ The workspace root **is** the repo — a single-repo project. That matters twice
 | The cartridge format | [../integration/cartridge-schema.md](../integration/cartridge-schema.md). The template in the pack's `ws-setup/templates/`, and this file, are worked examples of it |
 | Project-specific review risks | [risks/common.md](risks/common.md) |
 | **What each check actually covers, and what it misses** | [../engineering/layout.md](../engineering/layout.md) — the only page with the per-section blind spots, and it was unreachable from here until 2026-11-02 |
+| **Why the system is shaped as it is** | [../decisions/](../decisions/) — six ADRs. The ones that bind daily work: [0001](../decisions/0001-library-is-the-source-of-truth.md) the library is the source of truth, [0002](../decisions/0002-publishing-is-a-guarded-copy-from-the-library.md) publishing is a guarded copy, [0006](../decisions/0006-retirement-refuses-what-removal-would-lose.md) what retirement refuses |
 | Limitations that are recorded rather than tracked | [../records/known-limitations.md](../records/known-limitations.md) |
 | What a shipped task left behind | [worklog/](worklog/) — one file per track, written by `ws-ship` at harvest |
 | An in-flight track's journal | `.worksite/tracks/<id>/journal.md` — **local only** here, not mirrored. The entry header carries a derived device **alias** since p8.31, so the mirror is no longer the leak it was; `.gitignore` keeps it local anyway, because a journal records what was done on which machine and this repo is public. The reason is in the ignore file, not in memory |
@@ -136,14 +138,47 @@ The workspace root **is** the repo — a single-repo project. That matters twice
 - **`verify` is `bash scripts/check.sh`.** There is no typecheck, lint, test or build here, and
   those are `null` on purpose. A repo of Markdown does not get an invented test runner.
 - **No AI attribution** in any commit or PR. No `Co-Authored-By`, no "Generated with".
-- `LICENSE` and the public npm scope `@abdur-codes/...` are allowed to contain the author's
-  name. Nothing else is.
+- **Where the author's name may appear, in full.** `LICENSE` and the public npm scope
+  `@abdur-codes/...` are the two places it *belongs*. What the scan will let through is wider, by
+  **two independent mechanisms**, and reading either as permission is the mistake:
+
+  1. **`excluded()`** in `scripts/check.sh` skips `LICENSE`, `scripts/check.sh` itself,
+     `scripts/leak-patterns.txt` and the glob `.githooks/*` — because a pattern file and the
+     scanner that reads it necessarily contain the patterns.
+  2. **The `!` allowlist** in `scripts/leak-patterns.txt` — currently the one entry
+     `!abdur-codes` — is replaced, in **every line of every scanned file** before matching, with
+     the literal token `ALLOWLISTED` (`strip_allowlisted`). So that spelling passes the scan
+     *anywhere in the repo*. Note what the token buys and costs: it keeps the remainder of the
+     line apart, so for a pattern spelled `<priv>`, a line reading `<pr>abdur-codes<iv>` becomes
+     `<pr>ALLOWLISTED<iv>` and does **not** match it — a private name spliced around the
+     allowlisted spelling is missed.
+     (Three places in this repo described this as "blanking", which would have joined the
+     remainder and caught that case. p8.25 measured it.)
+  3. **`files()`** lists with `git ls-files --cached --others --exclude-standard`, so **every
+     gitignored path is never scanned at all** — `.worksite/` here, and any `docs/agent/journal/`
+     mirror. Measured: a file under `.worksite/` holding two private names scans `ok`. The
+     mitigation is that those paths are also never *published*, which is the opposite of the
+     allowlist case and the reason this is third rather than first.
+
+  All three are scanning necessities, **not permission**: a name added to a hook, to the scanner,
+  or anywhere at all in the allowlisted spelling is published and unscanned. Everywhere else, a
+  name is a defect. (This bullet has now been wrong three times in one direction — "Nothing else
+  is", then "four paths", then "two mechanisms" — each correction stating a complete-sounding
+  clause one mechanism short. Three is what measurement found; it is not a promise that there is
+  no fourth.)
 
 ## Open questions
 
 - **No rule skill, deliberately.** `ws-setup` would normally generate one per code repo. This
   repo's "code" is the pack itself, and `ws-refine` already governs editing it — a rule skill
   would duplicate it. Revisit if `skills/` grows a build step.
+
+## Settled, and worth knowing
+
+The three below sat under *Open questions* until p8.25 — every sentence in them accurate, under a
+heading that had stopped describing its contents some tasks earlier. They are answers now, and
+they are kept because the reasoning is load-bearing.
+
 - **`worktrees: true`**, matching the new pack default (p8.6). Free here — a repo of Markdown
   has no dependency install to repeat, and fanout batches have run here on worktrees. What a
   worktree cannot isolate is work in the agent-sync library, which is not in `repos:`, so the
@@ -155,8 +190,9 @@ The workspace root **is** the repo — a single-repo project. That matters twice
   including the owner's, because it acts on the whole store rather than one track's changes. Its
   deploying half (`agent-sync apply`) is the lead's too, though that one is local and reversible
   and may run as often as verification needs. The rule, and why the graph audit follows the
-  deploy, is stated once in `ws-refine`'s *Who may run what* (p8.30, which corrected this
-  paragraph).
+  deploy, is stated once in `ws-refine`'s *Who may run what* —
+  [ADR 0003](../decisions/0003-shared-external-stores-are-declared-in-the-cartridge.md), whose
+  item 5 was amended to say it.
 - **No environments and nothing deploys.** `environments: {}` is accurate, not unfinished.
 - **CI runs `scripts/check.sh`** on every pull request and on pushes to `main` (p4.3), so the
   pre-commit hook is no longer the only guard — a contributor who never ran

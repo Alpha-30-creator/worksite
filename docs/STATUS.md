@@ -9,7 +9,7 @@
 out of the private library behind the leak guard, and the pack has reached this repo that way
 since 2026-11-01. The reference documentation exists — the cartridge schema at
 `docs/integration/cartridge-schema.md`, the concepts page at `docs/product/overview.md`, the four
-extension guides under `docs/engineering/`, five ADRs under `docs/decisions/` — and `check.sh` is
+extension guides under `docs/engineering/`, six ADRs under `docs/decisions/` — and `check.sh` is
 green on all **seven** sections. **Section 7 reads the README's own claims** (p7.3): every
 quantity it enumerates is read out of `README.md` and compared to the tree, so a stale front-page
 claim now fails the same gate as a private name. It was a script nothing ran until 2026-11-03. **CI runs it** on every pull request and every push to `main`, so a
@@ -38,13 +38,18 @@ what it stated it read, which is why the graph audit now names its own counts. A
 (`docs/decisions/0005-the-graph-audit-is-a-script-in-the-library.md`) — that audit is a script in
 the library, run by path, because a skill's body has the caller's argument substituted into it and
 the audit's own awk programs did not survive delivery; it overturns the parts of ADR 0002 and
-ADR 0004 that had rejected this shape, and accepts the one objection that still binds.
+ADR 0004 that had rejected this shape, and accepts the one objection that still binds. ADR 0006
+(`docs/decisions/0006-retirement-refuses-what-removal-would-lose.md`) — retirement refuses what its
+own removal would leave unreachable rather than what is missing from a remote, because
+`git worktree remove` removes a checkout and not a branch.
 
 ## In progress
 
-Nothing claimed.
+**p8.25 is claimed** — `ws-ship` now re-reads the cartridge rows a shipped task invalidates
+without touching, and this repo's own cartridge gave seven live defects to fix, six of them
+statements that were true and still read wrong.
 
-**p8.40 shipped 2026-11-03** ([PR #27](https://github.com/Alpha-30-creator/worksite/pull/27)): the
+Previously: **p8.40 shipped 2026-11-03** ([PR #27](https://github.com/Alpha-30-creator/worksite/pull/27)): the
 retirement guard asks whether its own removal would lose work, not whether the commits are on a
 remote — measured, `git worktree remove` removes a checkout and not a branch, so the commits it was
 protecting were never at risk. Three refusals in one table four callers read, including an
@@ -96,8 +101,8 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
-| p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
 | p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
+| p8.41 | A path named in the cartridge's prose has no check | filed by p8.25 as the executing half it deferred: a row naming a directory that never existed survived from p1.1 to p8.25 |
 
 ## Shipped
 

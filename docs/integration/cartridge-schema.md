@@ -30,12 +30,33 @@ shared files this page cites.
 The frontmatter holds the machine-readable facts: repos, tracker, git flow, environments, house
 rules and per-device overrides (`ws-shared/reference.md`). The prose below it holds the
 things a table cannot carry — the workspace layout, where to find what, the rules that override
-an agent's defaults, and the open questions.
+an agent's defaults, and the open questions. Those four are what `ws-setup` writes; a project may
+add sections of its own, and one worth knowing about is a home for items that have **stopped**
+being open questions. Leaving a settled answer under *Open questions* is the commonest instance of
+the tense defect the docs step looks for, and deleting it loses reasoning that is often
+load-bearing.
 
 **The division of labour matters.** Facts about *how to work on the project* belong here. Facts
 about *the product* belong in the docs tree, and facts about the *system* belong in
 `engineering/` or `decisions/` (`ws-refine` states both halves, and
 `ws-shared/review/documentation.md`). A cartridge that starts explaining the product has absorbed something that will go stale in it.
+
+**The prose half rots, and it rots from edits made elsewhere.** It is the only document in a
+project whose staleness is caused by work that never touched it, so `ws-ship`'s **docs step**
+(section 4, before the merge — not the harvest) re-reads four classes of row: anything naming a
+task id, a phase, a path that does not exist yet, or a count. It asks whether each still *reads*
+correctly rather than whether it is still true, and its closing line reports whether it ran. Two
+rules for writing it so there is less to re-read:
+
+- **Prefer a link to a decision record over a task id.** `(p8.30)` tells a reader which task
+  changed a paragraph; it does not tell them why, and it stops resolving the moment the roadmap
+  entry is archived or the file is renamed. A decision record is a document with a name, and
+  linking it also puts the rejected alternatives one click away. Where there is no record behind
+  the id, keep the id — an unresolvable citation is better than none, and it is a signal the
+  reasoning was never written down.
+- **Write what is true now, not what is planned.** A path named before it exists never fails: a
+  bare path in a table cell is not a link, so no relative-link check sees it, and the row can
+  outlive every commit without ever being right. If a path is aspirational, say so in the row.
 
 Three things are **not** in the cartridge, and looking for them here wastes time:
 

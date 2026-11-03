@@ -738,7 +738,7 @@ defect by this phase's new goal line.
   `conflicted`, which `agent-sync save` reports and the audit does not read — and the cause of
   that conflict was a manual `cp` into a deployed copy.
 
-## [~] p8.25 — Shipping a task does not refresh the cartridge rows it invalidates
+## [r] p8.25 — Shipping a task does not refresh the cartridge rows it invalidates
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -1207,3 +1207,41 @@ third signal that it is not worth a track.
   empty stdout so a never-pushed worktree reads as holding no work and is offered for removal —
   the only work-losing path here — and `ws-plan` §5's `pull --ff-only`, which failed between two
   commands that both ran, so the branch was cut from an unknown base.
+
+## [ ] p8.41 — A path named in the cartridge's prose has no check, so a row can name a directory that never existed
+
+- **Repos:** worksite — this repo's `scripts/` only. **No pack change**, so no `ws-refine` and no graph audit
+- **Depends on:** —
+- **Found 2026-11-03 by p8.25**, and deferred by it deliberately rather than built inline.
+- **Why:** `scripts/check.sh` section 3 checks **relative links**, so a path written as
+  `` `examples/` `` in a table cell is invisible to it, and a cartridge's layout table is almost
+  entirely that kind. Measured: this repo's cartridge carried a row for a top-level `examples/`
+  directory that **no commit in its history ever contained** — the files are at
+  `skills/ws-shared/examples/` — and the word "Exists" had later been added to the row. It
+  survived from p1.1 to p8.25. p8.25 added a prompt at `ws-ship`'s docs step, which is honest and
+  is not a check: **the task's own Notes bought that prompt on the promise of "an executing path",
+  and for paths specifically there is one available.**
+- **Acceptance:**
+  - [ ] a `check.sh` section asserts that every backticked path in `<docs_home>/reference.md`
+        resolves, relative to the repo root, and states what it read per
+        [ADR 0004](../decisions/0004-a-check-must-state-what-it-read.md)
+  - [ ] a path that is deliberately aspirational can be marked as such and is then not a failure —
+        otherwise the section's cost is that nobody may describe a plan in the cartridge
+  - [ ] it does not fire on prose that merely contains backticks: a command, a key name, a glob,
+        a `<placeholder>`. **Proven by measurement against the current cartridge, which holds all
+        four**, not by reading the regex
+  - [ ] proven by making a cartridge path wrong and watching the gate refuse, plus a negative
+        control where the section runs and certifies nothing
+  - [ ] the `known-limitations.md` entry this row replaces is **removed in the same commit** — a
+        criterion rather than a promise in prose, because "the entry goes when it ships" is the
+        same claim-nobody-enforces that p8.25's Notes rejected, and leaving both would have the
+        record contradict the gate
+- **Notes:** the generic half — whether the pack should say anything about paths in cartridge prose
+  beyond `ws-ship`'s prompt — is already answered in `cartridge-schema.md` §1 ("write what is true
+  now"). This row is the executing half.
+- **Recorded as well as tracked, deliberately**, which the cartridge's rule 1 normally forbids: the
+  entry under *The cartridge* in
+  [`records/known-limitations.md`](../records/known-limitations.md) describes the gap **as it is
+  today**, because a reader meets it today, and this row is the work that closes it. The two
+  reference each other, and removing the entry is one of this row's acceptance criteria rather than
+  a promise in its prose.

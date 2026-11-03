@@ -1,9 +1,13 @@
 # Known limitations
 
-**Recorded 2026-11-02.** Seventeen mechanisms in this repo and in the pack that work, and the
-boundary each one stops at. Each entry names the mechanism in one clause and its boundary in the
-next. This is a record, not a task list: an entry changes only when the mechanism does, and then
-it changes in the same commit.
+**Started 2026-11-02 with eleven entries; it has grown with every task since** — 48 now, under six
+headings. (Both numbers were wrong one draft ago: the preamble said seventeen, and the correction
+said 49 — a count that includes this paragraph's own bold lead-in. The file's first commit is
+titled "record eleven known limitations".) Each names a mechanism in this repo or in the pack that works, and the boundary it
+stops at: the mechanism in one clause, the boundary in the next. This is a record rather than a
+task list, and it is the one **living** file in `records/` — an entry is edited when the mechanism
+changes, when a limitation closes, and when its stated cause turns out to have been wrong. All
+three have happened, more than once, and an entry that was corrected says so.
 
 These were filed as roadmap tasks and triaged out on 2026-11-02 by the owner, after an
 independent audit. A limitation that is written down costs a reader one sentence; the same
@@ -73,6 +77,20 @@ exists.
 
 ## The cartridge
 
+**A path written as a bare `` `path/` `` in a table cell has no check behind it, anywhere.**
+`scripts/check.sh` section 3 checks **relative links**, so a path inside Markdown link syntax is
+verified and a path inside backticks is not — and a cartridge's layout table is almost entirely
+the second kind. Measured by p8.25: this repo's own cartridge had a row for a top-level
+`examples/` directory that **no commit in the repo's history ever contained**, and someone had
+later added the word "Exists" to it. The files are at `skills/ws-shared/examples/`. Nothing could
+have caught it: the row named a path, not a link, and no gate reads paths out of prose.
+`ws-ship`'s docs step now re-reads that class of row before the merge, which is a prompt rather
+than a check — the honest distinction, since a prompt depends on an agent doing it and a check
+does not. (Section 3 also reads link syntax out of **inline code**, which this entry discovered by
+writing an example of a link into it and watching the gate fail on the example. Worth knowing
+before quoting link syntax in any page this gate reads.) A `check.sh` section asserting that every
+backticked path in the cartridge exists would close it; that is **p8.41**, and this entry goes when it ships.
+
 **There is no way to say "this command exists, do not run it".** A `null` command means the repo
 does not have one, which is a different claim; the do-not-run case is enforced by briefing the
 agent, not by the cartridge.
@@ -80,6 +98,7 @@ agent, not by the cartridge.
 **`schema_version` has no reader.** It is present in `ws-setup`'s cartridge template and in
 `ws-shared/examples/cartridge.md`, and a grep over `skills/` finds no skill that reads it — it is
 a marker for a human, not a compatibility mechanism.
+
 
 ## Tracks
 
