@@ -1232,6 +1232,10 @@ third signal that it is not worth a track.
         four**, not by reading the regex
   - [ ] proven by making a cartridge path wrong and watching the gate refuse, plus a negative
         control where the section runs and certifies nothing
+  - [ ] the `known-limitations.md` entry this row replaces is **removed in the same commit** — a
+        criterion rather than a promise in prose, because "the entry goes when it ships" is the
+        same claim-nobody-enforces that p8.25's Notes rejected, and leaving both would have the
+        record contradict the gate
 - **Notes:** the generic half — whether the pack should say anything about paths in cartridge prose
   beyond `ws-ship`'s prompt — is already answered in `cartridge-schema.md` §1 ("write what is true
   now"). This row is the executing half.
@@ -1239,4 +1243,5 @@ third signal that it is not worth a track.
   entry under *The cartridge* in
   [`records/known-limitations.md`](../records/known-limitations.md) describes the gap **as it is
   today**, because a reader meets it today, and this row is the work that closes it. The two
-  reference each other; when this ships, the entry goes rather than being left to contradict it.
+  reference each other, and removing the entry is one of this row's acceptance criteria rather than
+  a promise in its prose.

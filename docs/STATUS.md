@@ -45,9 +45,11 @@ own removal would leave unreachable rather than what is missing from a remote, b
 
 ## In progress
 
-Nothing claimed.
+**p8.25 is claimed** — `ws-ship` now re-reads the cartridge rows a shipped task invalidates
+without touching, and this repo's own cartridge gave seven live defects to fix, six of them
+statements that were true and still read wrong.
 
-**p8.40 shipped 2026-11-03** ([PR #27](https://github.com/Alpha-30-creator/worksite/pull/27)): the
+Previously: **p8.40 shipped 2026-11-03** ([PR #27](https://github.com/Alpha-30-creator/worksite/pull/27)): the
 retirement guard asks whether its own removal would lose work, not whether the commits are on a
 remote — measured, `git worktree remove` removes a checkout and not a branch, so the commits it was
 protecting were never at risk. Three refusals in one table four callers read, including an
@@ -99,7 +101,6 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
-| p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
 | p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
 | p8.41 | A path named in the cartridge's prose has no check | filed by p8.25 as the executing half it deferred: a row naming a directory that never existed survived from p1.1 to p8.25 |
 

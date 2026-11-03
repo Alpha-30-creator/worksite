@@ -1,7 +1,9 @@
 # Known limitations
 
-**Started 2026-11-02 with seventeen entries; it has grown with every task since** — 49 now, under
-six headings. Each names a mechanism in this repo or in the pack that works, and the boundary it
+**Started 2026-11-02 with eleven entries; it has grown with every task since** — 48 now, under six
+headings. (Both numbers were wrong one draft ago: the preamble said seventeen, and the correction
+said 49 — a count that includes this paragraph's own bold lead-in. The file's first commit is
+titled "record eleven known limitations".) Each names a mechanism in this repo or in the pack that works, and the boundary it
 stops at: the mechanism in one clause, the boundary in the next. This is a record rather than a
 task list, and it is the one **living** file in `records/` — an entry is edited when the mechanism
 changes, when a limitation closes, and when its stated cause turns out to have been wrong. All

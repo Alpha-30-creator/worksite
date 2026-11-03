@@ -45,8 +45,13 @@ ALLOW="$(sed -n 's/^!//p' scripts/leak-patterns.txt)"
 printf '' | grep -qE "$PATTERNS" 2>/dev/null
 [ "$?" -le 1 ] || { printf '%s\n' "UNKNOWN: grep cannot compile the patterns in scripts/leak-patterns.txt, so every scan below would pass everything. Fix the regex:" >&2; printf '' | grep -qE "$PATTERNS"; exit 1; }
 
-# Blank each allowlisted substring in place, case-insensitively, and emit ONE line per input
-# line so `grep -n` downstream still reports the file's own line numbers.
+# Replace each allowlisted substring in place with the token ALLOWLISTED, case-insensitively, and
+# emit ONE line per input line so `grep -n` downstream still reports the file's own line numbers.
+#
+# A TOKEN rather than an empty string, and the difference is observable: blanking would join what
+# sits either side, so a pattern spliced around an allowlisted spelling would re-form and be
+# caught, which is strictly more coverage. The token keeps the halves apart, so that one case is
+# missed. Three places in this repo described this as "blanking" until p8.25 measured it.
 #
 # It replaces rather than drops. Until p8.31 §1 piped its hit list through `grep -vi <string>`,
 # which discarded the whole LINE: a private name sharing a line with the allowlisted npm scope

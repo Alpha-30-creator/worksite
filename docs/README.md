@@ -19,8 +19,9 @@ the page itself or the folder that contains it.
 
 Each row gives the page, the question it answers, and the kind of the folder it sits in — living
 means it is maintained and can drift; immutable means it is not rewritten once written — which is
-not the same as never touched: an ADR's *item* may be amended in place with the date and task in
-its header, and the one standing record here is edited whenever a limitation closes. Folder links
+not the same as never touched, since an ADR's *item* may be amended in place with the date and task
+in its header. One file in `records/` is **living** rather than immutable and is marked so in its
+row: the standing limitations list. Folder links
 are deliberate where, and only where, a collection grows by file: the ADRs, the eight roadmap
 phase files, the dated records and the worklog entries, whose list here would go stale by the next
 merge. A *fixed* reference page is always linked directly even when it sits inside such a folder —

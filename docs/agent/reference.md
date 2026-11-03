@@ -142,20 +142,30 @@ The workspace root **is** the repo — a single-repo project. That matters twice
   `@abdur-codes/...` are the two places it *belongs*. What the scan will let through is wider, by
   **two independent mechanisms**, and reading either as permission is the mistake:
 
-  1. **`excluded()`** in `scripts/check.sh` skips four paths whole — `LICENSE`, `scripts/check.sh`
-     itself, `scripts/leak-patterns.txt` and **all of `.githooks/*`** — because a pattern file and
-     the scanner that reads it necessarily contain the patterns.
+  1. **`excluded()`** in `scripts/check.sh` skips `LICENSE`, `scripts/check.sh` itself,
+     `scripts/leak-patterns.txt` and the glob `.githooks/*` — because a pattern file and the
+     scanner that reads it necessarily contain the patterns.
   2. **The `!` allowlist** in `scripts/leak-patterns.txt` — currently the one entry
-     `!abdur-codes` — is blanked out of **every line of every scanned file** before matching
-     (`strip_allowlisted`). So that literal passes the scan *anywhere in the repo*, not only inside
-     an `@abdur-codes/...` scope and not only in the four files above.
+     `!abdur-codes` — is replaced, in **every line of every scanned file** before matching, with
+     the literal token `ALLOWLISTED` (`strip_allowlisted`). So that spelling passes the scan
+     *anywhere in the repo*. Note what the token buys and costs: it keeps the remainder of the
+     line apart, so for a pattern spelled `<priv>`, a line reading `<pr>abdur-codes<iv>` becomes
+     `<pr>ALLOWLISTED<iv>` and does **not** match it — a private name spliced around the
+     allowlisted spelling is missed.
+     (Three places in this repo described this as "blanking", which would have joined the
+     remainder and caught that case. p8.25 measured it.)
+  3. **`files()`** lists with `git ls-files --cached --others --exclude-standard`, so **every
+     gitignored path is never scanned at all** — `.worksite/` here, and any `docs/agent/journal/`
+     mirror. Measured: a file under `.worksite/` holding two private names scans `ok`. The
+     mitigation is that those paths are also never *published*, which is the opposite of the
+     allowlist case and the reason this is third rather than first.
 
-  Both are scanning necessities, **not permission**: a name added to a hook, to the scanner, or
-  anywhere at all in the allowlisted spelling is published and unscanned. Everywhere else, a name
-  is a defect — and "everywhere else" is now the honest size of the rule. (This bullet read
-  "Nothing else is" until p8.25 measured `excluded()`; its replacement then presented that list as
-  the whole surface, and review found the allowlist. Two exhaustive clauses, one after the other,
-  in a security rule.)
+  All three are scanning necessities, **not permission**: a name added to a hook, to the scanner,
+  or anywhere at all in the allowlisted spelling is published and unscanned. Everywhere else, a
+  name is a defect. (This bullet has now been wrong three times in one direction — "Nothing else
+  is", then "four paths", then "two mechanisms" — each correction stating a complete-sounding
+  clause one mechanism short. Three is what measurement found; it is not a promise that there is
+  no fourth.)
 
 ## Open questions
 

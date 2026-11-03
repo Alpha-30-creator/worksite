@@ -30,5 +30,6 @@ restating ADR 0001 and ADR 0002, in places verbatim; that duplication was remove
 the publish diagram and steps moved to [layout.md](layout.md). What remains is the direction, the
 pull-request answer, and the three links — because six real links reach this path from five files,
 one of them [ADR 0002](../decisions/0002-publishing-is-a-guarded-copy-from-the-library.md), and
-`decisions/` is immutable: an ADR is not edited to repoint a link. A page that answers its callers
-in thirty lines is cheaper than rewriting an immutable record to delete it.
+`decisions/` is immutable in substance: an item inside an ADR may be amended in place, dated and
+attributed, but an ADR is not rewritten — and certainly not to repoint a link. A page that answers
+its callers in thirty lines is cheaper than editing six records to delete it.
