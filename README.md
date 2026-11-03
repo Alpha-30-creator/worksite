@@ -83,14 +83,12 @@ and each one closed as a fix, a written limitation or a filed task rather than a
 `INSTALL.md` fixes, three limitations, two tasks that have both since shipped, and one criterion
 added to the third row below.
 
-The gaps a reader would still hit, each carried as a task:
+No gap a reader would hit is open right now. The last one — a project with no git remote could not
+retire a finished track — closed on 2026-11-03: the guard was asking whether the commits were on a
+remote, and removing a worktree does not remove the branch that holds them.
 
-| Gap | Task |
-|---|---|
-| a project with no git remote cannot retire a finished track: the guard asks whether the commits are on a remote, which measurably is not the question — removing a worktree does not remove the branch that holds them | p8.40 |
-
-Two more open tasks are about this repo's own authoring and tooling rather than anything a reader
-would meet; [docs/STATUS.md](docs/STATUS.md) has them.
+Two open tasks are about this repo's own authoring and tooling rather than anything a reader would
+meet; [docs/STATUS.md](docs/STATUS.md) has them.
 
 **To install it**, point your agent at [INSTALL.md](INSTALL.md) — it is written for the agent
 rather than for you, and it stops rather than guessing whenever only you can answer. If you would

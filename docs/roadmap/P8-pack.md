@@ -488,7 +488,7 @@ a decision about its safety rules — but if a second safety-rule change comes u
   built a wrong tree; and `cd <repo> && npm …` exits **0** in the first fragment, because bash's
   `cd` silently ignores extra arguments — so the checks run in the wrong directory and report.
 
-## [r] p8.40 — A local-only project has no documented way to retire a track
+## [x] p8.40 — A local-only project has no documented way to retire a track · 2026-11-03 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/27
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -530,12 +530,29 @@ a decision about its safety rules — but if a second safety-rule change comes u
   consults no remote. The bare-mirror measurement above stands; it answers the backup question,
   which becomes a printed note.
 - **Acceptance:**
-  - [ ] a written decision on how a remoteless project retires a track without the guard losing
-        its meaning — a bundle, an explicit acknowledgement, or a stated refusal with a reason
-  - [ ] whatever is decided, `ws-start`'s sweep stops re-offering a track it can never retire, or
-        says why it cannot
-  - [ ] proven by execution in a repo with no remote
-  - [ ] changed through `ws-refine`, with its graph audit
+  - [x] a written decision on how a remoteless project retires a track without the guard losing
+        its meaning — a bundle, an explicit acknowledgement, or a stated refusal with a reason.
+        **None of the three**, because the measurement moved the question: `git worktree remove`
+        removes a checkout and not a branch, so the commits the guard was protecting were never at
+        risk from the removal. [ADR 0006](../decisions/0006-retirement-refuses-what-removal-would-lose.md)
+        has retirement ask whether **its own removal** would leave a commit unreachable, which
+        consults no remote — so the guard keeps its meaning by being asked of the operation
+        actually being performed, and a local-only project is never blocked by it
+  - [x] whatever is decided, `ws-start`'s sweep stops re-offering a track it can never retire, or
+        says why it cannot. It stops **because such a track becomes retirable**. The sweep's
+        "holds work" test is now the same three refusals the block uses, in one table it reads
+        rather than a subset it restates — review round two found it still testing two of three,
+        which made this very loop reachable on *any* project, not only a remoteless one. `ws-wrap`,
+        which the sweep names as the exit for a track that does hold work, no longer dies on
+        `git push -u origin` in a repo with no remote
+  - [x] proven by execution in a repo with no remote — the block **extracted verbatim** from the
+        shipped document and run whole, across 12 fixtures, plus 14 each from three independent
+        reviewers. Round one's record claimed "retires" for cases where only the counting half had
+        been extracted, which review caught; the fenced block is still never executed by `verify`
+        on any platform, so these runs are the only thing that executes it
+  - [x] changed through `ws-refine`, with its graph audit — 1 finding,
+        `UNLISTED EXIT: ws-ship's prose offers ws-review`, verified pre-existing and in text this
+        task did not touch. `deployed check: claude 45/45 · codex 45/45 · cursor 45/45`
 - **Notes:** recorded in `docs/records/known-limitations.md` by p8.36. A decision task, so its
   acceptance is a written record.
 

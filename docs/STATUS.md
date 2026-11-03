@@ -42,12 +42,15 @@ ADR 0004 that had rejected this shape, and accepts the one objection that still 
 
 ## In progress
 
-**p8.40 is in review** ([PR #27](https://github.com/Alpha-30-creator/worksite/pull/27)): the
+Nothing claimed.
+
+**p8.40 shipped 2026-11-03** ([PR #27](https://github.com/Alpha-30-creator/worksite/pull/27)): the
 retirement guard asks whether its own removal would lose work, not whether the commits are on a
-remote — measured, `git worktree remove` removes a checkout and not a branch. Three refusals in one
-table four callers read, including an in-progress-operation check that closes the mid-rebase gap
-p8.32 recorded as uncatchable. Three review rounds, nine must-fixes; each round found the previous
-round's fix wrong in a new way.
+remote — measured, `git worktree remove` removes a checkout and not a branch, so the commits it was
+protecting were never at risk. Three refusals in one table four callers read, including an
+in-progress-operation check that closes the mid-rebase gap p8.32 had recorded as uncatchable. Two
+pre-existing false `clean`s in the same block went with it. Three review rounds, nine must-fixes,
+and each round found the previous round's fix wrong in a new way.
 
 **p8.32 shipped 2026-11-03** ([PR #26](https://github.com/Alpha-30-creator/worksite/pull/26)): the
 worktree root is one cartridge key resolved to a single absolute path per session, and retirement
@@ -93,7 +96,6 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
-| p8.40 | A local-only project has no documented way to retire a track | the guard asks about a remote where the question is whether removal loses the commits, and measurably it does not — so this is a guard to fix, not a workaround to document |
 | p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
 | p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
 
@@ -135,6 +137,7 @@ today, so they do not have to wait for P1–P7.
 | p8.39 | Quote the pack's path placeholders — filed as loud, measured silent at three of five | 2026-11-03 |
 | p8.30 | One rule for who may deploy and publish the library — six contradicting sites, not two | 2026-11-03 |
 | p8.32 | One resolved worktree root, and retirement that looks at the parent it leaves | 2026-11-03 |
+| p8.40 | Retirement refuses what its removal would lose, not what is unpushed | 2026-11-03 |
 
 ## Phases
 

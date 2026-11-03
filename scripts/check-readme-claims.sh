@@ -259,7 +259,22 @@ OPEN_RE='[ ~r?]'
 hdr "8. the gap table: every id open, and every row describing its own task"
 tbl=$(awk '/^The gaps a reader would still hit/{f=1} f&&/^\| /{print} f&&/^$/&&NR>1{if(seen)exit} f&&/^\| /{seen=1}' README.md)
 ids=$(printf '%s\n' "$tbl" | grep -oE '\| p[0-9]+\.[0-9]+ \|' | tr -d '| ' | sort -u)
-[ -n "$ids" ] || bad "no task ids found in the gap table"
+# An EMPTY gap table is a state the README has to be able to state, and until p8.40 it could not:
+# closing the last reader-facing gap emptied the table and this group then failed on a true
+# README. It is not treated as ok on absence alone — "I found no input" must never read as a pass,
+# which is this project's whole defect class. The README has to SAY it, in the sentinel below, and
+# even then the claim is reported as a note rather than ok, because what this group can check is
+# that no CLOSED id is listed as open. That no reader-facing gap EXISTS was never checkable here —
+# not now, and not when rows were present, since nothing enumerates which open tasks a reader
+# would hit.
+GAP_NONE='No gap a reader would hit is open right now'
+if [ -z "$ids" ]; then
+  if printf '%s' "$FLAT" | grep -qF "$GAP_NONE"; then
+    note "the gap table is absent and the README states no reader-facing gap is open; whether that is true is not checkable here"
+  else
+    bad "no task ids found in the gap table, and the README does not state that none is open"
+  fi
+fi
 for id in $ids; do
   st=$(grep -hoE "^## \[.\] ${id} —" docs/roadmap/*.md | head -1 | sed 's/^## \[\(.\)\].*/\1/')
   if [ -z "$st" ]; then
@@ -286,7 +301,10 @@ for id in $ids; do
 done
 
 hdr "9. the 'N more open tasks' count against the board minus the gap table"
-said=$(w2n "$(printf '%s' "$FLAT" | grep -oE '([A-Za-z]+) more open tasks' | awk '{print $1}')")
+# "N more open tasks" while the gap table has rows; plain "N open tasks" once it is empty, where
+# "more" would have nothing to be more THAN. Both spellings are read, and the arithmetic below is
+# unchanged either way because n_gap is then 0.
+said=$(w2n "$(printf '%s' "$FLAT" | grep -oE '([A-Za-z]+) (more )?open tasks' | awk '{print $1}')")
 # $OPEN_RE, so this and group 8 share one definition of "open" (see the block above group 8).
 # awk rather than `bc`: bc is an undeclared dependency, and where it is absent the sum comes back
 # EMPTY, which reaches `claim` as a measurement rather than as "I could not count".
