@@ -172,8 +172,8 @@ worktrees: true
 |---|---|---|---|---|---|
 | `schema_version` | integer | no | none — *template ships* `1` | **nothing reads this** | no effect — *inferred*, since nothing consumes it |
 | `project` | string, lowercase-kebab | **yes** | none | `ws-setup` | the cartridge cannot be matched to its `agent-sync` project id or workspace — *inferred* |
-| `profile` | `lite` \| `standard` \| `full` | no | none — *template ships* `standard` | `ws-setup`, which **asks** for it and never infers it from folder shape (p8.34); the rungs are read by concept by `ws-shared/trackers/tasks-file.md`, which names `standard` as the rung it is the default for. **No skill reads this key to decide what to do** — the rungs decide what `ws-setup` *writes*, and every skill downstream tests for the artefact rather than the value: `ws-review` creates `risks/` when it has a first risk whatever the profile says, and `ws-verify`, `ws-plan`, `ws-debug` and `ws-fanout` test whether that directory exists. Several of them **name** a rung in prose, to tell an agent an absence is expected rather than a gap — explanation, not a branch, and nothing parses the key | treated as `full`, so the full interview and the full artefact set apply — *inferred*. **`standard` is the rung added by p8.34**: cartridge, tracker, `state_dir` and the workspace `AGENTS.md`, without the rule-skill family or a reference docs tree. It is not a repo count — this pack's own project is a single repo and is `full` |
-| `rule_prefix` | string, two or three letters | **conditional** — `full` requires it; `lite` and `standard` have no rule skills, so for them `null` is the correct value | none — *the template ships the key with no value, which is* `null`, and per [section 11](#11-absent-vs-null-vs-empty-vs-todo) that reads as "the thing genuinely does not exist" — true on the two lower rungs, and on `full` it means the interview did not finish | `ws-setup`, which names `<rule_prefix>-<area>` skill directories and the `agent-sync include` call from it; `ws-fanout` and `ws-plan`, which send builders to read those skills | **`ws-fanout` has nothing to brief with, and degrades by saying so** — it tells the builder there are no rule skills rather than naming files that do not exist, which is right on `lite` and `standard` and **wrong** on `full`. `ws-setup` on a `full` project with no value must ask before generating, since the skill directories are named from it and there is nothing to fall back to. Added by p8.34, when the value was asked in the interview, used to name seven things, and recorded nowhere — *stated* |
+| `profile` | `lite` \| `standard` \| `full` | no | none — *template ships* `standard` | `ws-setup`, which **asks** for it and never infers it from folder shape (p8.34); the rungs are read by concept by `ws-shared/trackers/tasks-file.md`, which names `standard` as the rung it is the default for. **Nothing parses this key after setup.** `ws-setup` branches on it at generate time — that is what it is for — and every skill downstream tests for the artefact rather than the value: `ws-review` creates `risks/` when it has a first risk whatever the profile says, and `ws-verify`, `ws-plan`, `ws-debug` and `ws-fanout` test whether that directory exists. Several of them **name** a rung in prose, to tell an agent an absence is expected rather than a gap — explanation, not a branch, and nothing parses the key | treated as `full`, so the full interview and the full artefact set apply — *inferred*. **`standard` is the rung added by p8.34**, and what it *adds* to `lite` is the tracker — `lite` already has the cartridge, the instruction files and the track directory. Neither rung gets the rule-skill family or a reference docs tree. It is not a repo count — this pack's own project is a single repo and is `full` |
+| `rule_prefix` | string, two or three letters, or `null` | **conditional** — `full` requires it **where the project has rule skills**, which is what question 20 decides: one per repo that has code, plus one for migrations where there is a schema. A `full` project that earns none writes `null` **and says why in a comment**, which is a stated answer rather than an unfinished interview; this repo's own cartridge and the worked example in section 13 are both that case. `lite` and `standard` have no rule skills, so for them `null` is the correct value | none — *the template ships the key with no value, which is* `null`, and per [section 11](#11-absent-vs-null-vs-empty-vs-todo) that reads as "the thing genuinely does not exist" — true on the two lower rungs, and on `full` it means either that the project earns no rule skills — say so in a comment — or that the interview did not finish | `ws-setup`, which names `<rule_prefix>-<area>` skill directories and the `agent-sync include` call from it; `ws-fanout` and `ws-plan`, which send builders to read those skills | **`ws-fanout` has nothing to brief with, and degrades by saying so** — it tells the builder there are no rule skills rather than naming files that do not exist, which is right on `lite` and `standard`, and on `full` is right exactly when the project earns no rule skills. `ws-setup` on a `full` project with no value and no comment must ask before generating, since the skill directories are named from it and there is nothing to fall back to. Added by p8.34, when the value was asked in the interview, used to name seven things, and recorded nowhere — *stated* |
 | `state_dir` | path, relative to the workspace root | **conditional** — the track loop needs it | none — *template ships* `.<project>` | `ws-start`, `ws-plan`, `ws-verify`, `ws-ship`, `ws-wrap`, `ws-task`, `ws-fanout` | no track directory, so no `tracks/current`, plan, journal or evidence — *inferred* |
 | `docs_home` | path to the agent docs directory — **it ends `/agent`** | no | none | `ws-start`, `ws-plan`, `ws-verify`, `ws-wrap`, `ws-review`, `ws-ship`, `ws-setup`, `ws-refine`, `ws-fanout` | a project with a `state_dir` and **no `docs_home`** gets a local journal only, with no mirror and nothing on the other machine, said once when the track is created (`ws-shared/tracks.md`) — the rule keys off this key, not off the profile, which is what p8.34 corrected. What a **`full`** project without it does is *inferred*: the journal cannot be mirrored and `risks/`, `rules/` and `worklog/` have no location |
 | `artifacts` | `workspace-state` \| `in-repo` | no | `workspace-state` — stated (`ws-shared/tracks.md`) | `ws-plan`, `ws-review`, `ws-ship` | `workspace-state` — plans and journals in `<state_dir>`, never in a repo (`ws-plan`) |
@@ -190,12 +190,17 @@ is not expressible. It is a company convention on some projects: *"respect it; d
 it"* (`ws-shared/tracks.md`). On a multi-repo project **nothing specifies which repo holds the
 plan** — say so in the cartridge prose and keep it in one place.
 
-**A rung is a smaller interview, not a smaller schema.** Six questions on `lite`, about twelve on
-`standard`, about thirty on `full`, and each rung is the one below it plus its own questions
-(`ws-setup`). No rung forbids a key: the schema is one shape and every key is read the same way
-wherever it appears. What differs is what `ws-setup` **writes** — `lite` gets no tracker, no
-journal mirror, no rule skills and no `risks/`; `standard` adds the tracker; `full` adds the rule
-skills and `rules/<area>.md`.
+**A rung is a smaller interview, not a smaller schema.** **Six** questions on `lite`, **fourteen**
+on `standard`, **twenty-one** on `full`, numbered continuously so each rung is the one below it
+plus its own (`ws-setup`). No rung forbids a key: the schema is one shape and every key is read the
+same way wherever it appears. What differs is what `ws-setup` **writes** — `lite` gets no tracker,
+no rule skills and no `risks/`; `standard` adds the tracker; `full` adds the rule skills and
+`rules/<area>.md`.
+
+**The journal mirror is not one of those differences**, and saying it was is a mistake this page
+made twice: it depends on [`docs_home`](#5-identity-and-layout), which every rung now asks for, so
+every rung gets a mirror. A project with a `state_dir` and no `docs_home` has a local journal only
+— that is the rule, and it is about the key rather than the rung.
 
 So a `tasks-file` tracker key on a `lite` cartridge is still read normally, and it is also a sign
 the project has outgrown that rung — `ws-setup` in upgrade mode adds what `standard` needs. Until
@@ -647,8 +652,11 @@ schema_version: 1               # nothing reads it; a version marker for a futur
 project: meridian               # REQUIRED. Matches the agent-sync project id
 profile: full                   # lite | standard | full. Asked, never inferred from folder shape.
                                 # A rung is a smaller interview, not a smaller schema
-rule_prefix: md                 # full only, and REQUIRED there: names md-api, md-web, md-migration.
-                                # ws-fanout briefs builders to read them and looks the value up here
+rule_prefix: null               # `full` requires it WHERE THE PROJECT HAS RULE SKILLS. This one's
+                                # single repo is role: docs with every command null, so question 20
+                                # earns none — null, with the reason stated, is the right value and
+                                # not an unfinished interview. ws-fanout then briefs builders that
+                                # there are no rule skills, which is true
 state_dir: .meridian            # local, ephemeral, gitignored. Holds tracks/<id>/
 docs_home: docs/agent           # single repo, so the docs live in it. Always ends /agent
 artifacts: workspace-state      # workspace-state (default) | in-repo

@@ -2,9 +2,10 @@
 schema_version: 1
 project: worksite
 profile: full                       # lite | standard | full
-rule_prefix: null                   # `full` normally requires it; null here because this project
-                                    # deliberately has no rule skill — the reason is under
-                                    # Open questions, where it has always been
+rule_prefix: null                   # `full` requires it where the project earns rule skills; this
+                                    # one earns none — its "code" is the pack itself and ws-refine
+                                    # governs editing it. Stated, not unfinished: the reasoning is
+                                    # the first bullet under Open questions, below
 state_dir: .worksite
 docs_home: docs/agent
 artifacts: workspace-state
