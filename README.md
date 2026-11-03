@@ -87,8 +87,8 @@ No gap a reader would hit is open right now. The last one — a project with no 
 retire a finished track — closed on 2026-11-03: the guard was asking whether the commits were on a
 remote, and removing a worktree does not remove the branch that holds them.
 
-Three open tasks are about this repo's own authoring and tooling rather than anything a reader
-would meet; [docs/STATUS.md](docs/STATUS.md) has them.
+Two open tasks are about this repo's own authoring and tooling rather than anything a reader would
+meet; [docs/STATUS.md](docs/STATUS.md) has them.
 
 **To install it**, point your agent at [INSTALL.md](INSTALL.md) — it is written for the agent
 rather than for you, and it stops rather than guessing whenever only you can answer. If you would

@@ -45,11 +45,18 @@ own removal would leave unreachable rather than what is missing from a remote, b
 
 ## In progress
 
-**p8.25 is claimed** — `ws-ship` now re-reads the cartridge rows a shipped task invalidates
-without touching, and this repo's own cartridge gave seven live defects to fix, six of them
-statements that were true and still read wrong.
+Nothing claimed.
 
-Previously: **p8.40 shipped 2026-11-03** ([PR #27](https://github.com/Alpha-30-creator/worksite/pull/27)): the
+**p8.25 shipped 2026-11-03** ([PR #28](https://github.com/Alpha-30-creator/worksite/pull/28)):
+`ws-ship` §4 now re-reads the cartridge rows a shipped task invalidates **without touching** —
+task ids, phases, not-yet-existing paths, counts — and asks whether each still *reads* correctly
+rather than whether it is true. It runs before the merge and reports itself in §7's closing line,
+because nothing gates on §4. This repo's own cartridge gave **seven** defects, **six of them
+statements that were true and still read wrong**, including a row for a directory no commit ever
+contained and a security rule with three exemption mechanisms where it claimed one. Three review
+rounds, twelve must-fixes; every round found the previous round's fix wrong in a new way.
+
+**p8.40 shipped 2026-11-03** ([PR #27](https://github.com/Alpha-30-creator/worksite/pull/27)): the
 retirement guard asks whether its own removal would lose work, not whether the commits are on a
 remote — measured, `git worktree remove` removes a checkout and not a branch, so the commits it was
 protecting were never at risk. Three refusals in one table four callers read, including an
@@ -143,6 +150,7 @@ today, so they do not have to wait for P1–P7.
 | p8.30 | One rule for who may deploy and publish the library — six contradicting sites, not two | 2026-11-03 |
 | p8.32 | One resolved worktree root, and retirement that looks at the parent it leaves | 2026-11-03 |
 | p8.40 | Retirement refuses what its removal would lose, not what is unpushed | 2026-11-03 |
+| p8.25 | `ws-ship` re-reads the cartridge rows a shipped task invalidates without touching | 2026-11-03 |
 
 ## Phases
 

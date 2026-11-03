@@ -738,7 +738,7 @@ defect by this phase's new goal line.
   `conflicted`, which `agent-sync save` reports and the audit does not read — and the cause of
   that conflict was a manual `cp` into a deployed copy.
 
-## [r] p8.25 — Shipping a task does not refresh the cartridge rows it invalidates
+## [x] p8.25 — Shipping a task does not refresh the cartridge rows it invalidates · 2026-11-03 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/28
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -753,14 +753,38 @@ defect by this phase's new goal line.
   read as exhaustive after two directories were added. Both survived a deliberate full re-read
   looking for false statements. The check wants to be **"does this row still read correctly"**.
 - **Acceptance:**
-  - [ ] `ws-ship` names the cartridge among the docs a shipped task may invalidate, with the rows
+  - [x] `ws-ship` names the cartridge among the docs a shipped task may invalidate, with the rows
         most likely to rot called out — anything naming a task id, a phase, or a path that does not
-        exist yet
-  - [ ] the prompt asks whether each such row still *reads* correctly, not merely whether it is
-        accurate, with the tense-and-completeness failure named
-  - [ ] a project's cartridge prefers a link to a decision record over a task id where one exists,
-        since a closed task survives only as long as its roadmap entry
-  - [ ] changed through `ws-refine`, with its graph audit
+        exist yet. §4, as a named subsection with the distinction that makes it necessary: this is
+        the one doc a task invalidates **without touching**, so "the docs it touched" misses it by
+        construction. **A fourth class was added** — any **count or enumeration** — because this
+        session broke two of those in one day. Each class carries a grep handle where one exists,
+        and the id handle is per-tracker, since a card-titled tracker has no grepable id and there
+        the whole file is the scope
+  - [x] the prompt asks whether each such row still *reads* correctly, not merely whether it is
+        accurate, with the tense-and-completeness failure named — one worked example of each, and
+        both are measured rather than invented: of the **seven** defects found in this repo's own
+        cartridge while writing the step, **six were not false statements**, and four of those had
+        survived a deliberate re-read looking for false ones. The step is also made to *run*: §3
+        now opens with "§4 first" (an agent reading top to bottom otherwise merges and is then told
+        to put the fix in the PR it just closed), and §7's closing line carries a sixth fact,
+        `cartridge re-read`, with a spelling for a late run and for `cartridge NOT re-read` —
+        because nothing gates on §4, which is the objection that retired the "last reviewed" date
+  - [x] a project's cartridge prefers a link to a decision record over a task id where one exists,
+        since a closed task survives only as long as its roadmap entry. Stated in
+        [`cartridge-schema.md`](../integration/cartridge-schema.md) §1 and in `ws-setup`'s
+        template, and applied here: **exactly one** of the cartridge's bare ids had a record behind
+        it (p8.30 → [ADR 0003](../decisions/0003-shared-external-stores-are-declared-in-the-cartridge.md),
+        whose item 5 was amended to say what the row claims), and ADR 0004 and ADR 0005 were linked
+        where they are the record for a stated contract. The rest keep their ids, which is the
+        signal the rule asks for — the reasoning was never written down
+  - [x] changed through `ws-refine`, with its graph audit — 1 finding,
+        `UNLISTED EXIT: ws-ship's prose offers ws-review`, verified pre-existing and in text this
+        task did not touch; `deployed check: claude 45/45 · codex 45/45 · cursor 45/45`. The pack
+        change went beyond the four criteria in one place, recorded in the worklog: the folder-kind
+        classification in `ws-shared/reference.md` said `decisions/` is "never edited" while this
+        repo's ADR 0003 header records an in-place amendment, and correcting only this repo's
+        restatement of it was review round two's worst finding
 - **Kept open 2026-11-02** as the thirteenth task, past the twelve the trim targeted: it defends
   the first file every agent reads, and this session hit it three times in one day.
 - **Notes:** *rejected* while planning p3.5: adding a "last reviewed" date to the cartridge. It would
@@ -1236,6 +1260,14 @@ third signal that it is not worth a track.
         criterion rather than a promise in prose, because "the entry goes when it ships" is the
         same claim-nobody-enforces that p8.25's Notes rejected, and leaving both would have the
         record contradict the gate
+- **Measured 2026-11-03, while shipping p8.25**, by running the naive version of this check over
+  this repo's cartridge. **Resolving each backticked path from the repo root gives 18 false
+  positives out of 29** — `` `decisions/` ``, `` `roadmap/` ``, `` `risks/` `` and the rest are
+  written relative to `docs/`, `docs/agent/` or `skills/`, because that is how the prose reads.
+  Trying a small list of bases (`.`, `docs`, `docs/agent`, `skills`, `skills/ws-shared`) resolves
+  28 of 29 and leaves exactly one: `` `docs/agent/journal/` ``, which the cartridge itself says is
+  **local only, not mirrored** — so it is correct that it does not exist, and it is the worked
+  example for criterion 2. A check that fires on 18 correct rows would be turned off in a week.
 - **Notes:** the generic half — whether the pack should say anything about paths in cartridge prose
   beyond `ws-ship`'s prompt — is already answered in `cartridge-schema.md` §1 ("write what is true
   now"). This row is the executing half.
