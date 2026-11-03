@@ -62,8 +62,28 @@ hdr() { printf '\n-- %s --\n' "$*"; ngroup=$((ngroup+1)); }
 unknown(){ printf '  UNCHECKED  %s\n' "$1"; unchecked=$((unchecked+${2:-1}))
            UNCHECKED_NAMES="$UNCHECKED_NAMES
   - $1"; }
-# The two interpreters the checks below need. Absence makes a claim UNCHECKED, never ok.
-HAVE_PY=0; command -v python3 >/dev/null 2>&1 && HAVE_PY=1
+# The tools the checks below need. A missing tool makes a claim UNCHECKED, never ok — and never a
+# FAILURE either, which is the contract stated above and the reason section 7 does not turn CI red.
+#
+# python3 is probed by RUNNING it, not by `command -v`. `command -v python3` succeeds for a python3
+# that cannot run, which is the ordinary macOS state with no Command Line Tools: it prints
+# "xcrun: error: invalid active developer path" and exits 1. Measured, that shape took the HAVE_PY=1
+# branch, produced no output, and was reported as "a README claim does not hold" — a tool failure
+# diagnosed as a false README, which is the contract inverted. It is `python3 -c pass`, not
+# `--version`, because a stub that answers --version and runs nothing would still pass.
+#
+# mktemp is needed by that same block and is checked here for the same reason: its absence used to
+# reach the same hard FAIL.
+HAVE_PY=0;     command -v python3 >/dev/null 2>&1 && python3 -c 'pass' >/dev/null 2>&1 && HAVE_PY=1
+HAVE_MKTEMP=0; command -v mktemp  >/dev/null 2>&1 && HAVE_MKTEMP=1
+# Kept apart rather than folded into one flag: the first version set a single HAVE_PY from both,
+# so with mktemp missing it reported "no working python3 here" about a python3 that works fine.
+# A message that names the wrong missing tool sends the reader to install the wrong thing.
+_whynopy() {
+  if [ "$HAVE_PY" -eq 0 ] && [ "$HAVE_MKTEMP" -eq 0 ]; then echo "no working python3 and no mktemp here"
+  elif [ "$HAVE_PY" -eq 0 ]; then echo "no working python3 here"
+  else echo "no mktemp here"; fi
+}
 
 # word2num: the README spells quantities as words. Return -1 for anything unrecognised so a
 # missing claim is a failure rather than a silent 0.
@@ -111,16 +131,24 @@ diff <(grep -oE '^\| \[`ws-[a-z]+`\]' README.md | tr -d '|[`] ' | sort) \
   || bad "the table and the skill directories disagree"
 
 hdr "3. each table row's 'Ends with' against that skill's own description"
-if [ "$HAVE_PY" -eq 0 ]; then
+if [ "$HAVE_PY" -eq 0 ] || [ "$HAVE_MKTEMP" -eq 0 ]; then
   # Counted from the README, not written here: this script's own header forbids holding a
   # quantity it is supposed to be reading, and an UNCHECKED message is no exception.
   nrows=$(grep -cE '^\| \[`ws-[a-z]+`\]' README.md)
-  unknown "the skill-table paraphrases: python3 is not on PATH, so all $nrows rows went unread" "$nrows"
+  unknown "the skill-table paraphrases: $(_whynopy), so all $nrows rows went unread" "$nrows"
 else
-# The python block writes to a temp file rather than into $( ), because a heredoc inside a command
-# substitution is a parse error on bash 3.2 — which is the /bin/bash this repo is read on. `bash -n`
-# reported it as a syntax error 80 lines further down, in an unrelated `case`.
+# The python block writes to a temp file rather than into $( ), which keeps python's exit status
+# and its output separable with no pipeline in between.
+#
+# An earlier draft of this block DID use `$( )` and `bash -n` refused it, pointing at an unrelated
+# `case` eighty lines further down. The first version of this comment blamed heredocs inside
+# command substitution on bash 3.2; a reviewer could not reproduce that across five shapes and
+# neither could I across two more, and `0f0e791`'s own checker parses clean on 3.2. **So the cause
+# is not established**, and no mechanism is claimed here rather than teaching a false one. Keep
+# the temp file; if you move this back into `$( )`, run `bash -n` under /bin/bash before trusting
+# it, and do not trust the line number it gives you.
 PY3OUT_F="$(mktemp -t wsclaims)"
+trap 'rm -f "$PY3OUT_F"' EXIT INT TERM    # it is removed below too; this covers an interrupt
 python3 - > "$PY3OUT_F" <<'PY'
 import io, re, sys
 md = io.open("README.md", encoding="utf-8").read()
@@ -194,7 +222,7 @@ grep -q 'agent key MISSING' skills/ws-env/SKILL.md && ok "a missing key" || bad 
 grep -q 'Unknown kind' skills/ws-start/SKILL.md && ok "an unknown tracker" || bad "an unknown tracker has no degrade"
 grep -q 'A tag with no pack is fine' skills/ws-shared/reference.md && ok "a stack with no pack" || bad "a stack with no pack has no degrade"
 
-# THE OPEN SET, defined once and used by groups 8 and 9, so the two cannot drift apart. The
+# THE OPEN SET, defined once and read by BOTH groups 8 and 9, so the two cannot drift apart. The
 # project's six markers are defined in `skills/ws-shared/trackers/roadmap-files.md`,
 # `docs/roadmap/README.md` and `docs/integration/cartridge-schema.md`: `[ ]` open, `[~]` claimed,
 # `[r]` PR open, `[x]` done, `[-]` dropped, `[?]` blocked on a decision. The first FOUR of those
@@ -206,6 +234,12 @@ grep -q 'A tag with no pack is fine' skills/ws-shared/reference.md && ok "a stac
 # definition: `[?]` was missing, so marking any task blocked refused every commit. Both halves of
 # that are recorded because the second is the more instructive — the set was enumerated from
 # memory when the repo defines it three times over.
+# A review then found that the first version of this "defined once" was a lie: group 8 enumerated
+# its own four arms and never read OPEN_RE, so editing the one definition changed group 9 alone —
+# demonstrated by narrowing it to '[ ~r]' and watching group 8 keep calling a `[?]` row open while
+# group 9 started failing. Group 8 now tests membership against OPEN_RE and uses its own `case`
+# only for the WORDING, which cannot drift into disagreement because a marker that is not in
+# OPEN_RE never reaches it.
 OPEN_RE='[ ~r?]'
 hdr "8. the gap table: every id open, and every row describing its own task"
 tbl=$(awk '/^The gaps a reader would still hit/{f=1} f&&/^\| /{print} f&&/^$/&&NR>1{if(seen)exit} f&&/^\| /{seen=1}' README.md)
@@ -213,18 +247,27 @@ ids=$(printf '%s\n' "$tbl" | grep -oE '\| p[0-9]+\.[0-9]+ \|' | tr -d '| ' | sor
 [ -n "$ids" ] || bad "no task ids found in the gap table"
 for id in $ids; do
   st=$(grep -hoE "^## \[.\] ${id} —" docs/roadmap/*.md | head -1 | sed 's/^## \[\(.\)\].*/\1/')
-  case "$st" in
-    " ") ok "$id is open" ;;
-    "~") ok "$id is open (claimed, [~])" ;;
-    "r") ok "$id is open (PR open, [r])" ;;
-    "?") ok "$id is open (blocked on a decision, [?])" ;;
-    "x"|"-") bad "$id is marked [$st] on the roadmap, but the README lists it as an open gap" ;;
-    "")  bad "$id is in the gap table but not on the roadmap" ;;
-    # Said as an unrecognised marker rather than as "closed". A marker this script has not been
-    # taught is not evidence that the task is done, and reading it as such is how `[?]` came to
-    # refuse every commit.
-    *)   bad "$id carries the marker [$st], which this check does not recognise — see the six in skills/ws-shared/trackers/roadmap-files.md" ;;
-  esac
+  if [ -z "$st" ]; then
+    bad "$id is in the gap table but not on the roadmap"
+  elif printf '%s' "$st" | grep -qE "^$OPEN_RE$"; then
+    # In the open set, so the only question left is how to say it. These arms carry wording only;
+    # a marker absent from OPEN_RE cannot reach them.
+    case "$st" in
+      " ") ok "$id is open" ;;
+      "~") ok "$id is open (claimed, [~])" ;;
+      "r") ok "$id is open (PR open, [r])" ;;
+      "?") ok "$id is open (blocked on a decision, [?])" ;;
+      *)   ok "$id is open (marker [$st], in the open set)" ;;
+    esac
+  else
+    case "$st" in
+      "x"|"-") bad "$id is marked [$st] on the roadmap, but the README lists it as an open gap" ;;
+      # Said as an unrecognised marker rather than as "closed". A marker this script has not been
+      # taught is not evidence that the task is done, and reading it as such is how `[?]` came to
+      # refuse every commit.
+      *) bad "$id carries the marker [$st], which this check does not recognise — see the six in skills/ws-shared/trackers/roadmap-files.md" ;;
+    esac
+  fi
 done
 
 hdr "9. the 'N more open tasks' count against the board minus the gap table"
@@ -264,8 +307,21 @@ said=$(printf '%s' "$FLAT" | grep -oE 'Node ([0-9]+)\+' | head -1 | grep -oE '[0
 as_pkg=""
 as_bin=""
 if [ "$HAVE_PY" -eq 1 ] && as_bin=$(command -v agent-sync 2>/dev/null); then
-  d=$(dirname "$(python3 -c 'import os,sys;print(os.path.realpath(sys.argv[1]))' "$as_bin")")
-  while [ "$d" != "/" ]; do [ -f "$d/package.json" ] && { as_pkg="$d/package.json"; break; }; d=$(dirname "$d"); done
+  # `command -v python3` succeeds for a python3 that cannot RUN — the ordinary macOS state with
+  # no Command Line Tools installed, where it prints "xcrun: error: invalid active developer
+  # path" and exits 1. The realpath then comes back empty, `dirname ""` is `.`, `dirname "."` is
+  # `.`, and the walk below never reaches `/`: an unbounded loop with no output and no timeout.
+  # It predates p7.3 and was harmless while nothing ran this script. Section 7 runs it in
+  # `verify`, in the pre-commit hook and at all three publish sites, so it would now HANG every
+  # one of them. Measured; the loop was watched not reaching `/` over six iterations.
+  d=$(python3 -c 'import os,sys;print(os.path.realpath(sys.argv[1]))' "$as_bin" 2>/dev/null)
+  case "$d" in /*) d=$(dirname "$d") ;; *) d="" ;; esac   # anything not absolute: do not walk it
+  while [ -n "$d" ] && [ "$d" != "/" ]; do
+    [ -f "$d/package.json" ] && { as_pkg="$d/package.json"; break; }
+    _parent=$(dirname "$d")
+    [ "$_parent" = "$d" ] && break      # a belt-and-braces floor: dirname is a fixed point here
+    d="$_parent"
+  done
 fi
 # The README's Node floor is checked against agent-sync's OWN `engines` field, so this claim is
 # only checkable where agent-sync is installed. It is UNCHECKED elsewhere, not false: it was a
@@ -274,7 +330,7 @@ fi
 if [ -z "$said" ]; then
   bad "Node floor: no 'Node N+' claim found in README.md to check"
 elif [ "$HAVE_PY" -eq 0 ]; then
-  unknown "Node floor: python3 is not on PATH, so agent-sync's engines field went unread"
+  unknown "Node floor: no working python3 here, so agent-sync's engines field went unread"
 elif [ -n "$as_pkg" ]; then
   claim "Node floor" "$said" "$(python3 -c 'import json,io,sys,re;e=(json.load(io.open(sys.argv[1])).get("engines") or {}).get("node","");print(re.sub(r"[^0-9]","",e) or -1)' "$as_pkg")"
 elif [ -z "${as_bin:-}" ]; then

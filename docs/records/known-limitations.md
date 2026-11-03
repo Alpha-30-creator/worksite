@@ -284,8 +284,38 @@ defines **six**, in `skills/ws-shared/trackers/roadmap-files.md`, `docs/roadmap/
 `docs/integration/cartridge-schema.md`, and the one it omitted was `[?]` blocked on a decision —
 so marking any task blocked refused every commit. A reviewer found it from the definition. The set
 was enumerated from memory in a repo that writes it down three times, and it is now defined once
-in the script and shared by both groups. An unrecognised marker is reported as unrecognised rather
-than as closed, because reading an unknown marker as done is how `[?]` broke. The general form is
+in the script and shared by both groups — **and that sentence was false the first time it was
+written too.** The "one definition" was read by group 9 alone; group 8 enumerated the same four
+markers in its own arms, so narrowing the definition moved one group and not the other, which a
+second review demonstrated by doing exactly that. Group 8 now tests membership against the shared
+definition and uses its own arms only for the wording, which cannot disagree because a marker
+outside the set never reaches them. An unrecognised marker is reported as unrecognised rather than
+as closed, because reading an unknown marker as done is how `[?]` broke. The general form is
 worth keeping: a check written as
 evidence for one task is written against the tree as it stood that day, and the states it never
 saw are the ones it gets wrong the moment it starts running on every commit.
+
+**A tool that is present and does not work is the hole this task kept falling into.** Section 7's
+contract is that a missing tool makes a claim `UNCHECKED` rather than failing the gate, and twice
+the code tested the wrong thing. `command -v python3` succeeds for a python3 that cannot run —
+the ordinary macOS state with no Command Line Tools, where it prints `xcrun: error: invalid active
+developer path` and exits 1 — so the check took its python3-present branch, produced nothing, and
+reported "a README claim does not hold": a tool failure diagnosed as a false README, the contract
+exactly inverted. Worse, the `package.json` walk it then entered **never terminated**: the
+realpath came back empty, `dirname ""` is `.`, `dirname "."` is `.`, and nothing bounded the loop.
+That loop predates this task and was harmless while nothing ran the script; section 7 runs it in
+`verify`, in the pre-commit hook and at all three publish sites, so p7.3 is what would have hung
+every one of them, with no output and no timeout. `python3` is now probed by running it, `mktemp`
+is probed too because the same block needs it, and each message names the tool that is actually
+absent rather than the first one in the list. A **real** bug in that block still fails, which is
+the line that matters: a tool this machine lacks is `UNCHECKED`, a program that is here and wrong
+is a failure.
+
+**Every measurement in this repo was taken under a `grep` that CI does not have.** On the author's
+machine the first `grep` on `PATH` is `ugrep 7.8.4`, not the `/usr/bin/grep` that is BSD grep
+2.6.0-FreeBSD, and CI runs GNU grep on `ubuntu-latest`. The checks here use a small common subset
+— `-c`, `-h`, `-o`, `-E`, `-q`, `-x`, `-l`, `-v` — and section 7 is green in CI as well as locally,
+so nothing is known to differ. What cannot be claimed is that the three implementations agree on
+anything not exercised, and the figures recorded in this repo's `records/` and `verify/` artefacts
+were produced under the first of the three. Noted by a reviewer, which is the only reason it is
+written down at all.

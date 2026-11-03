@@ -480,13 +480,27 @@ else
       say "    about a staged tree at all."
     else
       DIFFERS="$( { git diff --name-only; git ls-files --others --exclude-standard; } 2>/dev/null | sort -u )"
+      # Paths carrying `assume-unchanged` or `skip-worktree`: git has been TOLD not to look at
+      # them, so neither question above can see one, and a README masked that way let the first
+      # version assert that every path agreed while the commit carried a different README from
+      # the one the claims were read from. Reported separately, because "not compared" is a third
+      # answer rather than a kind of agreement.
+      MASKED="$(git ls-files -v 2>/dev/null | sed -n 's/^[a-z] //p')"
+      # "do not match", not "hold different content": a mode-only change and an intent-to-add
+      # entry both land in this list with byte-identical content, and over-reporting is the safe
+      # direction. The narrower wording was simply false on those two.
       if [ -n "$DIFFERS" ]; then
-        say "    the index and the working tree hold different content for these paths, so any one"
-        say "    of them the checker reads, it read in its on-disk form and not as committed:"
+        say "    the index and the working tree do not match on these paths, so any one of them the"
+        say "    checker reads, it read in its on-disk form and not as committed:"
         printf '%s\n' "$DIFFERS" | sed 's|^|      |'
       else
-        say "    the index and the working tree agree on every path, so the tree the claims were"
-        say "    read from is the tree being committed."
+        say "    the index and the working tree match on every path git compared, so the tree the"
+        say "    claims were read from is the tree being committed."
+      fi
+      if [ -n "$MASKED" ]; then
+        say "    and these were NOT COMPARED at all — they carry assume-unchanged or skip-worktree,"
+        say "    so git was told not to look, and the line above does not cover them:"
+        printf '%s\n' "$MASKED" | sed 's|^|      |'
       fi
     fi
   fi
@@ -503,10 +517,18 @@ else
   COUNTS="$(printf '%s\n' "$CLAIMOUT" | sed -n 's/^-- counts -- //p' | tail -1)"
   cnt() { printf '%s' "$COUNTS" | sed -n "s/.*$1=\([0-9]*\).*/\1/p"; }
   NGROUP="$(cnt groups)"; NOK="$(cnt ok)"; NNOTE="$(cnt note)"; NUNCHECKED="$(cnt unchecked)"
+  # `fail` as well, and that is the whole point of reading a self-report rather than inferring
+  # state. The first version of this block parsed four of the five fields and left `fail` on the
+  # floor, so the gate's only evidence that a claim had failed was still the checker's EXIT
+  # STATUS — the kind of evidence the comment above is about. A review broke the exit path alone,
+  # left one real claim false, and the gate printed "all checks passed" over a self-report that
+  # said `fail=1`.
+  NFAIL="$(cnt fail)"
   # Everything that is not a clean, self-reporting, non-empty pass prints the whole output: which
   # claim, what the README said, what the tree has. Nothing is summarised away at the one moment
   # the summary would matter.
-  if [ "$CRC" -ne 0 ] || [ -z "$COUNTS" ] || [ "${NGROUP:-0}" -eq 0 ] || [ "${NOK:-0}" -eq 0 ]; then
+  if [ "$CRC" -ne 0 ] || [ -z "$COUNTS" ] || [ "${NGROUP:-0}" -eq 0 ] || [ "${NOK:-0}" -eq 0 ] \
+     || [ "${NFAIL:-1}" -ne 0 ]; then
     printf '%s\n' "$CLAIMOUT" | sed '/./s|^|  |'
   fi
   if [ -z "$COUNTS" ]; then
@@ -522,7 +544,13 @@ else
     say "  FAIL — $CLAIMS reports ${NGROUP:-0} claim group(s) and ${NOK:-0} holding claim(s), so it"
     say "         certified nothing. UNKNOWN, not a pass."
     FAIL=1
-  elif [ "$CRC" -ne 0 ]; then
+  elif [ "${NFAIL:-1}" -ne 0 ] && [ "$CRC" -eq 0 ]; then
+    # The two answers disagree. Neither is believed: a script whose exit status and whose own
+    # report of itself contradict each other has established nothing about the README.
+    say "  FAIL — $CLAIMS self-reports fail=${NFAIL:-?} and exited 0. Its two answers disagree,"
+    say "         so neither is believed. UNKNOWN, not a pass."
+    FAIL=1
+  elif [ "$CRC" -ne 0 ] || [ "${NFAIL:-1}" -ne 0 ]; then
     say "  FAIL — a README claim does not hold against this tree (named above)."
     FAIL=1
   else
