@@ -422,7 +422,7 @@ a decision about its safety rules — but if a second safety-rule change comes u
   path that executes it. Found by the lead's own grep after the review, which had declared it
   skimmed `ws-start` outside the diff hunks. A coverage gap honestly declared, not a miss.
 
-## [r] p8.39 — `git -C <repo>` is unquoted in the pack's placeholder idiom, so a bare fill word-splits
+## [x] p8.39 — `git -C <repo>` is unquoted in the pack's placeholder idiom, so a bare fill word-splits · 2026-11-03 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/24
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -435,12 +435,19 @@ a decision about its safety rules — but if a second safety-rule change comes u
   defect class as p8.13 in a different shape, and it is the pack's documented idiom at dozens of
   sites across most skills.
 - **Acceptance:**
-  - [ ] every `<repo>`-style path placeholder inside a fenced command either carries its quotes in
-        the template (`git -C "<repo>"`) or the skill states that the fill must be quoted
-  - [ ] the rule is stated once in `ws-shared/reference.md`'s cross-platform table, beside the two
-        word-splitting rows p8.13 added
-  - [ ] proven by execution against a workspace path containing a space, per p8.13's precedent
-  - [ ] changed through `ws-refine`, with its graph audit
+  - [x] every `<repo>`-style path placeholder inside a fenced command either carries its quotes in
+        the template (`git -C "<repo>"`) or the skill states that the fill must be quoted — 30
+        unquoted `-C <…>` sites went to 1, and that one is the new cross-platform row *quoting the
+        broken form in order to describe it*. A review enumerated 253 fenced placeholders
+        independently and found exactly one miss, `--body-file <body>`, since fixed
+  - [x] the rule is stated once in `ws-shared/reference.md`'s cross-platform table, beside the two
+        word-splitting rows p8.13 added — and it names the three forms that must **not** be
+        quoted, because an agent told "quote the path placeholders" would break each of them
+  - [x] proven by execution against a workspace path containing a space, per p8.13's precedent —
+        five shapes, before and after, each reproduced independently by the reviewer
+  - [x] changed through `ws-refine`, with its graph audit — exit 0; its one finding (`ws-ship`'s
+        prose offers `ws-review`, which its `What next?` does not list) verified pre-existing
+        against the published copy, so a worklog line rather than a row
 - **Notes, as filed:** "it **fails loudly** (`fatal:`), unlike p8.13's loops, which printed a
   reassuring row at exit 0 — so it wastes a run rather than lying about one. That is why it was
   filed rather than fixed inside p8.36."

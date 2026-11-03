@@ -87,7 +87,6 @@ The gaps a reader would still hit, each carried as a task:
 
 | Gap | Task |
 |---|---|
-| a workspace path containing a space breaks the `git -C <repo>` commands the skills tell an agent to run. The first command fails loudly; three other sites fail **silently**, and a fourth prints an error and then `clean: track removed` over a track it never touched | p8.39 |
 | a project with no git remote has no documented way to retire a finished track; the guard that refuses is correct, the workaround is undocumented | p8.40 |
 | `ws-refine` ends by pushing the whole library while `ws-fanout` forbids its subagents to push, so a library track inside a fanout batch is instructed both ways | p8.30 |
 

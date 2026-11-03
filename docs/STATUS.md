@@ -77,7 +77,6 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
-| p8.39 | `git -C <repo>` is unquoted in the pack's placeholder idiom | p8.13's defect class in a different shape, at ~30 sites across most skills. Filed as merely loud; **measured on 2026-11-03 to be silent at three of five, and falsely reassuring at a fourth** — it prints `clean: track removed` over a track it never touched. Named in the README as a gap a reader will hit |
 | p8.40 | A local-only project can never retire a track | the one place "degrade, never fail" and "never discard work" genuinely conflict, so it needs a decision |
 | p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
 | p8.32 | A retired track leaves its parent directory behind | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |
@@ -119,6 +118,7 @@ today, so they do not have to wait for P1–P7.
 | p8.36 | The loop assumed a git remote and died rather than degrading | 2026-11-03 |
 | p7.2 | Tag and announce — the README's claims verified against the tagged tree | 2026-11-03 |
 | p7.3 | The README's claims are section 7 of the one gate | 2026-11-03 |
+| p8.39 | Quote the pack's path placeholders — filed as loud, measured silent at three of five | 2026-11-03 |
 
 ## Phases
 
