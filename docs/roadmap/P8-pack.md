@@ -1096,7 +1096,7 @@ third signal that it is not worth a track.
 - **Notes:** every item here is a place where an author writes something reasonable and is never
   told it was ignored, which is this phase's goal line applied to a data format.
 
-## [~] p8.34 — `ws-setup`'s profiles, and the cartridge keys it writes
+## [r] p8.34 — `ws-setup`'s profiles, and the cartridge keys it writes
 
 - **Repos:** worksite (pack)
 - **Depends on:** p3.1
@@ -1128,7 +1128,8 @@ third signal that it is not worth a track.
   - [ ] `merge_style` is given a value in `ws-setup`'s cartridge template, or `ws-ship` stops
         reading it — a key whose only behaviour is its fallback is worse than no key *(p8.33)*
   - [ ] the rule-skill prefix gets a cartridge key. It is already load-bearing in `ws-setup`'s
-        own generator in four places — `:69`, `:138`, `:157`, `:181` — and `ws-fanout` briefs
+        own generator in four places — `:69`, `:138`, `:165`, `:189`; this line first cited `:157` and
+        `:181`, which are unrelated prose and a blank line — and `ws-fanout` briefs
         builders to read `<prefix>-<area>` skills on a value it cannot look up *(p8.33)*
   - [ ] `house_rules.owned_by`'s degrade to `me` — the **permissive** branch — is reversed, or
         warned about where it is read *(p8.33)*

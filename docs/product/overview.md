@@ -152,10 +152,11 @@ non-deterministic and unauditable: it is right most of the time and wrong **with
 so you find out downstream, where the mistake is expensive and its origin is no longer visible. A
 declared key is wrong *visibly and once*.
 
-The honest limit: the cartridge is **not fully specified today**. `ws-ship` reads a `merge_style`
-that nothing in the pack defines, several keys are never read by name — some only by concept, and
-at least one by nothing at all — and `ws-setup`'s interview collects answers that have no key to
-land in. [The cartridge schema page](../integration/cartridge-schema.md) accounts for that key by
+The honest limit: the cartridge is **not fully specified today**. Several keys are never read by
+name — some only by concept, and at least one by nothing at all. Two of the sharper cases closed
+on 2026-11-03 (p8.34): `ws-ship` read a `merge_style` that nothing defined, and `ws-setup` asked
+for the rule-skill prefix and gave it no key to land in, so the one skill that needed to look it
+up could not. [The cartridge schema page](../integration/cartridge-schema.md) accounts for that key by
 key, and names the holes it cannot close from the outside. None of it argues against the
 mechanism — it argues for writing the schema down — and the reason the loop works anyway is the
 **degrade-never-fail** rule: a missing cartridge, or a missing key, means less enrichment, never a

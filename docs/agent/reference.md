@@ -1,7 +1,11 @@
 ---
 schema_version: 1
 project: worksite
-profile: full
+profile: full                       # lite | standard | full
+rule_prefix: null                   # `full` requires it where the project earns rule skills; this
+                                    # one earns none — its "code" is the pack itself and ws-refine
+                                    # governs editing it. Stated, not unfinished: the reasoning is
+                                    # the first bullet under Open questions, below
 state_dir: .worksite
 docs_home: docs/agent
 artifacts: workspace-state
@@ -40,6 +44,8 @@ repos:
 git_flow:
   branch_pattern: "<type>/<id>-<slug>"
   pr_into: integration_branch
+  merge_style: merge              # what every PR here has actually used; written so ws-ship
+                                  # stops asking once per ship (p8.34)
   release: "tag v<x.y.z> on main; no deploy, nothing is published to a registry"
   forbidden:
     - force-push to main

@@ -172,13 +172,20 @@ because each is an honest ask rather than a wrong answer. An adapter works aroun
   where a finished card goes every task rather than inventing a list. A reader who invents a
   key for it is not told it was ignored.
 
-There is also an open contradiction about what a `lite` profile does with a tracker — one file
-in the pack says a `lite` project gets no tracker, while the single-file adapter calls itself the
-`lite` default. That contradiction **is** open, as a criterion on **p8.34**, where it is resolved
-against the profile decision rather than by picking one of the two sentences. It is not resolved
-here, and a new adapter should not lean on either reading.
+There **was** a contradiction here about what a `lite` profile does with a tracker — one file said
+a `lite` project gets no tracker while the single-file adapter called itself the `lite` default.
+**Closed by p8.34**, and not by picking a side: a third rung, `standard`, now owns `tasks-file` as
+its default, and `lite` has no tracker at all. A new adapter aimed at small projects should say
+`standard`.
 
 ## An unknown kind is not an error
+
+**`none` is not an unknown kind**, and the distinction matters because the two paths are opposite:
+an unknown kind gets the four questions and an offer to write an adapter, while `none` has no
+adapter by design and must not be offered one. It is what a `lite`-profile project is generated
+with. The four fixed answers are in
+[`skills/ws-shared/trackers/README.md`](../../skills/ws-shared/trackers/README.md), and
+`ws-start`, `ws-task`, `ws-wrap` and `ws-ship` each carry one line pointing there.
 
 A `tracker.kind` with no adapter does not stop the loop. Ask the user the four questions, do the
 work with the answers, and offer to write the adapter afterwards. That behaviour is stated in
