@@ -83,9 +83,30 @@ a marker for a human, not a compatibility mechanism.
 
 ## Tracks
 
-**The no-upstream refusal when retiring a track is deliberately conservative.** It refuses a
-worktree whose branch has no upstream of its own, so it also refuses a branch that was merged and
-pushed by another route, and the operator's escape is to override it knowingly.
+**The retirement guard asks whether commits are on a remote, and a repo with no remote therefore
+refuses every time.** Until p8.32 it asked whether an *upstream was configured*, which refused a
+branch `worktree add -b` had created and never committed to — carrying nothing, and so stranding
+every library-only track behind a guard protecting commits that did not exist. It now counts
+commits reachable from `HEAD` and from no remote-tracking ref, which covers the no-upstream case
+and the pushed-then-committed-again case with one question. **A repo with no remote at all still
+refuses, correctly** — those commits really do exist nowhere else — and that is the open question
+p8.40 holds, not a defect in the guard.
+
+**A non-empty `<id>/` directory after retirement is reported, never deleted.** `git worktree
+remove` takes gitignored build output with it (measured), so a successful removal leaves the
+directory empty and one `rmdir` finishes the job. A directory that is *not* empty means an earlier
+removal did not finish, and since `rm -rf` is the one unrecoverable act in this path the block
+prints the size and contents and stops. The cost is real: `ws-ship` holds the tracker transition
+until the verification line is clean, so leftover build output blocks marking the task done until
+somebody looks at it. That is the intended trade — the directory is named for the track being
+retired, so the residue belongs to it.
+
+**Two readings of `../<project>-tracks` exist in the wild, and only new roots are governed.**
+p8.32 made the worktree root a cartridge key resolved absolutely against the workspace root, with
+the workspace's sibling as the default. `ws-start` reports an existing root found under the other
+reading rather than creating a second beside it — but it reports it to a human, and adopting it is
+a cartridge edit somebody has to make. Nothing migrates a root automatically, and a project whose
+two roots each hold half the tracks stays that way until someone acts on the report.
 
 **An `artifacts: in-repo` project's journal does not travel between machines.** `in-repo`
 relocates the plan and only the plan, and the journal mirror is exempt on that layout, so a track
@@ -194,14 +215,24 @@ them.
 are unchanged: a local-only project genuinely cannot push or open a PR, and refusing is right.
 But neither *says* so — both run `git push -u origin <branch>` unguarded, so what a stranger
 actually sees is a raw git fatal, not an explanation. **And the consequence reaches past the
-push:** retiring a track refuses a **worktree** whose branch has no upstream, by design, because
-those commits exist nowhere else — so on a local-only project nothing obvious satisfies it, and
-`ws-start`'s sweep keeps offering the same stale tracks. The refusal is the correct guard and must
-not be weakened. What it is *not* is an absolute bar, and the first draft of this paragraph said it
-was: a local upstream (`git branch --set-upstream-to=<integration> <branch>`) satisfies the check
-once the work is merged, and a track configured `worktrees: false` is never checked at all, since
-the guard only loops over the track's worktrees. So the real gap is that the workaround is
-undocumented — filed as p8.40, whose acceptance is a written decision. The tracker adapter `ws-shared/trackers/roadmap-files.md`
+push:** retiring a track refuses a **worktree** holding commits that are on no
+remote — by design, because those commits exist nowhere else. On a local-only project there is no
+remote at all, so **every** commit counts, and `ws-start`'s sweep keeps offering the same stale
+tracks. The refusal is the correct guard and must not be weakened.
+
+**This is not an absolute bar, and three drafts of this paragraph have now got it wrong in both
+directions.** The first two named an escape that worked only against the old test — set a local
+upstream — and p8.32 removed the test that made it work. The third, written by p8.32 itself, then
+called the result "an absolute bar", which is equally false. What satisfies the current guard on a
+project with no remote is a **push to a local bare mirror**: measured, 2 commits on no remote,
+`git push` to a `--bare` repo on the same disk, count 0. It needs no network and no hosting, and
+it satisfies the guard's *meaning* — the commits really are in a second place — rather than
+dressing an unsatisfied guard in a ref. The remaining gap is that nothing in the pack tells anyone
+this, which is **p8.40**, whose acceptance is a written decision, amended there on 2026-11-03.
+A track configured `worktrees: false` is also never checked, since the guard only loops over the
+track's worktrees.
+
+The tracker adapter `ws-shared/trackers/roadmap-files.md`
 degrades with a named `COULD NOT REFRESH` message, but phrases it as "may be stale" even where
 there is nothing to be stale against. What p8.36 changed is the seven places that
 failed *before* reaching any such decision. The limitation that remains is in the degrade itself:

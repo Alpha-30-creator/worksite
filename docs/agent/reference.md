@@ -7,6 +7,8 @@ docs_home: docs/agent
 artifacts: workspace-state
 agents_file: copy
 worktrees: true
+worktree_root: ../worksite-tracks   # the default made explicit: this is a single-repo project, so
+                                    # the root is necessarily outside the workspace, which is the repo
 
 shared_stores:
   - id: agent-library

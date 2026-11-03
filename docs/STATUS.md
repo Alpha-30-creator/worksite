@@ -42,7 +42,10 @@ ADR 0004 that had rejected this shape, and accepts the one objection that still 
 
 ## In progress
 
-Nothing claimed. **p8.31 shipped 2026-11-03** ([PR #17](https://github.com/Alpha-30-creator/worksite/pull/17)):
+**p8.32 is claimed** — the worktree root becomes one resolved definition, and retirement
+stops reporting `clean` over the `<id>/` directory it leaves behind.
+
+Previously: **p8.31 shipped 2026-11-03** ([PR #17](https://github.com/Alpha-30-creator/worksite/pull/17)):
 `scripts/check.sh` grew sections 5 and 6 — the state dir's ignore rule is asserted rather than
 trusted, and the object store is read for the first time — the §1 allowlist now strips instead of
 dropping the line, and the journal header carries a derived device alias. Two review rounds found
@@ -77,7 +80,7 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
-| p8.40 | A local-only project can never retire a track | the one place "degrade, never fail" and "never discard work" genuinely conflict, so it needs a decision |
+| p8.40 | A local-only project has no documented way to retire a track | the one place "degrade, never fail" and "never discard work" genuinely conflict, so it needs a decision |
 | p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
 | p8.32 | A retired track leaves its parent directory behind | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |
 | p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
