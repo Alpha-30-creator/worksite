@@ -47,6 +47,11 @@ own removal would leave unreachable rather than what is missing from a remote, b
 
 Nothing claimed.
 
+**p8.41 dropped 2026-11-03, the day it was filed**, by the owner: it is a limitation that is honest
+once stated, it is stated in
+[records/known-limitations.md](records/known-limitations.md), and p8.25 already shipped the
+mitigation. Filing it was why the board went from two rows to two instead of two to one.
+
 **p8.25 shipped 2026-11-03** ([PR #28](https://github.com/Alpha-30-creator/worksite/pull/28)):
 `ws-ship` §4 now re-reads the cartridge rows a shipped task invalidates **without touching** —
 task ids, phases, not-yet-existing paths, counts — and asks whether each still *reads* correctly
@@ -109,7 +114,6 @@ today, so they do not have to wait for P1–P7.
 | id | title | why now |
 |---|---|---|
 | p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
-| p8.41 | A path named in the cartridge's prose has no check | filed by p8.25 as the executing half it deferred: a row naming a directory that never existed survived from p1.1 to p8.25 |
 
 ## Shipped
 

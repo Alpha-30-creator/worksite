@@ -1232,7 +1232,20 @@ third signal that it is not worth a track.
   the only work-losing path here — and `ws-plan` §5's `pull --ff-only`, which failed between two
   commands that both ran, so the branch was cut from an unknown base.
 
-## [ ] p8.41 — A path named in the cartridge's prose has no check, so a row can name a directory that never existed
+## [-] p8.41 — A path named in the cartridge's prose has no check — dropped 2026-11-03 by the owner: the limitation is honest once stated, and it is stated; the body is kept below because the measurement in it is the useful part
+
+**Dropped 2026-11-03, the day it was filed**, and the reason is this project's own routing rule:
+*"a limitation that is honest once stated"* belongs in
+[`records/known-limitations.md`](../records/known-limitations.md), not on the board, and p8.25
+already shipped the mitigation — `ws-ship`'s docs step re-reads the path class on every ship and
+reports in its closing line whether it did. **What filing it cost was the thing worth noticing:**
+p8.25 shipped and this row was filed in the same breath, so a board that was supposed to go from
+two rows to one went from two to two. Filing a follow-up is cheap for the agent that finds it and
+costs every later session a decision about whether to take it. The entry in `known-limitations.md`
+stays and now stands on its own rather than promising this row.
+
+The body below is kept, per this file's convention, because the 18-false-positives-out-of-29
+measurement is the part a future attempt would otherwise have to redo.
 
 - **Repos:** worksite — this repo's `scripts/` only. **No pack change**, so no `ws-refine` and no graph audit
 - **Depends on:** —

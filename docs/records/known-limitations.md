@@ -89,7 +89,12 @@ than a check — the honest distinction, since a prompt depends on an agent doin
 does not. (Section 3 also reads link syntax out of **inline code**, which this entry discovered by
 writing an example of a link into it and watching the gate fail on the example. Worth knowing
 before quoting link syntax in any page this gate reads.) A `check.sh` section asserting that every
-backticked path in the cartridge exists would close it; that is **p8.41**, and this entry goes when it ships.
+backticked path in the cartridge exists would close it, and **is not written** — it was filed as
+p8.41 on 2026-11-03 and dropped the same day, because this is a limitation that is honest once
+stated and the board had just been cut to one row. The measurement a future attempt needs is in
+that dropped row's body: resolving each backticked path from the repo root gives **18 false
+positives out of 29**, since the prose writes them relative to `docs/` or `skills/`; a short list of
+bases resolves 28 and leaves one, `docs/agent/journal/`, which is deliberately absent.
 
 **There is no way to say "this command exists, do not run it".** A `null` command means the repo
 does not have one, which is a different claim; the do-not-run case is enforced by briefing the

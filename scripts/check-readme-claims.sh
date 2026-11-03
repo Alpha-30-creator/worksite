@@ -303,8 +303,10 @@ done
 hdr "9. the 'N more open tasks' count against the board minus the gap table"
 # "N more open tasks" while the gap table has rows; plain "N open tasks" once it is empty, where
 # "more" would have nothing to be more THAN. Both spellings are read, and the arithmetic below is
-# unchanged either way because n_gap is then 0.
-said=$(w2n "$(printf '%s' "$FLAT" | grep -oE '([A-Za-z]+) (more )?open tasks' | awk '{print $1}')")
+# unchanged either way because n_gap is then 0. The **singular** is read too: the board reached one
+# row on 2026-11-03, "One open tasks" is not English, and a count check that forces a grammatical
+# error into the front page to keep itself happy is a check that will be worked around instead.
+said=$(w2n "$(printf '%s' "$FLAT" | grep -oE '([A-Za-z]+) (more )?open tasks?\b' | awk '{print $1}')")
 # $OPEN_RE, so this and group 8 share one definition of "open" (see the block above group 8).
 # awk rather than `bc`: bc is an undeclared dependency, and where it is absent the sum comes back
 # EMPTY, which reaches `claim` as a measurement rather than as "I could not count".
