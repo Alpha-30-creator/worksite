@@ -1096,7 +1096,7 @@ third signal that it is not worth a track.
 - **Notes:** every item here is a place where an author writes something reasonable and is never
   told it was ignored, which is this phase's goal line applied to a data format.
 
-## [ ] p8.34 — `ws-setup`'s profiles, and the cartridge keys it writes
+## [~] p8.34 — `ws-setup`'s profiles, and the cartridge keys it writes
 
 - **Repos:** worksite (pack)
 - **Depends on:** p3.1
