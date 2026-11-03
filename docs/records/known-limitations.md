@@ -232,6 +232,20 @@ this, which is **p8.40**, whose acceptance is a written decision, amended there 
 A track configured `worktrees: false` is also never checked, since the guard only loops over the
 track's worktrees.
 
+**The retirement block's fenced shell is never executed by `verify`, on any platform.** `check.sh`
+reads the pack as text — frontmatter, links, parity — and CI runs `check.sh`, so a GNU-vs-BSD
+difference inside a fenced block reaches CI only if `check.sh` itself trips over it. p8.32's block
+was exercised against BSD `find` on macOS across nine fixtures; the one case left untested is GNU
+`find -delete` on a path carrying a literal `..`, which GNU refuses and which the resolver can
+still produce when the root's parent does not exist. No GNU `find` exists on the authoring machine.
+This is the general shape of the p7.3 lesson and it has not been closed: the pack's executable
+content is proved by whoever runs it, not by the gate.
+
+**Mid-rebase and mid-bisect state in a worktree is invisible to every check retirement makes.**
+The tree is clean and the commits are pushed, so retirement proceeds and `worktree remove` discards
+an in-progress rebase. Lost work rather than lost commits, and not something a commit count can be
+made to catch — recorded here because the guard's stated promise is about work, and this is work.
+
 The tracker adapter `ws-shared/trackers/roadmap-files.md`
 degrades with a named `COULD NOT REFRESH` message, but phrases it as "may be stale" even where
 there is nothing to be stale against. What p8.36 changed is the seven places that
