@@ -172,11 +172,11 @@ because each is an honest ask rather than a wrong answer. An adapter works aroun
   where a finished card goes every task rather than inventing a list. A reader who invents a
   key for it is not told it was ignored.
 
-There is also an open contradiction about what a `lite` profile does with a tracker — one file
-in the pack says a `lite` project gets no tracker, while the single-file adapter calls itself the
-`lite` default. That contradiction **is** open, as a criterion on **p8.34**, where it is resolved
-against the profile decision rather than by picking one of the two sentences. It is not resolved
-here, and a new adapter should not lean on either reading.
+There **was** a contradiction here about what a `lite` profile does with a tracker — one file said
+a `lite` project gets no tracker while the single-file adapter called itself the `lite` default.
+**Closed by p8.34**, and not by picking a side: a third rung, `standard`, now owns `tasks-file` as
+its default, and `lite` has no tracker at all. A new adapter aimed at small projects should say
+`standard`.
 
 ## An unknown kind is not an error
 

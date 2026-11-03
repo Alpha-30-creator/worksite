@@ -172,10 +172,10 @@ worktrees: true
 |---|---|---|---|---|---|
 | `schema_version` | integer | no | none — *template ships* `1` | **nothing reads this** | no effect — *inferred*, since nothing consumes it |
 | `project` | string, lowercase-kebab | **yes** | none | `ws-setup` | the cartridge cannot be matched to its `agent-sync` project id or workspace — *inferred* |
-| `profile` | `lite` \| `standard` \| `full` | no | none — *template ships* `standard` | `ws-setup`, which **asks** for it and never infers it from folder shape (p8.34); the rungs are read by concept by `ws-shared/trackers/tasks-file.md` (`standard`'s default tracker) and `ws-review` (which creates `risks/` rather than finding it seeded) | treated as `full`, so the full interview and the full artefact set apply — *inferred*. **`standard` is the rung added by p8.34**: cartridge, tracker, `state_dir` and the workspace `AGENTS.md`, without the rule-skill family or a reference docs tree. It is not a repo count — this pack's own project is a single repo and is `full` |
-| `rule_prefix` | string, two or three letters | **conditional** — `full` needs it | none — *template ships* an empty key with its comment | `ws-setup`, which names `<rule_prefix>-<area>` skill directories and the `agent-sync include` call from it; `ws-fanout`, which briefs every builder to read those skills | **`ws-fanout` has nothing to brief with.** Added by p8.34: the value was asked in the interview, used to name four things, and recorded nowhere, so the one skill that needs to *look it up* could not — *stated* |
+| `profile` | `lite` \| `standard` \| `full` | no | none — *template ships* `standard` | `ws-setup`, which **asks** for it and never infers it from folder shape (p8.34); the rungs are read by concept by `ws-shared/trackers/tasks-file.md`, which names `standard` as the rung it is the default for. **No skill branches on this key** — `ws-review` creates `risks/` when it has a first risk whatever the profile says, and `ws-verify`, `ws-debug` and `ws-fanout` test for that directory rather than for a rung | treated as `full`, so the full interview and the full artefact set apply — *inferred*. **`standard` is the rung added by p8.34**: cartridge, tracker, `state_dir` and the workspace `AGENTS.md`, without the rule-skill family or a reference docs tree. It is not a repo count — this pack's own project is a single repo and is `full` |
+| `rule_prefix` | string, two or three letters | **conditional** — `full` requires it; `lite` and `standard` have no rule skills, so for them `null` is the correct value | none — *the template ships the key with no value, which is* `null`, and per [section 11](#11-absent-vs-null-vs-empty-vs-todo) that reads as "the thing genuinely does not exist" — true on the two lower rungs, and on `full` it means the interview did not finish | `ws-setup`, which names `<rule_prefix>-<area>` skill directories and the `agent-sync include` call from it; `ws-fanout` and `ws-plan`, which send builders to read those skills | **`ws-fanout` has nothing to brief with, and degrades by saying so** — it tells the builder there are no rule skills rather than naming files that do not exist, which is right on `lite` and `standard` and **wrong** on `full`. `ws-setup` on a `full` project with no value must ask before generating, since the skill directories are named from it and there is nothing to fall back to. Added by p8.34, when the value was asked in the interview, used to name seven things, and recorded nowhere — *stated* |
 | `state_dir` | path, relative to the workspace root | **conditional** — the track loop needs it | none — *template ships* `.<project>` | `ws-start`, `ws-plan`, `ws-verify`, `ws-ship`, `ws-wrap`, `ws-task`, `ws-fanout` | no track directory, so no `tracks/current`, plan, journal or evidence — *inferred* |
-| `docs_home` | path to the agent docs directory — **it ends `/agent`** | no | none | `ws-start`, `ws-plan`, `ws-verify`, `ws-wrap`, `ws-review`, `ws-ship`, `ws-setup`, `ws-refine`, `ws-fanout` | on a `lite` project, a local journal only, with no mirror and nothing on the other machine, said once when the track is created (`ws-shared/tracks.md`). What a **`full`** project without it does is *inferred*: the journal cannot be mirrored and `risks/`, `rules/` and `worklog/` have no location |
+| `docs_home` | path to the agent docs directory — **it ends `/agent`** | no | none | `ws-start`, `ws-plan`, `ws-verify`, `ws-wrap`, `ws-review`, `ws-ship`, `ws-setup`, `ws-refine`, `ws-fanout` | a project with a `state_dir` and **no `docs_home`** gets a local journal only, with no mirror and nothing on the other machine, said once when the track is created (`ws-shared/tracks.md`) — the rule keys off this key, not off the profile, which is what p8.34 corrected. What a **`full`** project without it does is *inferred*: the journal cannot be mirrored and `risks/`, `rules/` and `worklog/` have no location |
 | `artifacts` | `workspace-state` \| `in-repo` | no | `workspace-state` — stated (`ws-shared/tracks.md`) | `ws-plan`, `ws-review`, `ws-ship` | `workspace-state` — plans and journals in `<state_dir>`, never in a repo (`ws-plan`) |
 | `agents_file` | `copy` \| `include` \| `symlink`. **Never `symlink`**: *"Do not use a symlink even on macOS. Windows git checks a symlink out as a text file containing the path, silently, and the agent then has no rules"* (`ws-setup`) | no | none — *template ships* `copy` | `ws-sync` | the deployed `AGENTS.md` is not refreshed or drift-checked — *inferred* |
 | `worktrees` | boolean | no | none — *template ships* `true`, and an absent key is **not** `true` | `ws-start`, `ws-plan`, `ws-fanout` | `ws-fanout` tests that the cartridge is **readable**, then greps `^worktrees:` (`ws-fanout`). Three outcomes, all stated rather than inferred: `true` proceeds; an **absent key reads as not-`true`**, so it takes the `false` branch and will not fan out without hard per-repo ownership; an **unreadable cartridge is a stop**, not that branch — spawn nothing, and the "different repos" option is disqualified by name because its own precondition is the unread `repos:` list (`ws-fanout`). **A worktree isolates the repos in `repos:` and nothing else** — a place outside them is declared in [`shared_stores`](#shared_stores) |
@@ -190,11 +190,17 @@ is not expressible. It is a company convention on some projects: *"respect it; d
 it"* (`ws-shared/tracks.md`). On a multi-repo project **nothing specifies which repo holds the
 plan** — say so in the cartridge prose and keep it in one place.
 
-**`lite` is a smaller interview, not a smaller schema.** Five questions instead of thirty, and
-`ws-setup` generates no journal, no rule skills and no risks file (`ws-setup`). It forbids no key:
-a `lite` project may carry a `tasks-file` tracker, which is what the adapter index recommends for
-one — even though `ws-setup` also says a `lite` project gets *"no tracker"*. A tracker key on a
-`lite` cartridge is read exactly like any other.
+**A rung is a smaller interview, not a smaller schema.** Six questions on `lite`, about twelve on
+`standard`, about thirty on `full`, and each rung is the one below it plus its own questions
+(`ws-setup`). No rung forbids a key: the schema is one shape and every key is read the same way
+wherever it appears. What differs is what `ws-setup` **writes** — `lite` gets no tracker, no
+journal mirror, no rule skills and no `risks/`; `standard` adds the tracker; `full` adds the rule
+skills and `rules/<area>.md`.
+
+So a `tasks-file` tracker key on a `lite` cartridge is still read normally, and it is also a sign
+the project has outgrown that rung — `ws-setup` in upgrade mode adds what `standard` needs. Until
+p8.34 this paragraph said the adapter index recommended `tasks-file` *for* `lite` while `ws-setup`
+said `lite` gets no tracker, and left the contradiction on the page as a fact about the schema.
 
 **`docs_home` ends `/agent`, and the path is the agent directory itself** — not the docs root.
 `<docs_home>/reference.md` is the cartridge, `<docs_home>/risks/` the project's own review risks,
@@ -209,16 +215,12 @@ the value in both files that **define** the key — `ws-setup/templates/cartridg
 which is what keeps it uncommittable. On a single-repo project the root *is* a repo, so
 `ws-setup` adds `<state_dir>/` to its `.gitignore` — removing that line commits your track state.
 
-### `merge_style`
+### `merge_style` moved, and is documented under `git_flow`
 
-`ws-ship` reads it; nothing in the pack defines it. It gets a row because a skill reads it, and
-every cell that cannot be sourced says so. **Its placement is inferred too** — `ws-ship` names no
-parent key, so top-level is this page's reading rather than the pack's statement, and it would sit
-as plausibly under `git_flow`.
-
-| key | type | required | default | read by | missing → |
-|---|---|---|---|---|---|
-| `merge_style` | `merge` \| `squash` \| `rebase` — ***inferred***, the pack states no value set | no | none | `ws-ship` — *"use the project's merge style (`merge_style` in the cartridge)"* | `ws-ship` has no merge style to apply and falls back to asking or to the repo's own default. **That fallback is the only behaviour this key has**, because `ws-setup`'s template never writes it — so in practice every project is in the missing case — *inferred* |
+It was listed here, at top level, with every cell marked *inferred* and a note saying the
+placement was this page's reading rather than the pack's statement. p8.34 settled it: the key is
+**[`git_flow.merge_style`](#8-git-flow)**, `ws-setup`'s template ships a value, and `ws-ship` names
+the parent. One key, one row, one section.
 
 ### `shared_stores`
 
@@ -268,7 +270,7 @@ each kind has its own disjoint set, and a key from the wrong kind is simply igno
 | `roadmap-files` | `ws-shared/trackers/roadmap-files.md` | a solo build with phases | yes — a pushed commit |
 | `github-projects` | `ws-shared/trackers/github-projects.md` | a team, or anything already on issues | no |
 | `trello` | `ws-shared/trackers/trello.md` | a board someone else owns | no |
-| `tasks-file` | `ws-shared/trackers/tasks-file.md` | `lite` projects, anything small | yes — a pushed commit |
+| `tasks-file` | `ws-shared/trackers/tasks-file.md` | `standard` projects — one person, one area, no phases, anything small | yes — a pushed commit |
 | anything else | ask the four questions, then write a new adapter | — | ask |
 
 *(`ws-shared/reference.md`. "No real lock" means assigning is not atomic: re-read the
@@ -633,7 +635,8 @@ that is absent there, a path convention. Workspace paths never do — those come
 
 ## 13. A complete cartridge, annotated
 
-Every key on this page, on a single-repo project with a `roadmap-files` board. The two in-repo
+Every key on this page, on a single-repo project with a `roadmap-files` board — `full`, so it
+carries `rule_prefix`, which that rung requires. The two in-repo
 examples — [this repo's own cartridge](../agent/reference.md) and the multi-repo
 [northwind example](../../skills/ws-shared/examples/cartridge.md) — are the other two shapes
 worth reading.
@@ -642,7 +645,10 @@ worth reading.
 ---
 schema_version: 1               # nothing reads it; a version marker for a future reader
 project: meridian               # REQUIRED. Matches the agent-sync project id
-profile: full                   # full | lite. lite = a five-question interview, not a smaller schema
+profile: full                   # lite | standard | full. Asked, never inferred from folder shape.
+                                # A rung is a smaller interview, not a smaller schema
+rule_prefix: nw                 # full only, and REQUIRED there: names the nw-backend rule skills.
+                                # ws-fanout briefs builders to read them and looks the value up here
 state_dir: .meridian            # local, ephemeral, gitignored. Holds tracks/<id>/
 docs_home: docs/agent           # single repo, so the docs live in it. Always ends /agent
 artifacts: workspace-state      # workspace-state (default) | in-repo
@@ -681,6 +687,7 @@ repos:                          # REQUIRED. A list, one map per repo
 git_flow:
   branch_pattern: "<type>/<id>-<slug>"   # ws-plan forms branch names from this
   pr_into: integration_branch            # or a literal branch name
+  merge_style: squash                    # ws-ship's merge; written so it stops asking per ship
   release: "tag v<x.y.z> on main; nothing is published"
   forbidden:                             # project-specific bans, into every build brief
     - force-push to main
@@ -732,21 +739,15 @@ documentation for a key that does not exist.
   the value: a decision and a gap nobody noticed are otherwise the same value with different
   provenance.
 
-**Closed by p8.34**, and recorded here because the page said these were gaps for a week:
+Two rows left this section on 2026-11-03 and neither is a gap any more, so neither is listed:
+`merge_style` is written by the template and documented under `git_flow`, and `rule_prefix` is a
+key. **A project generated before that date still has neither**, so `ws-ship` asks for a merge
+style and `ws-fanout` reports no rule skills to brief — both correct degrades, and `ws-setup` in
+upgrade mode writes the keys.
 
-- **`merge_style` was read with nothing writing it.** `ws-setup`'s template now ships
-  `git_flow.merge_style: squash`, and its parent is stated — `git_flow`, because the merge is part
-  of the flow rather than a property of one repo. Every project generated before that is still in
-  the missing case, where `ws-ship` asks.
-- **`rule_prefix` was asked and never recorded** — not previously listed here, which is itself
-  worth noting: the gap was in `ws-setup` rather than in a key, so a page organised by key had
-  nowhere to put it. It is a key now.
-
-**Moved, not closed:** `tracker.lists` cannot name the done list — the `trello` adapter defines it
-as *"the names of the lists that mean open and in progress"* and then asks, once per card forever,
-where a finished card goes. That is a boundary rather than a mismatch, and it lives in
-[`records/known-limitations.md`](../records/known-limitations.md), where it already was. This page
-carried a parallel copy; two copies of one finding is how they come to disagree.
+`tracker.lists`' inability to name the done list is a **boundary rather than a mismatch** and lives
+in [`records/known-limitations.md`](../records/known-limitations.md). This page carried a parallel
+copy of it; two copies of one finding is how they come to disagree.
 
 ## See also
 
