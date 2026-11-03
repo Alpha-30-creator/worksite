@@ -62,8 +62,12 @@ from it.
 bash scripts/check.sh
 ```
 
-That is the **whole** suite. There is no typecheck, no linter, no test runner and no build, and
-those are absent on purpose rather than unfinished — a repo of Markdown and three shell scripts
+That is the **whole** suite, and the only thing any gate runs.
+[`scripts/check-readme-claims.sh`](scripts/check-readme-claims.sh) sits beside it and is **not**
+part of it: it checks the README's own claims against the tree, is run by hand at a tag, and p7.3
+is filed to fold it in so a stale claim fails this same gate. There is no typecheck, no linter, no
+test runner and no build, and those are absent on purpose rather than unfinished — a repo of
+Markdown and five shell files
 does not get an invented test runner. The script has **six** sections: private names, skill
 frontmatter, relative links, library parity, the state-dir ignore assertion, and the object store.
 Section 4 is informational and never fails; **every other section can fail**, sections 5 and 6

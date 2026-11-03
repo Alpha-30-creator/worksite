@@ -2,12 +2,19 @@
 
 ## What this repo is
 
-Markdown and three shell scripts. No runtime, no dependencies, no build, and nothing published to
+Markdown and five shell files. No runtime, no dependencies, no build, and nothing published to
 a registry — so there is no service to attack and no package to poison. The only code that ever
 runs is [`scripts/check.sh`](scripts/check.sh), [`scripts/publish.sh`](scripts/publish.sh),
+[`scripts/check-readme-claims.sh`](scripts/check-readme-claims.sh),
 [`.githooks/pre-commit`](.githooks/pre-commit) and **`skills/ws-refine/audit.sh`** — the one
 executable the pack itself ships, which the published skill tells its reader to run. All of them
 run locally by someone who cloned the repo and read them first.
+
+**This count was wrong until 2026-11-03 (p7.2)**, and the way it was wrong is worth one sentence:
+it said "three shell scripts" while listing four files, and p7.2 added a fifth and bumped the
+number to four without recounting. It is now derived from `git ls-files`, and
+`scripts/check-readme-claims.sh` checks the README's own counts the same way rather than against
+numbers written inside itself.
 
 `audit.sh` has been part of the pack since 2026-11-03 (p8.37); before that the pack was Markdown
 only, and this paragraph said two scripts. It is published by name through `publish.sh`'s

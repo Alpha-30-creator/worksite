@@ -31,6 +31,7 @@ the pack. Editing them here does not change the pack, and the next publish overw
 | `docs/` | everything on this page's docs-tree table | authored here | names, links |
 | `skills/` | the pack itself: the `ws-*` skills, the shared reference material they read, and `ws-refine/audit.sh` — the one executable file the pack ships | **received copy** | names, frontmatter, links, parity |
 | `scripts/check.sh` | the whole verification suite for this repo | authored here | **excluded from the name scan** — it holds the exclusion logic |
+| `scripts/check-readme-claims.sh` | checks every checkable claim in `README.md` against a tree and exits non-zero if one fails, so it can gate a tag. Written for p7.2. **Not** part of `verify`: nothing runs it automatically, which is the gap p7.3 is filed to close by folding it into `check.sh` | authored here | names, links |
 | `scripts/leak-patterns.txt` | the private-name patterns the scan uses, **and its `!` allowlist entries** — this file alone is the whole definition of coverage | authored here | **excluded from the name scan** — it *is* the list |
 | `scripts/object-store-baseline.txt` | the unreachable objects known to carry a pattern, with the measurement and the decision not to prune | authored here | names, links — it holds hashes and prose, never a private name |
 | `scripts/publish.sh` | the guarded copy that lands a publish here. It classifies every file in a skill directory: Markdown silently, reference data and the executable files named in its `PACK_EXEC` list **with the list printed**, anything else refused | authored here | names |
@@ -216,7 +217,11 @@ kept out of history on purpose.
 
 ## What the checks actually cover
 
-`verify` for this repo is `bash scripts/check.sh`. There is no typecheck, lint, test or build
+`verify` for this repo is `bash scripts/check.sh`, and it is the only thing a gate runs.
+`scripts/check-readme-claims.sh` sits beside it but is **not** part of `verify` — it is evidence
+tooling for one acceptance criterion, run by hand at a tag, and p7.3 is filed to fold it in so
+that a stale README claim fails the same gate as everything else. There is no typecheck, lint,
+test or build
 here, by design. The script runs over the working tree, or with `--staged` over staged content
 only — which is how [the pre-commit hook](../../.githooks/pre-commit) invokes it.
 

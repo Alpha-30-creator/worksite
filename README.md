@@ -76,11 +76,23 @@ agent-sync library into this repo, refuses the copy if any known private name su
 `ws-refine` runs it as a step rather than leaving it to be done by hand. That is how everything
 you are reading arrived.
 
-The roadmap carries each remaining gap as a task:
+A stranger has now run it. Two agents with none of this project's history installed the pack from
+`INSTALL.md` alone and then ran the loop end to end on a real task — 44 points where they had to
+guess, ask or improvise, [recorded with the date](docs/records/2026-11-02-stranger-install-dry-run.md)
+and each one closed as a fix, a written limitation or a filed task rather than a note to self: five
+`INSTALL.md` fixes, three limitations, two tasks that have both since shipped, and one criterion
+added to the third row below.
+
+The gaps a reader would still hit, each carried as a task:
 
 | Gap | Task |
 |---|---|
-| no stranger has run the loop end to end from these instructions | p7.1 |
+| a workspace path containing a space breaks the `git -C <repo>` commands the skills tell an agent to run — loudly, on the first command | p8.39 |
+| a project with no git remote has no documented way to retire a finished track; the guard that refuses is correct, the workaround is undocumented | p8.40 |
+| `ws-refine` ends by pushing the whole library while `ws-fanout` forbids its subagents to push, so a library track inside a fanout batch is instructed both ways | p8.30 |
+
+Four more open tasks are about this repo's own authoring and tooling rather than anything a reader
+would meet; [docs/STATUS.md](docs/STATUS.md) has them.
 
 **To install it**, point your agent at [INSTALL.md](INSTALL.md) — it is written for the agent
 rather than for you, and it stops rather than guessing whenever only you can answer. If you would
