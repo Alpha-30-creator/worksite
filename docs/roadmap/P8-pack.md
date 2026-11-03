@@ -471,7 +471,7 @@ a decision about its safety rules — but if a second safety-rule change comes u
 - **Notes:** recorded in `docs/records/known-limitations.md` by p8.36. A decision task, so its
   acceptance is a written record.
 
-## [~] p7.3 — Nothing runs the README claim checker, so a claim can go stale between tags
+## [r] p7.3 — Nothing runs the README claim checker, so a claim can go stale between tags
 
 - **Repos:** worksite
 - **Depends on:** —
