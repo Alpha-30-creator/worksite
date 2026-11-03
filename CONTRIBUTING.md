@@ -76,10 +76,15 @@ groups it read, how many claims hold and how many it did not check. It had four 
 2026-11-02 (p8.31) and six until 2026-11-03 (p7.3).
 
 **Section 7 is [`scripts/check-readme-claims.sh`](scripts/check-readme-claims.sh)**, called rather
-than inlined — 250 lines of claim-reading inside the gate would make the gate unreadable. Every
-quantity in it is read **out of `README.md`** and compared to the tree, so renaming "thirteen
-skills" to "twelve" fails. You can run it alone against any tree, which is what a tag does:
-`bash scripts/check-readme-claims.sh <dir>`. It is **not** a second `verify`; there is one command
+than inlined — the claim-reading is long enough that putting it inside the gate would make the
+gate unreadable. Every
+quantity it reads is read **out of `README.md`** and compared to the tree, so renaming the
+`## The thirteen skills` heading to "twelve" fails. It reads the claims it enumerates, not every
+number in the file — the README states the thirteen four times and two of those four are among
+its claims, so a stale "thirteen" at `README.md`:48 or :49 would pass. `docs/engineering/layout.md`'s
+row 7 lists every claim it does read. You can run it
+alone against any tree, which is how a tag and a publish candidate are checked, and nothing yet
+runs it *at* a tag automatically: `bash scripts/check-readme-claims.sh <dir>`. It is **not** a second `verify`; there is one command
 and this is a section of it. Until 2026-11-03 nothing ran it at all, which is the gap p7.3 closed.
 
 Three things worth knowing before you rely on it:

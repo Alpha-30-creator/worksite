@@ -9,7 +9,7 @@
 #
 # THIS IS NOT A SECOND `verify`. There is one gate, `scripts/check.sh` (AGENTS.md), and since
 # p7.3 this script IS one of its sections — section 7 calls it, indents its output and fails the
-# gate on a non-zero exit. It stays a separate file because 250 lines of claim-reading inside
+# gate on a non-zero exit. It stays a separate file because this much claim-reading inside
 # check.sh would make the gate unreadable, not because it is optional. Run it directly against
 # any tree (`bash scripts/check-readme-claims.sh <dir>`) to check a tag or a candidate clone.
 #
@@ -42,13 +42,24 @@ fail=0
 # README.md with newlines folded and runs of whitespace squeezed: a claim that wraps across two
 # lines is invisible to a line-based grep, and three checks silently found "no claim" because of it.
 FLAT=$(tr '\n' ' ' < README.md | tr -s ' ')
-ok()  { printf '  ok     %s\n' "$*"; }
+# Every disposition is COUNTED by the function that reports it, and the totals are printed as
+# one machine-readable line at the end. check.sh reads that line and refuses its absence.
+#
+# It used to re-derive those totals by grepping this script's output, and a review broke that in
+# one line: reverting hdr()'s `--` to `==` made check.sh report "0 claim group(s)" and call it ok,
+# because its `grep -c '^-- [0-9]'` matched nothing. A count derived from another program's
+# formatting is a count that goes to zero when the formatting moves, and zero read as a pass is
+# the defect class this whole script belongs to. Counting here, where the formatting lives, is the
+# only version that cannot drift apart.
+ngroup=0; nok=0; nnote=0; unchecked=0; UNCHECKED_NAMES=""
+ok()  { printf '  ok     %s\n' "$*"; nok=$((nok+1)); }
 bad() { printf '  FAIL   %s\n' "$*"; fail=1; }
-note(){ printf '  note   %s\n' "$*"; }
-hdr() { printf '\n-- %s --\n' "$*"; }
-# A claim this environment cannot check. NOT a failure, and NOT silent: see the header.
-unchecked=0; UNCHECKED_NAMES=""
-unknown(){ printf '  UNCHECKED  %s\n' "$*"; unchecked=$((unchecked+1))
+note(){ printf '  note   %s\n' "$*"; nnote=$((nnote+1)); }
+hdr() { printf '\n-- %s --\n' "$*"; ngroup=$((ngroup+1)); }
+# A claim this environment cannot check. NOT a failure, and NOT silent: see the header. $2 is how
+# many individual claims went unread, defaulting to one — group 3 stands for all thirteen
+# skill-table rows at once, and reporting that as "1 not checked" understated it by twelve.
+unknown(){ printf '  UNCHECKED  %s\n' "$1"; unchecked=$((unchecked+${2:-1}))
            UNCHECKED_NAMES="$UNCHECKED_NAMES
   - $1"; }
 # The two interpreters the checks below need. Absence makes a claim UNCHECKED, never ok.
@@ -101,13 +112,20 @@ diff <(grep -oE '^\| \[`ws-[a-z]+`\]' README.md | tr -d '|[`] ' | sort) \
 
 hdr "3. each table row's 'Ends with' against that skill's own description"
 if [ "$HAVE_PY" -eq 0 ]; then
-  unknown "the skill-table paraphrases: python3 is not on PATH, so all 13 rows went unread"
+  # Counted from the README, not written here: this script's own header forbids holding a
+  # quantity it is supposed to be reading, and an UNCHECKED message is no exception.
+  nrows=$(grep -cE '^\| \[`ws-[a-z]+`\]' README.md)
+  unknown "the skill-table paraphrases: python3 is not on PATH, so all $nrows rows went unread" "$nrows"
 else
-python3 - <<'PY' || fail=1
+# The python block writes to a temp file rather than into $( ), because a heredoc inside a command
+# substitution is a parse error on bash 3.2 — which is the /bin/bash this repo is read on. `bash -n`
+# reported it as a syntax error 80 lines further down, in an unrelated `case`.
+PY3OUT_F="$(mktemp -t wsclaims)"
+python3 - > "$PY3OUT_F" <<'PY'
 import io, re, sys
 md = io.open("README.md", encoding="utf-8").read()
 rows = re.findall(r"^\| \[`(ws-[a-z]+)`\]\([^)]*\) \| ([^|]+) \|", md, re.M)
-bad = 0
+bad = 0; nok = 0; nnote = 0
 STOP = {"a","an","the","and","or","never","with","it","you","can","act","on","one","is","to","that","of","in"}
 for name, ends in rows:
     fm = io.open(f"skills/{name}/SKILL.md", encoding="utf-8").read().split("---")[1]
@@ -126,10 +144,26 @@ for name, ends in rows:
               f"sentence. README: {ends.strip()!r}"); bad = 1
     elif missing:
         print(f"  note   {name}: paraphrased — {sorted(missing)} absent from the skill's own sentence")
+        nnote += 1
     else:
         print(f"  ok     {name}")
+        nok += 1
+# Counted here, by the code that prints, for the same reason the shell counts its own: a total
+# re-derived from someone else's output formatting goes to zero when the formatting moves.
+print(f"__counts__ ok={nok} note={nnote}")
 sys.exit(bad)
 PY
+PY3RC=$?
+  grep -v '^__counts__ ' "$PY3OUT_F"
+  PY3COUNTS="$(sed -n 's/^__counts__ //p' "$PY3OUT_F" | tail -1)"
+  rm -f "$PY3OUT_F"
+  [ "$PY3RC" -eq 0 ] || fail=1
+  if [ -z "$PY3COUNTS" ]; then
+    bad "the skill-table paraphrase check printed no count line, so how many of its rows it read is UNKNOWN"
+  else
+    nok=$((nok  + $(printf '%s' "$PY3COUNTS" | sed -n 's/.*ok=\([0-9]*\).*/\1/p')))
+    nnote=$((nnote + $(printf '%s' "$PY3COUNTS" | sed -n 's/.*note=\([0-9]*\).*/\1/p')))
+  fi
 fi
 
 hdr "4. the opinions, as the README counts them"
@@ -152,7 +186,7 @@ said=$(w2n "$(printf '%s' "$FLAT" | grep -oE '([A-Za-z]+) of them visibly do les
 sites=$(grep -ln 'ws-env pull' skills/*/SKILL.md | sed 's|skills/||;s|/SKILL.md||' | grep -v '^ws-env$' | sort)
 claim "skills that call ws-env pull" "$said" "$(printf '%s\n' "$sites" | grep -c .)"
 for s in $sites; do grep -q "\`$s\`" README.md || bad "$s calls ws-env pull and the README does not name it"; done
-printf '  note   call sites: %s\n' "$(printf '%s' "$sites" | paste -sd' ' -)"
+note "call sites: $(printf '%s' "$sites" | paste -sd' ' -)"
 
 hdr "7. degrade-never-fail covers the four cases the README lists"
 grep -q 'no cartridge' skills/ws-start/SKILL.md && ok "a missing cartridge" || bad "a missing cartridge has no degrade"
@@ -160,31 +194,45 @@ grep -q 'agent key MISSING' skills/ws-env/SKILL.md && ok "a missing key" || bad 
 grep -q 'Unknown kind' skills/ws-start/SKILL.md && ok "an unknown tracker" || bad "an unknown tracker has no degrade"
 grep -q 'A tag with no pack is fine' skills/ws-shared/reference.md && ok "a stack with no pack" || bad "a stack with no pack has no degrade"
 
+# THE OPEN SET, defined once and used by groups 8 and 9, so the two cannot drift apart. The
+# project's six markers are defined in `skills/ws-shared/trackers/roadmap-files.md`,
+# `docs/roadmap/README.md` and `docs/integration/cartridge-schema.md`: `[ ]` open, `[~]` claimed,
+# `[r]` PR open, `[x]` done, `[-]` dropped, `[?]` blocked on a decision. The first FOUR of those
+# — `[?]` included — are still an open gap to a reader, which is who the gap table is for.
+#
+# Until p7.3 only `[ ]` counted, so merely CLAIMING a task failed both groups; measured, with
+# `[~]` on p7.3 for group 9 and on the gap-table row p8.30 for group 8. The first fix then listed
+# five markers and asserted "only [x] and [-] are closed", which a review disproved from the
+# definition: `[?]` was missing, so marking any task blocked refused every commit. Both halves of
+# that are recorded because the second is the more instructive — the set was enumerated from
+# memory when the repo defines it three times over.
+OPEN_RE='[ ~r?]'
 hdr "8. the gap table: every id open, and every row describing its own task"
 tbl=$(awk '/^The gaps a reader would still hit/{f=1} f&&/^\| /{print} f&&/^$/&&NR>1{if(seen)exit} f&&/^\| /{seen=1}' README.md)
 ids=$(printf '%s\n' "$tbl" | grep -oE '\| p[0-9]+\.[0-9]+ \|' | tr -d '| ' | sort -u)
 [ -n "$ids" ] || bad "no task ids found in the gap table"
-# `[ ]` open, `[~]` claimed, `[r]` in review are all STILL OPEN to a reader, which is who the gap
-# table is for. Until p7.3 only `[ ]` counted, so merely claiming a gap-table task failed this
-# group — measured on a copy with p8.30 marked `[~]`. Only `[x]` done and `[-]` dropped are closed.
 for id in $ids; do
   st=$(grep -hoE "^## \[.\] ${id} —" docs/roadmap/*.md | head -1 | sed 's/^## \[\(.\)\].*/\1/')
   case "$st" in
     " ") ok "$id is open" ;;
     "~") ok "$id is open (claimed, [~])" ;;
-    "r") ok "$id is open (in review, [r])" ;;
+    "r") ok "$id is open (PR open, [r])" ;;
+    "?") ok "$id is open (blocked on a decision, [?])" ;;
+    "x"|"-") bad "$id is marked [$st] on the roadmap, but the README lists it as an open gap" ;;
     "")  bad "$id is in the gap table but not on the roadmap" ;;
-    *)   bad "$id is marked [$st] on the roadmap, but the README lists it as an open gap" ;;
+    # Said as an unrecognised marker rather than as "closed". A marker this script has not been
+    # taught is not evidence that the task is done, and reading it as such is how `[?]` came to
+    # refuse every commit.
+    *)   bad "$id carries the marker [$st], which this check does not recognise — see the six in skills/ws-shared/trackers/roadmap-files.md" ;;
   esac
 done
 
 hdr "9. the 'N more open tasks' count against the board minus the gap table"
 said=$(w2n "$(printf '%s' "$FLAT" | grep -oE '([A-Za-z]+) more open tasks' | awk '{print $1}')")
-# Same marker set as group 8, and for the same reason: claiming ANY task used to drop this count
-# by one and fail the gate (measured — marking p7.3 `[~]` turned "README says 4, tree has 3").
+# $OPEN_RE, so this and group 8 share one definition of "open" (see the block above group 8).
 # awk rather than `bc`: bc is an undeclared dependency, and where it is absent the sum comes back
 # EMPTY, which reaches `claim` as a measurement rather than as "I could not count".
-n_open=$(grep -hcE '^## \[[ ~r]\] p[0-9]+\.[0-9]+' docs/roadmap/*.md | awk '{t += $1} END {print t + 0}')
+n_open=$(grep -hcE "^## \\[$OPEN_RE\\] p[0-9]+\\.[0-9]+" docs/roadmap/*.md | awk '{t += $1} END {print t + 0}')
 n_gap=$(printf '%s\n' "$ids" | grep -c .)
 claim "open tasks not in the gap table" "$said" "$((n_open - n_gap))"
 
@@ -214,6 +262,7 @@ claim "guess-points, README vs the record it cites" \
 # the Node floor the README states, against agent-sync's own engines field
 said=$(printf '%s' "$FLAT" | grep -oE 'Node ([0-9]+)\+' | head -1 | grep -oE '[0-9]+')
 as_pkg=""
+as_bin=""
 if [ "$HAVE_PY" -eq 1 ] && as_bin=$(command -v agent-sync 2>/dev/null); then
   d=$(dirname "$(python3 -c 'import os,sys;print(os.path.realpath(sys.argv[1]))' "$as_bin")")
   while [ "$d" != "/" ]; do [ -f "$d/package.json" ] && { as_pkg="$d/package.json"; break; }; d=$(dirname "$d"); done
@@ -228,8 +277,13 @@ elif [ "$HAVE_PY" -eq 0 ]; then
   unknown "Node floor: python3 is not on PATH, so agent-sync's engines field went unread"
 elif [ -n "$as_pkg" ]; then
   claim "Node floor" "$said" "$(python3 -c 'import json,io,sys,re;e=(json.load(io.open(sys.argv[1])).get("engines") or {}).get("node","");print(re.sub(r"[^0-9]","",e) or -1)' "$as_pkg")"
-else
+elif [ -z "${as_bin:-}" ]; then
   unknown "Node floor: agent-sync is not on PATH, so the README's 'Node ${said}+' went unread"
+else
+  # On PATH but with no package.json above it — an installed binary, a shim, a symlink out of a
+  # tree that was moved. Said as what it is: the first draft reported this as "not on PATH",
+  # which sends the reader to install something they already have.
+  unknown "Node floor: agent-sync is at ${as_bin} but no package.json was found above it, so its engines field went unread"
 fi
 # the licence the README names, against LICENSE itself
 said=$(printf '%s' "$FLAT" | grep -oE '(MIT|Apache-2\.0|BSD-[0-9]-Clause|GPL-[0-9.]+) — see \[LICENSE\]' | awk '{print $1}')
@@ -242,6 +296,10 @@ grep -qi 'publish' skills/ws-refine/SKILL.md && ok "ws-refine has a publish step
 grep -qi 'answer only the user can give' INSTALL.md && ok "INSTALL.md stops for what only the user can answer" \
   || bad "README says INSTALL.md stops; no such stop found"
 
+# The machine-readable self-report check.sh reads. Counted by the reporting functions above, so
+# it cannot disagree with what was printed, and its ABSENCE is a refusal on the other side.
+printf '\n-- counts -- groups=%s ok=%s note=%s unchecked=%s fail=%s\n' \
+  "$ngroup" "$nok" "$nnote" "$unchecked" "$fail"
 printf '\n-- result --\n'
 # ADR 0004: certify only what was stated as read. The unchecked set is printed on both paths —
 # on the failing path too, because "one claim failed" over a partially-read README is a different

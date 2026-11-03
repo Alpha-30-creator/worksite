@@ -40,10 +40,10 @@ untracked, or tracked and unmodified, is not read at all in that mode. It runs a
 - as a **preflight on this repo before the publish starts** (`scripts/publish.sh`:200, working-tree
   mode), which refuses to publish into a tree whose guard is already failing — so a pre-existing
   leak is never buried under a publish commit;
-- in a throwaway clone of the candidate, before a byte is written here (`publish.sh`:312,
+- in a throwaway clone of the candidate, before a byte is written here (`publish.sh`:316,
   working-tree mode, **minus section 6** — see below);
 - again on this repo's staged tree, which is what is actually about to be committed
-  (`publish.sh`:356, `--staged`);
+  (`publish.sh`:360, `--staged`);
 - once more in the pre-commit hook, on exactly those staged bytes
   ([`.githooks/pre-commit`](.githooks/pre-commit), `--staged`) — which fires on the publish commit
   too, since `publish.sh` never passes `--no-verify`;
@@ -58,11 +58,14 @@ Plus one documented manual run, at [`CONTRIBUTING.md`](CONTRIBUTING.md):62.
 fails, the second line re-runs it without `>/dev/null` so the output is visible. Someone counting
 `bash scripts/check.sh` finds six and should not "correct" the five.
 
-These line numbers moved twice on 2026-11-03 — once for `PACK_EXEC` (p8.37) and again for the
-candidate's section-6 opt-out (p8.38) — and were re-derived both times. They are exact against the
-commit that carries this sentence and will drift again, which is the citation drift
-[`docs/agent/risks/common.md`](docs/agent/risks/common.md) warns about, happening twice in a day
-to the document that warns about it.
+These line numbers moved **three times** on 2026-11-03 — for `PACK_EXEC` (p8.37), for the
+candidate's section-6 opt-out (p8.38), and for section 7's comment block (p7.3) — and were
+re-derived every time. They are exact against the commit that carries this sentence and will
+drift again, which is the citation drift
+[`docs/agent/risks/common.md`](docs/agent/risks/common.md) warns about, happening three times in a
+day to the document that warns about it. The third was found by a reviewer, not by the author who
+had just re-derived two of the five and stopped: `:200` and `:203` were above the insertion and
+unchanged, which is exactly the pattern that makes a partial re-derivation feel complete.
 
 **The candidate clone is scanned without section 6, and that is the one place any section is
 skipped.** Section 6 reads the *unreachable* objects in `.git/objects`, and a local `git clone`

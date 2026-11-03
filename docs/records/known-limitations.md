@@ -232,10 +232,20 @@ whether it fires.
 **What section 7 of `check.sh` does not cover, after p7.3.** The gate now refuses a false README
 claim, and the limits of that are worth stating in the same breath. It reads the **working tree**
 in every mode, `--staged` included, because its checks open files with `cat` and `grep` and
-`--staged` cannot redirect them; it names each file that differs from the index rather than
-pretending otherwise, so the hook can certify a version nobody is committing — loudly, but it can.
-It reads quantities and named facts, never prose: whether `docs/product/overview.md`'s argument
-persuades is not checkable, and a skill-table cell that paraphrases its skill's own `Ends with`
+`--staged` cannot redirect them. It asks `git status --porcelain` and prints every path git
+reports, so the mismatch is named rather than glossed — but naming it does not remove it, and it
+cuts **both ways**. The hook can certify a README nobody is committing: with `README.md` staged
+for deletion and still on disk, section 7 reads the on-disk copy and reports that every claim
+holds. And symmetrically, **it refuses a commit over a working-tree claim nobody is staging** — an
+unstaged README edit, or an untracked extra roadmap file or skill directory, changes what the
+counts measure and blocks every commit in the repo until it is dealt with. The first version of
+this section asked `git diff --name-only`, which names none of those three cases (and prints a
+conflicted path twice); all four were found by a reviewer reproducing them rather than by reading.
+It reads **the quantities it enumerates**, not every number in the README: the thirteen is stated
+four times and only two of those are claims it reads, so a stale figure at `README.md`:48 or :49
+passes. Widening that is cheap and deliberately not done here — it is claim coverage, which is
+p7.2's subject, and this task is the wiring. It reads no prose judgement at all: whether
+`docs/product/overview.md`'s argument persuades is not checkable, and a skill-table cell that paraphrases its skill's own `Ends with`
 sentence fairly is reported as a `note` — three of the thirteen are, today — with only a cell
 sharing no content word at all failing. And it covers `README.md` alone. `CONTRIBUTING.md`,
 `SECURITY.md` and `docs/engineering/layout.md` state counts too, including the count of this
@@ -250,7 +260,11 @@ failure: the Node floor is read out of `agent-sync`'s own `engines` field, so a 
 would turn CI — which has no `agent-sync` — red on a README that is perfectly true. The cost is
 that a green gate on a reader's machine or in CI certifies **one claim fewer** than a green gate
 here. That is why the count is printed in the section, each one named, and repeated in the closing
-summary: the narrowing is visible rather than inferred. The line this draws is that only a missing
+summary: the narrowing is visible rather than inferred. It is a wider hole than one claim, and the
+widest case is worth naming: without `python3` the whole skill-table paraphrase check goes unread,
+so **a README cell that genuinely contradicts its skill passes the gate there** — reported as
+thirteen unchecked claims, counted, and named, but passed. The first draft reported those thirteen
+as one, understating what went unread by twelve. The line this draws is that only a missing
 *tool* is `UNCHECKED` — "no claim of that shape found in `README.md`" stays a failure, because it
 means the README moved out from under the check rather than the machine being short of something.
 
@@ -259,6 +273,14 @@ could have found that until something ran it. Groups 8 and 9 read the roadmap's 
 counted only `[ ]` as open, so *claiming any task* — marking it `[~]` — dropped the open count by
 one and failed the gate; measured both ways on 2026-11-03 before fixing it, with `[~]` on p7.3 for
 group 9 and on p8.30, a gap-table row, for group 8. `[ ]`, `[~]` and `[r]` now all count as open,
-which is what a reader means by an open gap. The general form is worth keeping: a check written as
+which is what a reader means by an open gap — **and the first fix of that was itself wrong.** It
+listed five markers and asserted "only `[x]` done and `[-]` dropped are closed"; the project
+defines **six**, in `skills/ws-shared/trackers/roadmap-files.md`, `docs/roadmap/README.md` and
+`docs/integration/cartridge-schema.md`, and the one it omitted was `[?]` blocked on a decision —
+so marking any task blocked refused every commit. A reviewer found it from the definition. The set
+was enumerated from memory in a repo that writes it down three times, and it is now defined once
+in the script and shared by both groups. An unrecognised marker is reported as unrecognised rather
+than as closed, because reading an unknown marker as done is how `[?]` broke. The general form is
+worth keeping: a check written as
 evidence for one task is written against the tree as it stood that day, and the states it never
 saw are the ones it gets wrong the moment it starts running on every commit.
