@@ -91,8 +91,8 @@ remote-tracking ref, which fixed that and still asked about the wrong place: **a
 copy lives, and `git worktree remove` removes a checkout, not a branch.** Measured — after
 removing a worktree whose branch held an unpushed commit, `refs/heads/<branch>` still points at
 it. So p8.40 made the count ask which commits would be left reachable from **no branch, tag or
-remote-tracking ref**, which refuses the one shape that really loses work (a detached `HEAD` that
-committed) and stops refusing the three that do not. Being on no remote is now a printed note:
+remote-tracking ref**, which refuses a shape that really loses work — a detached `HEAD` that
+committed — and stops refusing three that do not. Being on no remote is now a printed note:
 true, worth knowing, and not a reason to refuse. The decision is
 [ADR 0006](../decisions/0006-retirement-refuses-what-removal-would-lose.md).
 
@@ -257,11 +257,18 @@ It is now a refusal of its own, asked with `rev-parse --git-path` over `rebase-m
 worktree parked at a `rebase -i` `edit` step reported a clean `status`, both commit tests returned
 0, and plain `worktree remove` succeeded and took `rebase-merge/` with it.
 
-**What replaced it as the open edge**, from p8.40's review: the reflog sweep that catches a commit
-a worktree made and then stepped off is **best effort**, because with reflogs disabled or expired
-there is nothing to walk; a commit reachable only from another worktree's detached `HEAD` is not
-asked about; and `for-each-ref --contains` runs once per reflog entry, which was never benchmarked
-on a large repository.
+**What replaced it as the open edge**, from p8.40's two review rounds. The sweep that finds a
+commit a worktree made and then **stepped off** is a **note, not a refusal**, and that is a
+deliberate loss: a reflog is full of commits no ref contains by design — every `amend`, every
+`pull --rebase`, every `reset --hard` — so as a refusal it blocked the ordinary path on every
+project and could not be satisfied without creating branches for commits the author had replaced.
+The consequence, measured: a stepped-off commit whose reflog has **expired** (default `gc` policy,
+30 days for unreachable entries) is lost on retirement with a `clean` line, and so is one named
+only by a `refs/worktree/*` ref. The sweep also **over**-reports in the other direction, because
+`for-each-ref` asked of the repository lists no worktree's `HEAD`: a commit another worktree is
+standing on is named although it survives. And `for-each-ref --contains` runs once per reflog
+entry — measured at 1.2s for 187 entries against 39 refs in this repo, and never benchmarked on a
+large one.
 
 The tracker adapter `ws-shared/trackers/roadmap-files.md`
 degrades with a named `COULD NOT REFRESH` message, but phrases it as "may be stale" even where

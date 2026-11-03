@@ -88,7 +88,7 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
-| p8.40 | A local-only project has no documented way to retire a track | p8.32 measured that a local bare mirror satisfies the guard, so what is missing is the documentation, not a way out |
+| p8.40 | A local-only project has no documented way to retire a track | the guard asks about a remote where the question is whether removal loses the commits, and measurably it does not — so this is a guard to fix, not a workaround to document |
 | p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
 | p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
 

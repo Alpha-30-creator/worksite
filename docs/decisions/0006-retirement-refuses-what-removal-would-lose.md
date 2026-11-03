@@ -61,10 +61,18 @@ about a remote.**
 - **Did this worktree make a commit and then step off it?** The question above reads only what the
   worktree is *standing on*, so an experiment committed and then abandoned
   (`switch --detach`, `reset --hard`) is reachable from no ref **and** absent from that count. Its
-  last remaining name is the worktree's own per-worktree reflog, deleted with the directory. So the
-  block walks `rev-list -g HEAD` and asks `for-each-ref --contains` per entry. Best effort, stated
-  as such: with reflogs disabled or expired there is nothing to walk. **This was found by review,
-  not by the measurement that produced the decision** — see *What the first cut got wrong*.
+  last remaining name is the worktree's own per-worktree reflog, deleted with the directory. The
+  block walks `rev-list -g HEAD` and asks `for-each-ref --contains` per entry — and **reports what
+  it finds as a note, never as a refusal.** That is the one place this decision deliberately
+  accepts a possible loss, and the reason is measurable: a reflog is full of commits no ref
+  contains **by design**. Every `commit --amend`, every `pull --rebase` — which this pack's own
+  tracker adapters instruct — and every `reset --hard` that drops a mistake leaves the superseded
+  commit there. As a refusal it fired on the ordinary path on every project, remote or not, and
+  since `ws-ship` holds the tracker transition on the verification line, the track could not ship
+  at all; the only remedy on offer was to create a branch naming a commit the author had
+  deliberately replaced. An abandoned experiment and an amended-away commit are indistinguishable
+  from inside this block, so the agent is told and the human decides at the yes. Both the refusal
+  version and this one were found by review, not by the measurement that produced the decision.
 - **Is an operation in progress?** A rebase, cherry-pick, merge, revert or bisect stopped half-way
   leaves `status --porcelain` empty and every commit count at zero, and `worktree remove` discards
   it. Asked separately, via `rev-parse --git-path`, because no commit count can be made to see it.
@@ -115,9 +123,18 @@ the accidental coverage along with the wrong justification, and the only way to 
 enumerate what the blanket was catching. A narrower test is not automatically a better one; it is
 better only once what it stopped catching is accounted for.
 
-Two of the three became refusals of their own (above). The third is a note: removal lists the
-ignored files it will delete, so the yes in step 3 is informed, because a built `dist/` going with
-the worktree is the documented behaviour and an `.env` is recoverable with `ws-env pull`.
+One of the three became a refusal of its own: the in-progress operation. The other two are notes,
+and the second review round is why. Removal lists the ignored files it will delete, so the yes in
+step 3 is informed — a built `dist/` going with the worktree is documented behaviour and an `.env`
+is recoverable with `ws-env pull`. And the stepped-off commit is a note rather than the refusal the
+first fix made it, because that refusal could not be satisfied on the ordinary path (above).
+
+**The second round's lesson is the first round's, one layer in.** Round one found that a narrower
+test loses the blanket's accidental coverage. Round two found that *restoring* the coverage with a
+refusal costs more than the loss it prevents, because the signal it keys on — a commit no ref
+contains — is produced constantly by the workflow this pack prescribes. Both rounds are the same
+question asked about a different thing: what else does this test catch, and what else does it
+block?
 
 ## Consequences
 
@@ -125,6 +142,17 @@ the worktree is the documented behaviour and an `.env` is recoverable with `ws-e
   and what it costs is this: a machine that dies with a branch never pushed loses that branch.
   Retirement never protected against that anyway — the branch and its commits stay in the
   repository after the worktree is gone — but it is no longer refused on the way past.
+- **Two sequences lose a commit where the old test refused, and they print `clean`.** Both were
+  measured by the second review round, and both are a consequence of the reflog sweep being a note:
+  a stepped-off commit whose reflog entries have **expired** (`gc` expires unreachable entries at
+  30 days by default, which is inside the staleness band `ws-start`'s sweep is aimed at), and a
+  commit named only by a `refs/worktree/*` ref under the same condition. With the reflog gone there
+  is nothing left for any check here to read. This is the price of the paragraph above, stated where
+  the cost belongs rather than only under *What this does not claim*.
+- **The three refusals are one list, in one place**, because four callers run this block and a
+  caller that tests a subset offers a track the block then refuses — which is p8.40's own loop,
+  reached from `ws-start`'s sweep on any project. The second round found exactly that: `ws-start`
+  was still testing two of the three.
 - `ws-start`'s sweep stops reporting such a track as holding work, which is what p8.40's second
   criterion asks for: a remoteless track stops being re-offered because it becomes retirable.
 - A detached-HEAD worktree is now refused for a reason an agent can act on.
@@ -137,10 +165,10 @@ the worktree is the documented behaviour and an `.env` is recoverable with `ws-e
   and the note says when it has not.
 - **Not that `status --porcelain` plus these checks see everything.** A stash was measured to
   survive (`refs/stash` is shared across worktrees, so the main checkout still lists it). Mid-rebase
-  state *is* now refused, closing the gap p8.32 recorded. What remains: the reflog sweep is
-  defeated by expired or disabled reflogs; per-worktree refs under `refs/worktree/*` go with the
-  directory and nothing asks about them; and a worktree whose branch is deleted afterwards by
-  something outside this pack is not retirement's business. Recorded in
+  state *is* now refused, closing the gap p8.32 recorded. What remains, beyond the two losses under
+  *Consequences*: the reflog sweep **over**-reports as well, because `for-each-ref` asked of the
+  repository does not list any worktree's `HEAD`, so a commit another worktree is standing on is
+  named here although it survives — which a note can afford and a refusal could not. Recorded in
   [`records/known-limitations.md`](../records/known-limitations.md).
 - **Not that the fenced block is executed by `verify`.** It is not, on any platform. The five
   shapes above were exercised by extracting the block from the shipped document and running it.

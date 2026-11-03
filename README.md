@@ -87,7 +87,7 @@ The gaps a reader would still hit, each carried as a task:
 
 | Gap | Task |
 |---|---|
-| a project with no git remote has no documented way to retire a finished track; the guard that refuses is correct, the workaround is undocumented | p8.40 |
+| a project with no git remote cannot retire a finished track: the guard asks whether the commits are on a remote, which measurably is not the question — removing a worktree does not remove the branch that holds them | p8.40 |
 
 Two more open tasks are about this repo's own authoring and tooling rather than anything a reader
 would meet; [docs/STATUS.md](docs/STATUS.md) has them.
