@@ -217,8 +217,10 @@ them.
 
 **What still assumes a remote, after p8.36 and p8.40.** `ws-ship`'s push and PR steps are
 unchanged: a local-only project genuinely cannot push or open a PR, and stopping is right, but
-neither *says* so — both run `git push -u origin <branch>` unguarded, so what a stranger sees is a
-raw git fatal rather than an explanation. `ws-wrap`'s push was the same until p8.40, which guarded
+neither *says* so. Its step 2 runs `git push -u origin <branch>` and then `gh pr create`, both
+unguarded, so what a stranger sees is a raw git or `gh` failure rather than an explanation. A
+local-only project therefore does not reach retirement through `ws-ship` at all; it gets there
+through `ws-task`'s drop path or `ws-start`'s stale sweep. `ws-wrap`'s push was the same until p8.40, which guarded
 it, because `ws-start`'s stale sweep names `ws-wrap` as the exit for a track that holds work and a
 remoteless project would be sent to a command that cannot run.
 
@@ -247,10 +249,19 @@ still produce when the root's parent does not exist. No GNU `find` exists on the
 This is the general shape of the p7.3 lesson and it has not been closed: the pack's executable
 content is proved by whoever runs it, not by the gate.
 
-**Mid-rebase and mid-bisect state in a worktree is invisible to every check retirement makes.**
-The tree is clean and the commits are pushed, so retirement proceeds and `worktree remove` discards
-an in-progress rebase. Lost work rather than lost commits, and not something a commit count can be
-made to catch — recorded here because the guard's stated promise is about work, and this is work.
+**Mid-rebase and mid-bisect state in a worktree was invisible to every check retirement makes —
+closed by p8.40.** The tree is clean and every commit count returns zero, so nothing in the
+counting half of the guard could see it, and `worktree remove` discarded an in-progress rebase.
+It is now a refusal of its own, asked with `rev-parse --git-path` over `rebase-merge`,
+`rebase-apply`, `CHERRY_PICK_HEAD`, `MERGE_HEAD`, `REVERT_HEAD` and `BISECT_LOG`. Measured: a
+worktree parked at a `rebase -i` `edit` step reported a clean `status`, both commit tests returned
+0, and plain `worktree remove` succeeded and took `rebase-merge/` with it.
+
+**What replaced it as the open edge**, from p8.40's review: the reflog sweep that catches a commit
+a worktree made and then stepped off is **best effort**, because with reflogs disabled or expired
+there is nothing to walk; a commit reachable only from another worktree's detached `HEAD` is not
+asked about; and `for-each-ref --contains` runs once per reflog entry, which was never benchmarked
+on a large repository.
 
 The tracker adapter `ws-shared/trackers/roadmap-files.md`
 degrades with a named `COULD NOT REFRESH` message, but phrases it as "may be stale" even where

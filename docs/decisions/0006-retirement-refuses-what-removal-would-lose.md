@@ -52,13 +52,23 @@ main checkout.
 
 ## Decision
 
-**One test became two, and only one of them refuses.**
+**One test became four refusals and a note, and the refusals ask about the removal rather than
+about a remote.**
 
-- **The refusal asks whether this removal would make a commit unreachable**:
+- **Would this removal make a commit unreachable?**
   `rev-list --count HEAD --not --branches --tags --remotes`, keeping p8.32's unborn-`HEAD` and
-  non-numeric guards. It consults no remote, so a local-only project is never blocked by it, and
-  it refuses exactly the shape where the commits have no other ref — with the remedy in the
-  message, which is to give them a branch.
+  non-numeric guards. It consults no remote, so a local-only project is never blocked by it.
+- **Did this worktree make a commit and then step off it?** The question above reads only what the
+  worktree is *standing on*, so an experiment committed and then abandoned
+  (`switch --detach`, `reset --hard`) is reachable from no ref **and** absent from that count. Its
+  last remaining name is the worktree's own per-worktree reflog, deleted with the directory. So the
+  block walks `rev-list -g HEAD` and asks `for-each-ref --contains` per entry. Best effort, stated
+  as such: with reflogs disabled or expired there is nothing to walk. **This was found by review,
+  not by the measurement that produced the decision** — see *What the first cut got wrong*.
+- **Is an operation in progress?** A rebase, cherry-pick, merge, revert or bisect stopped half-way
+  leaves `status --porcelain` empty and every commit count at zero, and `worktree remove` discards
+  it. Asked separately, via `rev-parse --git-path`, because no commit count can be made to see it.
+- **Uncommitted changes**, unchanged.
 - **The off-machine question becomes a note, printed and never blocking.** "These commits are on
   no remote" is a **backup** fact, not a retirement one: the commits survive the removal either
   way. With no remote at all the note says that in one line.
@@ -79,16 +89,42 @@ keeps its meaning — it is the same meaning, asked of the operation actually be
 - **A stated refusal with a reason — "a local-only project cannot retire a track".** Rejected
   once the measurement was in: nothing is lost, so there is nothing to refuse.
 - **Keeping the remote test as a second refusal.** Rejected: it would reinstate the block for
-  exactly the projects this task is about, and `ws-ship` already pushes in step 2 and merges in
-  step 3, so by the time retirement runs a shipped branch is pushed. Where it is not, the note
-  says so.
+  exactly the projects this task is about. Where a track *does* ship through `ws-ship`, step 2
+  pushes and step 3 merges, so by retirement the branch is pushed anyway. The honest caveat is the
+  other two callers: `ws-task`'s drop path and `ws-start`'s stale sweep retire tracks that never
+  went through `ws-ship` and so were never pushed — which is exactly when the note matters, and
+  why it prints rather than being derived from a skill's happy path.
+
+## What the first cut got wrong
+
+The decision above is the reviewed version. The first cut replaced the remote test with the
+`HEAD`-based count alone, and review measured **three sequences that passed it and lost
+something**, each of which the remote-based test had refused in a remoteless repo:
+
+| sequence | old (remoteless) | first cut | what was lost |
+|---|---|---|---|
+| detached, commit, then step back onto a branch | refuse | **allow** | the commit, unreachable and named in no reflog afterwards |
+| worktree parked mid-`rebase -i` | refuse | **allow** | `rebase-merge/`, the todo list, `refs/rewritten` |
+| ignored files in the worktree (`.env`, `dist/`) | refuse | **allow** | the files, which `worktree remove` takes |
+
+The pattern is worth naming, because it is the real lesson of this task: **the old test was
+fail-closed for reasons that had nothing to do with its subject.** In a remoteless project it
+refused *everything*, so it incidentally protected against rebases, stepped-off commits and
+ignored files — none of which it knew about. Replacing a blanket refusal with a precise one removes
+the accidental coverage along with the wrong justification, and the only way to see that is to
+enumerate what the blanket was catching. A narrower test is not automatically a better one; it is
+better only once what it stopped catching is accounted for.
+
+Two of the three became refusals of their own (above). The third is a note: removal lists the
+ignored files it will delete, so the yes in step 3 is informed, because a built `dist/` going with
+the worktree is the documented behaviour and an `.env` is recoverable with `ws-env pull`.
 
 ## Consequences
 
 - A worktree with unpushed commits on a branch now retires. That is a **deliberate relaxation**,
-  and the one case where it costs something is a machine that dies with a branch never pushed —
-  which retirement never protected against anyway, because the branch and its commits stay in the
-  repository after the worktree is gone.
+  and what it costs is this: a machine that dies with a branch never pushed loses that branch.
+  Retirement never protected against that anyway — the branch and its commits stay in the
+  repository after the worktree is gone — but it is no longer refused on the way past.
 - `ws-start`'s sweep stops reporting such a track as holding work, which is what p8.40's second
   criterion asks for: a remoteless track stops being re-offered because it becomes retirable.
 - A detached-HEAD worktree is now refused for a reason an agent can act on.
@@ -99,9 +135,12 @@ keeps its meaning — it is the same meaning, asked of the operation actually be
 
 - **Not that the remote is unimportant.** It is the only thing that puts work on another machine,
   and the note says when it has not.
-- **Not that `status --porcelain` plus this count sees everything.** A stash was measured to
-  survive (`refs/stash` is shared across worktrees), but mid-rebase and mid-bisect state is still
-  invisible to every check retirement makes — recorded, unchanged, in
+- **Not that `status --porcelain` plus these checks see everything.** A stash was measured to
+  survive (`refs/stash` is shared across worktrees, so the main checkout still lists it). Mid-rebase
+  state *is* now refused, closing the gap p8.32 recorded. What remains: the reflog sweep is
+  defeated by expired or disabled reflogs; per-worktree refs under `refs/worktree/*` go with the
+  directory and nothing asks about them; and a worktree whose branch is deleted afterwards by
+  something outside this pack is not retirement's business. Recorded in
   [`records/known-limitations.md`](../records/known-limitations.md).
 - **Not that the fenced block is executed by `verify`.** It is not, on any platform. The five
   shapes above were exercised by extracting the block from the shipped document and running it.
