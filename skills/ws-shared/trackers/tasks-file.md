@@ -1,7 +1,13 @@
 # Tracker: a single TASKS.md
 
-The `lite` default, and right for anything small. Cartridge key: `tracker.path` (default
-`TASKS.md` in the docs home or the repo root).
+**The `standard` default**, and right for anything small: one person, one area of work, no phases.
+Cartridge key: `tracker.path` (default `TASKS.md` in the docs home or the repo root).
+
+Not `lite`'s — a `lite` project has **no tracker at all**, which is the whole point of that rung:
+it has a track directory and runs the loop locally, and what it cannot do is *claim* work, because
+there is nothing to claim it on. This line said "the `lite` default" until p8.34, while
+`ws-setup` said in the same breath that lite gets no tracker; the two were read together for the
+first time when the third rung made the answer obvious.
 
 Format — flat, no phases, no dependencies:
 

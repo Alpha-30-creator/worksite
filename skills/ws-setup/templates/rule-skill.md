@@ -1,5 +1,5 @@
 ---
-name: <prefix>-<area>
+name: <rule_prefix>-<area>
 description: Rules for working in <repo> (<project>'s <role>). Covers <the things an agent would otherwise get wrong>. Load it automatically before touching any file in <repo>.
 ---
 

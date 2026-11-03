@@ -1,7 +1,13 @@
 ---
 schema_version: 1
 project: <id>                   # the agent-sync project id, lowercase-kebab
-profile: full                   # full | lite
+profile: standard               # lite | standard | full. Asked, never inferred from folder shape.
+                                # lite = cartridge + AGENTS.md + tracks/, and no tracker
+                                # standard = + a tracker, so work can be claimed
+                                # full = + rule skills and rules/<area>.md
+rule_prefix:                    # full only: 2-3 letters naming the rule skills, e.g. nw -> nw-backend.
+                                # Required for `full`, because ws-fanout briefs builders to read
+                                # <rule_prefix>-<area> and cannot look the value up anywhere else
 state_dir: .<id>                # local, ephemeral, never committed
 docs_home: <project>-docs/agent      # or <repo>/docs/agent for a single-repo project
 artifacts: workspace-state      # workspace-state | in-repo
@@ -30,6 +36,9 @@ repos:
 git_flow:
   branch_pattern: "<pattern>"
   pr_into: integration_branch
+  merge_style: squash           # squash | merge | rebase — as the repo is actually set up.
+                                # Written rather than left absent: ws-ship reads it and otherwise
+                                # asks once per ship, forever
   release: "<how a release happens>"
   forbidden: []
 

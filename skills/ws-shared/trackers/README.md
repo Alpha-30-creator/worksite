@@ -11,6 +11,23 @@ Selected by `tracker.kind` in the cartridge. **An unknown kind is not an error**
 user those four questions, do the work, and offer to write a new adapter. Adding a tracker is
 adding a file to this folder — never editing a skill (R4).
 
+## `kind: none` — the one value with no adapter, by design
+
+A `lite` project is generated with it, and it is **not** the unknown-kind case above: there is
+nothing to adapt to, so do not offer to write an adapter. Each of the four questions has a fixed
+answer, and every skill that would consult an adapter reads them here instead:
+
+| The adapter would answer | With `none` |
+|---|---|
+| **List** — what is open | nothing to list. Ask the user what the work is |
+| **Claim** | nothing to claim, and **no claim to lose**. `ws-start` writes the work into `task.md` from the answer, and the track id is the user's own short slug — there is no tracker id to take, so ask for one and say it is local |
+| **Close** | nothing to mark done. `ws-ship`'s closing line says `tracker none` rather than `tracker [x]`, which is true and distinguishable from `tracker not confirmed` |
+| **Note** | the journal and the resume note are local. `ws-wrap` writes the note into the journal and says there is no tracker to put it on |
+
+What such a project has given up is the **claim lock**, which matters only where someone else
+might take the same work. Everything else in the loop — plan, build, verify, review, harvest,
+retire — is unchanged, because none of it consults a tracker.
+
 ## Which copy of this folder, and why it matters
 
 **Write the adapter in the library, then deploy it.** This folder exists once in the library and

@@ -17,6 +17,12 @@ code.
 3. Read `<state_dir>/me` if the project has collaborators. Missing → ask once and write it.
 4. Read the tracker adapter for `tracker.kind` from `../ws-shared/trackers/`. Unknown kind → ask
    the four questions in that folder's README and carry on.
+
+   **`kind: none` is not an unknown kind**, and it has no adapter by design — it is what a `lite`
+   project carries. Read *`kind: none`* in that folder's README for the four fixed answers, and do
+   **not** offer to write an adapter. For this step: say there is no tracker, ask what the work is
+   and for a short id to call it, and **write both into `task.md`** instead of copying them from a
+   board. Steps 3 and 4 below have nothing to read and nothing to claim; say so and continue.
 5. **Assert that the state dir cannot be committed.** `<state_dir>` holds the journal, whose
    entry header identifies the machine, and every track file. On most projects the workspace
    root is not a git repo and the question does not arise. Where it *is* one, the only thing
@@ -286,7 +292,7 @@ protection is the ignore rule asserted above, and that is not a reason to write 
 - Plan: none yet
 - PRs: none
 
-## Task, verbatim from the tracker
+## Task, verbatim from the tracker  (or, with `kind: none`, as the user stated it)
 <the whole thing: description, acceptance criteria, dependencies, links>
 ```
 

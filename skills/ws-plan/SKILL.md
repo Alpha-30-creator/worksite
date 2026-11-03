@@ -101,8 +101,11 @@ ref at all, read the working tree and say that is what you did.
   task, raise it as its own task via `ws-task`, or record it as a question. Do not quietly build
   around an undecided question.
 - Existing contracts, the schema, and the practices docs for the repos touched.
-- `<docs_home>/risks/` — the known traps in this project — **and the `ws-shared/stacks/` pack
-  for each `stack:` tag on the repos the plan touches**. These are the rulebooks `ws-review`
+- `<docs_home>/risks/` **if it exists** — the known traps in this project. It will not exist on a
+  `lite` or `standard` project until a review has found a first risk, and this is the step most
+  likely to meet that: planning runs before any review has happened. Its absence is not a gap to
+  work around. **And the `ws-shared/stacks/` pack for each `stack:` tag on the repos the plan
+  touches**, which exists whatever the rung. These are the rulebooks `ws-review`
   will judge the result against, so plan around them now rather than meeting them in review.
 
 ## 3. Write the plan
@@ -184,7 +187,8 @@ continues and the plan records which base it got. Only a failed `switch` aborts.
 With `worktrees: true`, the worktree and branch already exist from `ws-start`; work there.
 
 **Before writing any code, load the rule skills for what the plan touches** — the project's
-`<prefix>-<area>` skills. If your agent cannot invoke a skill, read its `SKILL.md` and the
+`<rule_prefix>-<area>` skills, named by the cartridge key. On a `lite` or `standard` project there
+are none — only `full` generates them — and that is not a gap to work around. If your agent cannot invoke a skill, read its `SKILL.md` and the
 `rules/<area>.md` it points at. They are the build step's rulebook; building without them is not
 following the plan.
 

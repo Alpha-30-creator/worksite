@@ -268,7 +268,7 @@ authority and this is the same job run N times. Each brief carries:
 - the task and acceptance criteria verbatim;
 - the files it owns;
 - the sources to read: the task's own source, the project's `decisions/`, the contracts, the
-  schema, the practices docs, and `<docs_home>/risks/` — plan around the known traps rather
+  schema, the practices docs, and `<docs_home>/risks/` where it exists — plan around the known traps rather
   than meeting them in review;
 - **write the plan to its track directory as `plan.md`. Do not write code. Do not create
   branches.**
@@ -333,7 +333,9 @@ Every brief contains:
   `ws-refine`'s *Who may run what*.
 - **The rule skills and rulebooks to read**, named by path, in **two or three calls, never one** (a single
   batched read of a dozen files truncates silently): the project's
-  `<prefix>-<area>` skills, `<docs_home>/rules/`, and the repo's own practices docs.
+  `<rule_prefix>-<area>` skills (the cartridge key, which is why it is a key — p8.34),
+  `<docs_home>/rules/`, and the repo's own practices docs. A `lite` or `standard` project has no
+  rule skills and no `rules/`; say so rather than sending a builder after files that do not exist.
 - **The project's house rules** that override defaults — attribution, commit convention, never
   `--no-verify`, never `git add -A`.
 - **Commit, do not push, do not open a PR, do not merge.** Shipping is the lead's decision after
@@ -360,7 +362,7 @@ reports and has absorbed its framing.
 
 Use `ws-review`'s rules for the brief — that file is the authority, and this is the same job run
 N times: standalone brief, the rulebooks named, **the risks specific to that change** picked from
-the packs and the project's `risks/`, read-only, a 10–15 call budget, findings quoted as exact
+the packs and the project's `risks/` where it exists, read-only, a 10–15 call budget, findings quoted as exact
 source lines rather than line numbers, and coverage declared.
 
 Reviewers can run concurrently with builders still working on other tracks. Keep the total in

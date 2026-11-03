@@ -2,6 +2,7 @@
 schema_version: 1
 project: atlas
 profile: full
+rule_prefix: at                 # full requires it: names at-api, at-web
 state_dir: .atlas
 docs_home: atlas-api/docs/agent
 artifacts: in-repo

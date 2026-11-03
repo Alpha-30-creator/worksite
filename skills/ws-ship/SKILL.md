@@ -88,7 +88,8 @@ mistake it is cheaper to warn about than to renumber: an agent reading top to bo
 reaches §4 and finds the PR it was told to put them in already closed.
 
 Only after CI is green and any required review is in. Use the project's merge style
-(`merge_style` in the cartridge). **Check `deploy_branches` before merging and say out loud
+(`git_flow.merge_style` in the cartridge). Absent, ask once and offer to write the answer in, so
+the next ship does not ask again. **Check `deploy_branches` before merging and say out loud
 whether this merge deploys, and to where.** If it does, that needs an explicit go.
 
 Order matters when several repos are involved: whatever the plan said — usually API before web,
@@ -241,7 +242,9 @@ thing this line is for. Per the rule below, the untrue version goes in the same 
 being left out.
 
 Any fact that is not true says so **in that same line** — `track NOT REMOVED: …`,
-`tracker not confirmed`. The failure this defends against is a session that ends mid-way and
+`tracker not confirmed`. With **`kind: none`** there is no tracker to move, and the line says
+`tracker none` — true, and deliberately distinguishable from `tracker not confirmed`, which means
+a transition was attempted and could not be verified. The failure this defends against is a session that ends mid-way and
 reports success anyway, so the line is written from what the commands printed, never from what
 was intended.
 

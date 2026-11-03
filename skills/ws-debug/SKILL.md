@@ -10,7 +10,7 @@ Ends with **a confirmed cause**, not a fix that seems to work.
 ## Before anything
 
 Read [../ws-shared/reference.md](../ws-shared/reference.md), the cartridge, and
-`<docs_home>/risks/` plus the stack packs for the repo that broke — a known trap is the most
+`<docs_home>/risks/` if it exists, plus the stack packs for the repo that broke — a known trap is the most
 likely cause, so check there before anywhere else. If there is a current track, read its
 `task.md`, `plan.md` and journal.
 

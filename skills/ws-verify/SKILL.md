@@ -49,7 +49,9 @@ harvest, not the raw logs.
 
 ## 3. Check the things the plan said were risky
 
-Re-read the plan's edge cases and `<docs_home>/risks/`, and prove each one specifically:
+Re-read the plan's edge cases and `<docs_home>/risks/` **if it exists** — a `lite` or `standard`
+project has none until a review writes the first one, and its absence is not a gap to work around
+— and prove each one specifically:
 concurrency under two simultaneous requests, money with an amount that does not divide cleanly,
 permissions as the wrong user, the empty and error states, the migration's `down()`.
 

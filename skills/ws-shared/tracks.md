@@ -116,8 +116,12 @@ property.
 `ws-ship` deletes it.
 
 `artifacts: in-repo` projects need no mirror — the task branch already carries the files.
-`lite` projects with no `docs_home` get a local journal only; say so once when the track is
-created, so nobody expects it on the other machine.
+A project with a `state_dir` but **no `docs_home`** gets a local journal only; say so once when the
+track is created, so nobody expects it on the other machine. The rule keys off `docs_home`, not off
+a profile name: until p8.34 this sentence said "`lite` projects", while `ws-setup` said in the same
+breath that a `lite` project gets no journal. Both were about the **mirror** and neither said so.
+A `lite` project has a `state_dir` and a local journal; what it has no home for is the mirror, and
+that depends on `docs_home`, not on the rung.
 
 **The mirror is a push into a repo that may be public, and the consequence belongs here rather
 than in the memory of whoever set the project up.** Everything the journal format carries travels

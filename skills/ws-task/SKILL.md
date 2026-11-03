@@ -13,6 +13,12 @@ Read [../ws-shared/reference.md](../ws-shared/reference.md), the cartridge, and 
 `tracker.kind` in `../ws-shared/trackers/`. Refresh first — for a file-based tracker,
 `git -C "<docs>" pull --rebase -q`.
 
+**With `kind: none`** there is no tracker to change, so this skill has nothing to edit and should
+say so rather than inventing a file: the work is described in the track's own `task.md` (see
+*`kind: none`* in the trackers README). Changing what the work *is* means editing that, and a
+project that has outgrown it wants a tracker — offer `ws-setup` in upgrade mode, which is the
+`standard` rung.
+
 ## 1. Understand the change
 
 Clarify until you can state all of these. If you cannot, ask rather than writing a vague task —
@@ -120,3 +126,5 @@ Invoke with `/skill-name` in Claude Code or Cursor, `$skill-name` in Codex.
 - `ws-wrap` — a dropped task's worktree still holds work you want pushed first
 - `ws-plan` — re-plan, if you just split your own current track
 - `ws-debug` — the bug's cause is still unknown
+- `ws-setup` — the project has `tracker.kind: none` and has outgrown it; upgrade mode adds the
+  tracker that the `standard` rung writes

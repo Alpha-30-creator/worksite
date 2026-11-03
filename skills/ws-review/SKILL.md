@@ -203,6 +203,13 @@ For each **confirmed** finding, ask: is this risk class already written down?
 Show the exact wording, wait for a yes, then write it. Stack-pack edits go through
 `agent-sync save`; project risks are a normal docs commit.
 
+**If `<docs_home>/risks/` does not exist yet, this step is what creates it** — `ws-setup` no longer
+seeds it (p8.34), because an empty `risks/common.md` is a promise rather than a fact and the pack's
+own rule is to write what is true now. Start it from `../ws-setup/templates/risks.md`, which holds
+the shape, and put the first real risk in it in the same commit. A `risks/` directory in a project
+therefore means *a review found something*, which is a more useful signal than its existence
+everywhere.
+
 **You run that save, not the reviewer, and it is not the whole job.** A stack pack is a library
 file, so editing one is a `ws-refine` change: after the save it still owes that skill's **graph
 audit** and its **publish** step, or the pack is edited in a state nobody audited and the public

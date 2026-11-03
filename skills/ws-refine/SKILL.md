@@ -69,7 +69,11 @@ on a tracker kind inside a skill, the design is being broken — add an adapter 
 - **New behaviour arrives as a flag defaulting to today's behaviour** (R5).
 - Every command or fact you add must be checked — run it, or read the code. **Mark anything you
   could not check**, rather than implying you did.
-- Never propose changing a project's `house_rules` when `owned_by: company`.
+- Never propose changing a project's `house_rules` when `owned_by: company`. **With the key absent,
+  say so before proposing**: it is read as `me`, which is the permissive branch, so an unstated
+  value and a deliberate `me` are indistinguishable here — one line, "`owned_by` is not set, so I
+  am treating these as yours to change", is the difference between a decision and an accident
+  (p8.34).
 - No AI attribution anywhere, including the library commit message.
 - Do not rename or delete a skill without an explicit yes.
 

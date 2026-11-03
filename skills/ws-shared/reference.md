@@ -218,7 +218,7 @@ One adapter per tracker kind, in [trackers/](trackers/), each answering the same
 | `roadmap-files` | `trackers/roadmap-files.md` | a solo build with phases; a real claim lock |
 | `github-projects` | `trackers/github-projects.md` | a team, or anything already using issues |
 | `trello` | `trackers/trello.md` | a board someone else owns |
-| `tasks-file` | `trackers/tasks-file.md` | `lite` projects; a real claim lock |
+| `tasks-file` | `trackers/tasks-file.md` | `standard` projects — one person, one area, no phases; a real claim lock |
 | anything else | ask the four questions, then write a new adapter | — |
 
 **Only `roadmap-files` and `tasks-file` give a real lock** (a pushed commit that can be

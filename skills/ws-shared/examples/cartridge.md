@@ -2,6 +2,7 @@
 schema_version: 1
 project: northwind
 profile: full
+rule_prefix: nw                 # full requires it: names nw-backend, nw-frontend, nw-migration
 state_dir: .northwind
 docs_home: northwind-docs/agent
 artifacts: workspace-state
@@ -58,6 +59,7 @@ repos:
 git_flow:
   branch_pattern: "<type>/<id>-<slug>"
   pr_into: integration_branch
+  merge_style: squash
   release: "PR from dev into main; merging main deploys production"
   forbidden:
     - force-push to dev or main

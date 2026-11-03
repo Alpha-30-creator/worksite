@@ -13,6 +13,9 @@ Read [../ws-shared/reference.md](../ws-shared/reference.md),
 [../ws-shared/tracks.md](../ws-shared/tracks.md), the cartridge, the tracker adapter,
 `tracks/current`, and the track's `task.md`, `plan.md` and `journal.md`.
 
+**With `kind: none`** there is no tracker to put the resume note on, so the journal carries it
+alone — say that, because the note is then the only copy and the wording matters more, not less.
+
 ## 1. Save the work
 
 Per repo with changes, on the task branch — create it if the work is still on the integration

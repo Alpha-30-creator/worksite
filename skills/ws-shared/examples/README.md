@@ -25,7 +25,7 @@ stack packs but has no cartridge of its own — a third would repeat what these 
 | [cartridge.md](cartridge.md) | a filled-in cartridge for northwind, frontmatter and prose |
 | [cartridge-atlas.md](cartridge-atlas.md) | a second filled-in cartridge, for atlas: a hosted tracker, `artifacts: in-repo`, `owned_by: company`, and a `machine:` block with its inertness stated |
 | [manifest.tsv](manifest.tsv) | the secrets store manifest |
-| [tasks-file.md](tasks-file.md) | the `tasks-file` tracker, which `lite` projects default to |
+| [tasks-file.md](tasks-file.md) | the `tasks-file` tracker, which `standard` projects default to |
 
 ## Reading the three
 

@@ -1,6 +1,6 @@
 # Example: a `tasks-file` tracker
 
-What `lite` projects default to. One `TASKS.md` in the repo, same markers as every other adapter,
+What `standard` projects default to. One `TASKS.md` in the repo, same markers as every other adapter,
 no phases and no status file. A pushed commit is the lock, exactly as with `roadmap-files`.
 
 ```markdown
