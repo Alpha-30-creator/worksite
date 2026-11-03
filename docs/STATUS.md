@@ -10,7 +10,9 @@ out of the private library behind the leak guard, and the pack has reached this 
 since 2026-11-01. The reference documentation exists — the cartridge schema at
 `docs/integration/cartridge-schema.md`, the concepts page at `docs/product/overview.md`, the four
 extension guides under `docs/engineering/`, five ADRs under `docs/decisions/` — and `check.sh` is
-green on every section. **CI runs it** on every pull request and every push to `main`, so a
+green on all **seven** sections. **Section 7 reads the README's own claims** (p7.3): every
+quantity it enumerates is read out of `README.md` and compared to the tree, so a stale front-page
+claim now fails the same gate as a private name. It was a script nothing ran until 2026-11-03. **CI runs it** on every pull request and every push to `main`, so a
 contributor who never ran `git config core.hooksPath .githooks` is still caught; both the hook and
 CI read the same `scripts/leak-patterns.txt`, which is the limit of what either can catch.
 
@@ -75,8 +77,7 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
-| p7.3 | Nothing runs the README claim checker | p7.2 wrote it and nothing executes it — the pack's recurring shape, now on the repo's front page |
-| p8.39 | `git -C <repo>` is unquoted in the pack's placeholder idiom | p8.13's defect class in a different shape, at dozens of sites — it fails loudly, so it wastes runs rather than lying about them |
+| p8.39 | `git -C <repo>` is unquoted in the pack's placeholder idiom | p8.13's defect class in a different shape, at dozens of sites — it fails loudly, so it wastes runs rather than lying about them. Named in the README as a gap a reader will hit |
 | p8.40 | A local-only project can never retire a track | the one place "degrade, never fail" and "never discard work" genuinely conflict, so it needs a decision |
 | p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
 | p8.32 | A retired track leaves its parent directory behind | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |
@@ -117,6 +118,7 @@ today, so they do not have to wait for P1–P7.
 | p8.13 | `for r in <repos>` in three skills, one of which warned against it | 2026-11-03 |
 | p8.36 | The loop assumed a git remote and died rather than degrading | 2026-11-03 |
 | p7.2 | Tag and announce — the README's claims verified against the tagged tree | 2026-11-03 |
+| p7.3 | The README's claims are section 7 of the one gate | 2026-11-03 |
 
 ## Phases
 

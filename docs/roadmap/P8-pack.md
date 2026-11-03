@@ -471,7 +471,7 @@ a decision about its safety rules — but if a second safety-rule change comes u
 - **Notes:** recorded in `docs/records/known-limitations.md` by p8.36. A decision task, so its
   acceptance is a written record.
 
-## [r] p7.3 — Nothing runs the README claim checker, so a claim can go stale between tags
+## [x] p7.3 — Nothing runs the README claim checker, so a claim can go stale between tags · 2026-11-03 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/23
 
 - **Repos:** worksite
 - **Depends on:** —
@@ -484,17 +484,32 @@ a decision about its safety rules — but if a second safety-rule change comes u
   page. The claim p7.2 found false had been stale for a day; the next one will go stale the same
   way, between tags, with nothing looking.
 - **Acceptance:**
-  - [ ] the claim checks run as a section of `scripts/check.sh`, so a stale README claim fails the
-        same gate as everything else — not as a second `verify`
-  - [ ] the section states what it read and what it could not check, per
-        [ADR 0004](../decisions/0004-a-check-must-state-what-it-read.md)
-  - [ ] the paraphrase check stays a `note` rather than a failure: three of the thirteen skill-table
-        cells are fair paraphrases and would fail a literal comparison
-  - [ ] the section count is corrected everywhere it is stated — `CONTRIBUTING.md`,
-        `docs/engineering/layout.md`, and `SECURITY.md`'s run-site arithmetic
-  - [ ] proven by making a README claim false and watching the gate refuse
-- **Notes:** `scripts/check-readme-claims.sh` already exits non-zero on failure, so this is wiring
-  and the documentation cascade, not new logic. The script's own header says it is not `verify`.
+  - [x] the claim checks run as a section of `scripts/check.sh`, so a stale README claim fails the
+        same gate as everything else — not as a second `verify`. Section 7 calls the script; the
+        hook, CI and all three publish sites still invoke `check.sh` alone
+  - [x] the section states what it read and what it could not check, per
+        [ADR 0004](../decisions/0004-a-check-must-state-what-it-read.md) — ten claim groups, how
+        many hold, how many are notes, how many went unchecked and why, and in `--staged` mode
+        every path where the index and the working tree do not match
+  - [x] the paraphrase check stays a `note` rather than a failure: three of the thirteen skill-table
+        cells are fair paraphrases and would fail a literal comparison. Measured: 13 rows, 3 notes
+  - [x] the section count is corrected everywhere it is stated — `CONTRIBUTING.md`,
+        `docs/engineering/layout.md`, and `SECURITY.md`'s run-site arithmetic, **plus three sites
+        the first draft missed**: `docs/agent/reference.md`'s cartridge table, and two statements
+        in `layout.md` that still said the checker was not part of `verify`
+  - [x] proven by making a README claim false and watching the gate refuse — 15 mutations, 15
+        refusals, plus a negative control where the checker runs and certifies nothing
+- **Notes:** the premise of the Notes line below was wrong. It read "this is wiring and the
+  documentation cascade, not new logic", and wiring the checker in exposed that two of its ten
+  groups were only ever correct on an idle board: they counted `[ ]` alone as open, so claiming
+  any task failed the gate. Two review rounds then found eight must-fixes, **six of them in the
+  fixes rather than the original** — the counts were re-derived from the checker's own output
+  formatting and read zero when it moved; the self-report's `fail=` field was printed and never
+  read; `command -v python3` succeeds for a python3 that cannot run, which led into a
+  `package.json` walk that never terminated. CI then found a ninth that neither round could:
+  `mktemp -t` with a bare prefix is BSD-only, so the paraphrase check died on every Linux. Three
+  of the findings were false statements written while fixing false statements. The worklog has
+  all of it.
 
 ## [-] p8.14 — Nothing ever enumerates the track root, so a forgotten worktree is invisible — its cheap half is absorbed into p8.32; the third sweep pass is dropped
 
