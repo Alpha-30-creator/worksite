@@ -951,7 +951,7 @@ third signal that it is not worth a track.
   "a reflog keeps an abandoned commit reachable, so section 6 is weakest right after the mistake".
   The same sentence read from the other end predicts this, and nobody read it from that end.
 
-## [~] p8.32 — A retired track leaves its parent directory behind, and the root it lives under is undefined
+## [r] p8.32 — A retired track leaves its parent directory behind, and the root it lives under is undefined
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
