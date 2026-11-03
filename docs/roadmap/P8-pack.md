@@ -749,7 +749,7 @@ citation is advisory and the quote is the durable half.
 **Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. Flagged twice and deliberately not taken twice, which is the
 third signal that it is not worth a track.
 
-## [ ] p8.30 — Two skills give opposite instructions about pushing the library
+## [~] p8.30 — Two skills give opposite instructions about pushing the library
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
