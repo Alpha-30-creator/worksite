@@ -1,8 +1,10 @@
 ---
 schema_version: 1
 project: worksite
-profile: full                       # lite | standard | full. No rule_prefix: this project has no
-                                    # rule skill, deliberately — see Settled, below
+profile: full                       # lite | standard | full
+rule_prefix: null                   # `full` normally requires it; null here because this project
+                                    # deliberately has no rule skill — the reason is under
+                                    # Open questions, where it has always been
 state_dir: .worksite
 docs_home: docs/agent
 artifacts: workspace-state

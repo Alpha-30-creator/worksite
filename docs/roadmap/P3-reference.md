@@ -38,15 +38,20 @@ pack without reading the skills' source.
     *stated* (cited) or *inferred*. That provenance convention doubles as a punch-list.
   - Document the schema **as it is, with gaps named** — do not specify the missing keys, which
     would quietly turn this into a `ws-refine` change to `ws-setup`.
-- **Three findings already banked from the planning pass:**
+- **Three findings already banked from the planning pass** — the first and third were **closed by
+  p8.34 on 2026-11-03**; they are kept as written because they are what this task found, and the
+  dated note says what is no longer true:
   - **`merge_style` is a ghost key.** `ws-ship` reads "the project's merge style (`merge_style` in
-    the cartridge)" and nothing in the pack defines it. Verified.
+    the cartridge)" and nothing in the pack defines it. Verified. **Closed 2026-11-03:** it is
+    `git_flow.merge_style`, `ws-setup`'s template ships a value, and `ws-ship` names the parent.
   - **Five keys have no literal reader:** `schema_version`, `git_flow`, `integration_branch`,
     `pr_into`, `commit_convention`. Four are pulled in wholesale by a template line;
     `schema_version` has no reader at all.
   - `ws-setup`'s interview collects a one-line description and a rule-skill prefix that have **no
     cartridge key to land in**, and `github-projects` says to "record them in the cartridge"
-    without naming a key.
+    without naming a key. **Half closed 2026-11-03:** the prefix is now `rule_prefix`, required on
+    the `full` rung. The one-line description still has no key, and `github-projects` still names
+    none.
 - **Notes:** the highest-value document in the repo and the one that does not exist in any form
   today. `ws-setup` generates cartridges by interview, so the format has never been written down.
 
