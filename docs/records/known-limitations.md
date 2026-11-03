@@ -228,3 +228,94 @@ silence.
 refusal has been checked by reading and by composition against fixtures; nothing yet proves that
 the loop's triggers fire in ordinary use, and the author of a description is the worst judge of
 whether it fires.
+
+**What section 7 of `check.sh` does not cover, after p7.3.** The gate now refuses a false README
+claim, and the limits of that are worth stating in the same breath. It reads the **working tree**
+in every mode, `--staged` included, because its checks open files with `cat` and `grep` and
+`--staged` cannot redirect them. It asks which paths the index and the working
+tree hold different content for, and prints them, so the mismatch is named rather than glossed —
+but naming it does not remove it, and it cuts **both ways**. The hook can certify a README nobody is committing: with `README.md` staged
+for deletion and still on disk, section 7 reads the on-disk copy and reports that every claim
+holds. And symmetrically, **it refuses a commit over a working-tree claim nobody is staging** — an
+unstaged README edit, or an untracked extra roadmap file or skill directory, changes what the
+counts measure and blocks every commit in the repo until it is dealt with. Asking that question precisely took three attempts, and the two
+wrong ones fail in opposite directions. `git diff --name-only` alone names none of the three cases
+above and prints a conflicted path twice — a reviewer found all four by reproducing them.
+`git status --porcelain` then named *too much*: it reports a staged, worktree-clean file as
+uncommitted, which is the one case where the index and the working tree agree exactly, so this
+task's own commit announced that all seven of its staged files differed from the commit they were
+in. A label that is wrong on the ordinary case is a label nobody still reads by the time it is
+right, which is why the noisy version is recorded here as a defect and not as a cautious choice.
+It reads **the quantities it enumerates**, not every number in the README: the thirteen is stated
+four times and only two of those are claims it reads, so a stale figure at `README.md`:48 or :49
+passes. Widening that is cheap and deliberately not done here — it is claim coverage, which is
+p7.2's subject, and this task is the wiring. It reads no prose judgement at all: whether
+`docs/product/overview.md`'s argument persuades is not checkable, and a skill-table cell that paraphrases its skill's own `Ends with`
+sentence fairly is reported as a `note` — three of the thirteen are, today — with only a cell
+sharing no content word at all failing. And it covers `README.md` alone. `CONTRIBUTING.md`,
+`SECURITY.md` and `docs/engineering/layout.md` state counts too, including the count of this
+script's own sections, and **nothing reads a claim out of those files**; the arithmetic in them has
+now been wrong twice (the "three shell scripts" that were five, p7.2; the six sections that are
+seven, this task). That is the same shape one document further out, and it is recorded here rather
+than filed, because a second claim checker aimed at three more files earns less than it costs.
+
+**An `UNCHECKED` claim is not a claim that holds.** Section 7 distinguishes "this claim is false"
+from "a tool this machine lacks means I did not look", and the second is deliberately not a
+failure: the Node floor is read out of `agent-sync`'s own `engines` field, so a hard failure there
+would turn CI — which has no `agent-sync` — red on a README that is perfectly true. The cost is
+that a green gate on a reader's machine or in CI certifies **one claim fewer** than a green gate
+here. That is why the count is printed in the section, each one named, and repeated in the closing
+summary: the narrowing is visible rather than inferred. It is a wider hole than one claim, and the
+widest case is worth naming: without `python3` the whole skill-table paraphrase check goes unread,
+so **a README cell that genuinely contradicts its skill passes the gate there** — reported as
+thirteen unchecked claims, counted, and named, but passed. The first draft reported those thirteen
+as one, understating what went unread by twelve. The line this draws is that only a missing
+*tool* is `UNCHECKED` — "no claim of that shape found in `README.md`" stays a failure, because it
+means the README moved out from under the check rather than the machine being short of something.
+
+**Two of the claim checker's ten groups were only ever correct on an idle board**, and nothing
+could have found that until something ran it. Groups 8 and 9 read the roadmap's status markers and
+counted only `[ ]` as open, so *claiming any task* — marking it `[~]` — dropped the open count by
+one and failed the gate; measured both ways on 2026-11-03 before fixing it, with `[~]` on p7.3 for
+group 9 and on p8.30, a gap-table row, for group 8. `[ ]`, `[~]` and `[r]` now all count as open,
+which is what a reader means by an open gap — **and the first fix of that was itself wrong.** It
+listed five markers and asserted "only `[x]` done and `[-]` dropped are closed"; the project
+defines **six**, in `skills/ws-shared/trackers/roadmap-files.md`, `docs/roadmap/README.md` and
+`docs/integration/cartridge-schema.md`, and the one it omitted was `[?]` blocked on a decision —
+so marking any task blocked refused every commit. A reviewer found it from the definition. The set
+was enumerated from memory in a repo that writes it down three times, and it is now defined once
+in the script and shared by both groups — **and that sentence was false the first time it was
+written too.** The "one definition" was read by group 9 alone; group 8 enumerated the same four
+markers in its own arms, so narrowing the definition moved one group and not the other, which a
+second review demonstrated by doing exactly that. Group 8 now tests membership against the shared
+definition and uses its own arms only for the wording, which cannot disagree because a marker
+outside the set never reaches them. An unrecognised marker is reported as unrecognised rather than
+as closed, because reading an unknown marker as done is how `[?]` broke. The general form is
+worth keeping: a check written as
+evidence for one task is written against the tree as it stood that day, and the states it never
+saw are the ones it gets wrong the moment it starts running on every commit.
+
+**A tool that is present and does not work is the hole this task kept falling into.** Section 7's
+contract is that a missing tool makes a claim `UNCHECKED` rather than failing the gate, and twice
+the code tested the wrong thing. `command -v python3` succeeds for a python3 that cannot run —
+the ordinary macOS state with no Command Line Tools, where it prints `xcrun: error: invalid active
+developer path` and exits 1 — so the check took its python3-present branch, produced nothing, and
+reported "a README claim does not hold": a tool failure diagnosed as a false README, the contract
+exactly inverted. Worse, the `package.json` walk it then entered **never terminated**: the
+realpath came back empty, `dirname ""` is `.`, `dirname "."` is `.`, and nothing bounded the loop.
+That loop predates this task and was harmless while nothing ran the script; section 7 runs it in
+`verify`, in the pre-commit hook and at all three publish sites, so p7.3 is what would have hung
+every one of them, with no output and no timeout. `python3` is now probed by running it, `mktemp`
+is probed too because the same block needs it, and each message names the tool that is actually
+absent rather than the first one in the list. A **real** bug in that block still fails, which is
+the line that matters: a tool this machine lacks is `UNCHECKED`, a program that is here and wrong
+is a failure.
+
+**Every measurement in this repo was taken under a `grep` that CI does not have.** On the author's
+machine the first `grep` on `PATH` is `ugrep 7.8.4`, not the `/usr/bin/grep` that is BSD grep
+2.6.0-FreeBSD, and CI runs GNU grep on `ubuntu-latest`. The checks here use a small common subset
+— `-c`, `-h`, `-o`, `-E`, `-q`, `-x`, `-l`, `-v` — and section 7 is green in CI as well as locally,
+so nothing is known to differ. What cannot be claimed is that the three implementations agree on
+anything not exercised, and the figures recorded in this repo's `records/` and `verify/` artefacts
+were produced under the first of the three. Noted by a reviewer, which is the only reason it is
+written down at all.

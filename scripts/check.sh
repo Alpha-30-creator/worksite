@@ -28,6 +28,7 @@ for arg in "$@"; do
 done
 FAIL=0
 SKIPPED=""
+UNCHECKED_CLAIMS=""
 # Coverage is defined entirely by scripts/leak-patterns.txt: `#` comments, `!` allowlist
 # entries, and one extended regex per remaining line. Nothing is forgiven by a literal in this
 # script — before p8.31 one string was, and auditing coverage meant reading both files.
@@ -297,8 +298,8 @@ fi
 
 # --------------------------------------------- 6. the object store (unreachable objects)
 # `git add` writes a blob before any hook can refuse the commit, so a REFUSED commit still
-# leaves its content in .git/objects. Sections 1-5 read the working tree or the index and have
-# never read the object store. Measured on 2026-11-02: this workspace already held unreachable
+# leaves its content in .git/objects. Every other section reads the working tree or the index and
+# none of them has ever read the object store. Measured on 2026-11-02: this workspace already held unreachable
 # blobs carrying private names, predating the task that found them.
 #
 # Nothing has escaped — unreachable objects are never pushed — so this is a local-hygiene gate,
@@ -311,8 +312,8 @@ if [ "$SKIP_OBJECT_STORE" -eq 1 ]; then
   # repo keeps fixing, so opting out is louder than running.
   say "  SKIPPED by --no-object-store — this is a throwaway clone, whose unreachable objects are"
   say "  an artifact of cloning (reflogs are not copied), not of the content under test."
-  say "  Sections 1-5 above DID run on this content. The object store of the real repo is checked"
-  say "  by its own run of this script, by the pre-commit hook and by CI."
+  say "  Sections 1-5 above, and section 7 below, DO run on this content. The object store of the"
+  say "  real repo is checked by its own run of this script, by the pre-commit hook and by CI."
   SKIPPED="section 6 (object store)"
 elif ! git rev-parse --git-dir >/dev/null 2>&1; then
   say "  skipped — not a git repo, so there is no object store to read"
@@ -425,7 +426,157 @@ UNREACHABLE_TREES
   fi
 fi
 
+
+# ------------------------------------------------- 7. the README's own claims
+# p7.2 wrote scripts/check-readme-claims.sh, which reads every quantity OUT of README.md and
+# compares it to the tree. Nothing executed it: `verify` is this script and deliberately the only
+# gate (AGENTS.md), so the checker was a rule with no path that ran it — on the repo's front page,
+# one day after a release whose single criterion was that those claims held. p7.3 is this section.
+#
+# It CALLS the script rather than inlining it. The claim-reading is long enough that putting it
+# here would make the gate unreadable, and the two files have different jobs: this one is the gate,
+# that one reads the front page. (No line count is quoted on purpose: the figure would drift, and
+# it is load-bearing for nothing.) It is still not a second `verify` — there is one command, and this is a section of it.
+#
+# WHAT IT READS, per ADR 0004: the WORKING TREE at the repo root, never the index. The script opens
+# files with cat and grep, and `--staged` cannot redirect that, so in --staged mode it is reading a
+# different tree from the one being committed. That is named below rather than glossed, as section
+# 3 already does for link targets.
+say "== 7. README claims =="
+CLAIMS="scripts/check-readme-claims.sh"
+if [ ! -r "$CLAIMS" ]; then
+  say "  FAIL — no readable $CLAIMS, so the README's claims are UNKNOWN. Not a pass."
+  FAIL=1
+elif [ ! -r README.md ]; then
+  say "  FAIL — no readable README.md, so there is nothing whose claims could be checked. UNKNOWN."
+  FAIL=1
+else
+  if [ "$MODE" = "--staged" ]; then
+    say "  note — these claims are read from the WORKING TREE, not from the staged tree, because"
+    say "  the checker opens files on disk. Where the two differ, what section 7 says below is"
+    say "  about the version on disk and not about the version being committed."
+    # The question is narrow and it took three tries to ask it: for which paths do the INDEX —
+    # which is what is being committed — and the WORKING TREE — which is what the claims are read
+    # from — hold different content?
+    #
+    # `git diff --name-only` alone was the first answer and misses two cases that matter:
+    #   * README.md staged for DELETION but still on disk. There is no index entry to diff
+    #     against, so `git diff` is silent and §7 certified 39 claims out of a file the commit
+    #     removes, announcing that the trees agreed. `ls-files --others` names it, because
+    #     removing it from the index is exactly what makes it untracked.
+    #   * an UNTRACKED file the checker reads — an extra roadmap file or skill directory changes
+    #     what the counts measure, and refuses every commit in the repo until it is dealt with.
+    # `git status --porcelain` was the second answer and is too WIDE: it reports a staged,
+    # worktree-clean file (`M `) as uncommitted, and that is the one case where the index and the
+    # working tree agree exactly. During this task's own commit it listed all seven staged files
+    # as differing from the commit they were in. A label that is wrong on the ordinary case is a
+    # label nobody reads by the time it is right.
+    # So: content differences, then untracked, de-duplicated — `git diff` prints an unmerged path
+    # more than once.
+    if ! git rev-parse --git-dir >/dev/null 2>&1; then
+      # Said, not assumed. Sections 5 and 6 both test this; the first version of this branch
+      # asserted "the two trees agree" where there was no index to agree with.
+      say "    not a git repo, so there is no index to compare against and nothing below is"
+      say "    about a staged tree at all."
+    else
+      DIFFERS="$( { git diff --name-only; git ls-files --others --exclude-standard; } 2>/dev/null | sort -u )"
+      # Paths carrying `assume-unchanged` or `skip-worktree`: git has been TOLD not to look at
+      # them, so neither question above can see one, and a README masked that way let the first
+      # version assert that every path agreed while the commit carried a different README from
+      # the one the claims were read from. Reported separately, because "not compared" is a third
+      # answer rather than a kind of agreement.
+      MASKED="$(git ls-files -v 2>/dev/null | sed -n 's/^[a-z] //p')"
+      # "do not match", not "hold different content": a mode-only change and an intent-to-add
+      # entry both land in this list with byte-identical content, and over-reporting is the safe
+      # direction. The narrower wording was simply false on those two.
+      if [ -n "$DIFFERS" ]; then
+        say "    the index and the working tree do not match on these paths, so any one of them the"
+        say "    checker reads, it read in its on-disk form and not as committed:"
+        printf '%s\n' "$DIFFERS" | sed 's|^|      |'
+      else
+        say "    the index and the working tree match on every path git compared, so the tree the"
+        say "    claims were read from is the tree being committed."
+      fi
+      if [ -n "$MASKED" ]; then
+        say "    and these were NOT COMPARED at all — they carry assume-unchanged or skip-worktree,"
+        say "    so git was told not to look, and the line above does not cover them:"
+        printf '%s\n' "$MASKED" | sed 's|^|      |'
+      fi
+    fi
+  fi
+  # Captured rather than streamed, so the exit status read below is the SCRIPT's and not sed's.
+  # `$?` after a pipeline reports the last command, which is the evidence bug this repo keeps
+  # re-finding; a pipe here would report sed's 0 on every failing claim.
+  CLAIMOUT="$(bash "$CLAIMS" . 2>&1)"; CRC=$?
+  # The checker's totals come from the ONE LINE it prints for this purpose, counted inside it by
+  # the very functions that print each claim. This script used to re-derive them by grepping the
+  # checker's output, and a review killed that in a single line: reverting the checker's group
+  # heading from `-- n --` to `== n ==` made this section report "0 claim group(s)" — and call it
+  # ok, because only the `ok` count was gated. A count derived from another program's formatting
+  # is a count that silently becomes zero when the formatting moves.
+  COUNTS="$(printf '%s\n' "$CLAIMOUT" | sed -n 's/^-- counts -- //p' | tail -1)"
+  cnt() { printf '%s' "$COUNTS" | sed -n "s/.*$1=\([0-9]*\).*/\1/p"; }
+  NGROUP="$(cnt groups)"; NOK="$(cnt ok)"; NNOTE="$(cnt note)"; NUNCHECKED="$(cnt unchecked)"
+  # `fail` as well, and that is the whole point of reading a self-report rather than inferring
+  # state. The first version of this block parsed four of the five fields and left `fail` on the
+  # floor, so the gate's only evidence that a claim had failed was still the checker's EXIT
+  # STATUS — the kind of evidence the comment above is about. A review broke the exit path alone,
+  # left one real claim false, and the gate printed "all checks passed" over a self-report that
+  # said `fail=1`.
+  NFAIL="$(cnt fail)"
+  # Everything that is not a clean, self-reporting, non-empty pass prints the whole output: which
+  # claim, what the README said, what the tree has. Nothing is summarised away at the one moment
+  # the summary would matter.
+  if [ "$CRC" -ne 0 ] || [ -z "$COUNTS" ] || [ "${NGROUP:-0}" -eq 0 ] || [ "${NOK:-0}" -eq 0 ] \
+     || [ "${NFAIL:-1}" -ne 0 ]; then
+    printf '%s\n' "$CLAIMOUT" | sed '/./s|^|  |'
+  fi
+  if [ -z "$COUNTS" ]; then
+    # No self-report at all: the checker died before its last line, or is not the program this
+    # section thinks it is. Either way what it read is unknown, and a crash must not be reported
+    # as "a claim does not hold" — that sends the reader to the README instead of to the script.
+    say "  FAIL — $CLAIMS printed no '-- counts --' line, so what it read is UNKNOWN. Not a pass."
+    FAIL=1
+  elif [ "${NGROUP:-0}" -eq 0 ] || [ "${NOK:-0}" -eq 0 ]; then
+    # A pass is only a pass if it certified something. Zero groups or zero holding claims means it
+    # ran and read nothing, and an empty result read as a pass is the defect class this repo keeps
+    # fixing — section 6 refuses the same way on a partial `git fsck`.
+    say "  FAIL — $CLAIMS reports ${NGROUP:-0} claim group(s) and ${NOK:-0} holding claim(s), so it"
+    say "         certified nothing. UNKNOWN, not a pass."
+    FAIL=1
+  elif [ "${NFAIL:-1}" -ne 0 ] && [ "$CRC" -eq 0 ]; then
+    # The two answers disagree. Neither is believed: a script whose exit status and whose own
+    # report of itself contradict each other has established nothing about the README.
+    say "  FAIL — $CLAIMS self-reports fail=${NFAIL:-?} and exited 0. Its two answers disagree,"
+    say "         so neither is believed. UNKNOWN, not a pass."
+    FAIL=1
+  elif [ "$CRC" -ne 0 ] || [ "${NFAIL:-1}" -ne 0 ]; then
+    say "  FAIL — a README claim does not hold against this tree (named above)."
+    FAIL=1
+  else
+    # What was read, per ADR 0004, with the counts that show it was read — and the paraphrase
+    # notes said out loud rather than buried, because three of the thirteen skill-table cells are
+    # fair paraphrases and a `note` is the honest verdict on them, not a pass and not a failure.
+    say "  read README.md and the files it cites: ${NGROUP:-0} claim group(s), ${NOK:-0} claim(s) hold,"
+    say "  ${NNOTE:-0} reported as paraphrase or detail, ${NUNCHECKED:-0} not checked here."
+    say "  Run 'bash $CLAIMS .' to see each one. ok"
+  fi
+  if [ "${NUNCHECKED:-0}" -gt 0 ]; then
+    UNCHECKED_CLAIMS="$NUNCHECKED README claim(s)"
+    # Named on the quiet path only — a claim nothing looked at must not be invisible, but on the
+    # loud path the full dump above already carries these lines and printing them again made them
+    # appear three times.
+    if [ "$CRC" -eq 0 ] && [ "${NOK:-0}" -gt 0 ] && [ "${NGROUP:-0}" -gt 0 ]; then
+      printf '%s\n' "$CLAIMOUT" | grep '^  UNCHECKED' | sed 's|^|  |'
+    fi
+  fi
+fi
+
 say ""
+if [ -n "$UNCHECKED_CLAIMS" ]; then
+  say "NOTE: $UNCHECKED_CLAIMS could not be checked on this machine — section 7 names each and why."
+  say "A tool this machine lacks is not a claim that holds, so the pass below is that much narrower."
+fi
 if [ -n "$SKIPPED" ]; then
   [ "$FAIL" -eq 0 ] && say "all checks passed EXCEPT $SKIPPED, which was skipped by request" \
                     || say "checks FAILED (and $SKIPPED was skipped by request)"
