@@ -319,3 +319,43 @@ so nothing is known to differ. What cannot be claimed is that the three implemen
 anything not exercised, and the figures recorded in this repo's `records/` and `verify/` artefacts
 were produced under the first of the three. Noted by a reviewer, which is the only reason it is
 written down at all.
+
+**A placeholder is a template, and a template is filled by someone who is not reading carefully.**
+p8.13 fixed the loops that iterate repo paths; p8.39 fixed the *placeholders* those loops and
+every other block substitute into, which had carried no quotes anywhere in the pack — about thirty
+sites across most skills. The two are the same defect reached from different directions, and the
+second is the one an author writes without noticing, because a fenced block reads as correct until
+somebody fills it with a path that has a space in it. What makes it worth a limitations entry
+rather than only a fix is that **it was filed as a loud failure and is not one.** The loud shape is
+`git -C <repo> status --short` → `fatal: cannot change to '…/My'`. Three are silent: the same idiom
+inside `$( )` still prints its row, `0 changed`, at exit 0; and a `2>/dev/null` placed there for
+"the file is absent" suppresses "you split my path" identically, so
+`cat <state_dir>/tracks/current` reads as *no current track* and `ls <state_dir>/tracks/` as *no
+tracks on this machine*. A fourth is neither — an unquoted **assignment** does not split at all:
+bash takes `state_dir=/x/My Projects/.p` as a prefix assignment for the command `Projects/.p`,
+which fails **audibly** and does not persist, so the variable is **empty** and
+`rm -rf "$state_dir/tracks/$id"` becomes one argument, `/tracks/$id`. That exits 0, the
+verification beside it checks the same wrong path, and the retirement prints
+`clean: track removed` over a track it never touched. So that one is loud and *then* falsely
+reassuring, which is harder to catch than silence, because the error has already scrolled past by
+the time the success line arrives. **Both halves of this paragraph were wrong first.** The task
+body claimed a plain loud failure; the correction then claimed four silent shapes and attributed a
+destroyed file to the assignment, which cannot produce it — that was a different shape, an unquoted
+*use*, and no `rm` in the pack has that form. A severity claim is a claim, and it took two reviews
+to get this one right.
+
+**What p8.39 deliberately did not quote, and why that list has to be written down.** An agent told
+"quote the path placeholders" will quote these too, and each one breaks: `<paths…>` in
+`git add <paths…>` is several words on purpose; `-R <owner>/<repo>` is a GitHub slug rather than a
+path; a **bare id** cannot hold a space, so quoting it is noise that makes the real quotes harder to
+see — `<project>` is constrained to `[a-z0-9-]` by `device.yaml`'s own parser, while a track id is
+constrained by the pack's convention and not by any parser, and the first draft of this sentence
+credited the parser with both. An id composed *into* a path is a path and does take the quotes. Two forms also look
+wrong and are right: `~/"<folder>"` rather than `"~/<folder>"`, because the tilde does not expand
+inside quotes, and `"<path>"/P*.md`, because the glob has to stay outside them. Fenced blocks that
+are **not commands** — output samples, tables, generated-by headers, file templates — were left
+alone, and they are named in [the p8.39 worklog](../agent/worklog/p8.39.md) rather than left as
+silence a later reader would have to re-derive. An earlier draft of this sentence cited the track's
+`verify/01-inventory.txt`, which is gitignored and is deleted when the track is retired: a
+permanent record must not point at an ephemeral one, and that is the second time this task pointed
+a reader at something they could never open.
