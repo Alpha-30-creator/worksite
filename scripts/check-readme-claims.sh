@@ -72,17 +72,27 @@ unknown(){ printf '  UNCHECKED  %s\n' "$1"; unchecked=$((unchecked+${2:-1}))
 # diagnosed as a false README, which is the contract inverted. It is `python3 -c pass`, not
 # `--version`, because a stub that answers --version and runs nothing would still pass.
 #
-# mktemp is needed by that same block and is checked here for the same reason: its absence used to
-# reach the same hard FAIL.
+# mktemp is needed by that same block and is probed the same way, for the same reason: its absence
+# used to reach the same hard FAIL.
 HAVE_PY=0;     command -v python3 >/dev/null 2>&1 && python3 -c 'pass' >/dev/null 2>&1 && HAVE_PY=1
-HAVE_MKTEMP=0; command -v mktemp  >/dev/null 2>&1 && HAVE_MKTEMP=1
+# mktemp is probed by MAKING A FILE with the exact template group 3 uses, not by `command -v`,
+# which is the same lesson as python3 one line up and was learned the same way twice. `mktemp -t
+# wsclaims` works on BSD mktemp and GNU mktemp refuses it ("too few X's in template"), so the
+# first version was macOS-only; CI caught it, which is the only environment here that is not
+# macOS. Presence was never the question — whether it does the job is.
+HAVE_MKTEMP=0
+if _mkt=$(mktemp "${TMPDIR:-/tmp}/wsclaims.XXXXXX" 2>/dev/null) && [ -f "$_mkt" ]; then
+  HAVE_MKTEMP=1; rm -f "$_mkt"
+fi
 # Kept apart rather than folded into one flag: the first version set a single HAVE_PY from both,
 # so with mktemp missing it reported "no working python3 here" about a python3 that works fine.
 # A message that names the wrong missing tool sends the reader to install the wrong thing.
 _whynopy() {
-  if [ "$HAVE_PY" -eq 0 ] && [ "$HAVE_MKTEMP" -eq 0 ]; then echo "no working python3 and no mktemp here"
+  # "no WORKING x" throughout: both probes run the tool, so neither can distinguish absent from
+  # present-and-unable, and both were reached by a tool that was present (see above).
+  if [ "$HAVE_PY" -eq 0 ] && [ "$HAVE_MKTEMP" -eq 0 ]; then echo "no working python3 and no working mktemp here"
   elif [ "$HAVE_PY" -eq 0 ]; then echo "no working python3 here"
-  else echo "no mktemp here"; fi
+  else echo "no working mktemp here"; fi
 }
 
 # word2num: the README spells quantities as words. Return -1 for anything unrecognised so a
@@ -147,7 +157,12 @@ else
 # is not established**, and no mechanism is claimed here rather than teaching a false one. Keep
 # the temp file; if you move this back into `$( )`, run `bash -n` under /bin/bash before trusting
 # it, and do not trust the line number it gives you.
-PY3OUT_F="$(mktemp -t wsclaims)"
+# NOT `mktemp -t wsclaims`: BSD mktemp accepts a bare prefix and GNU mktemp refuses it with
+# "too few X's in template", so that form works on macOS and fails on every Linux. Shipped, and
+# caught by CI — the one environment this is not developed in — which is the cross-platform trap
+# this pack documents, committed by the author who documented it. A full template with six X's is
+# accepted by both.
+PY3OUT_F="$(mktemp "${TMPDIR:-/tmp}/wsclaims.XXXXXX")"
 trap 'rm -f "$PY3OUT_F"' EXIT INT TERM    # it is removed below too; this covers an interrupt
 python3 - > "$PY3OUT_F" <<'PY'
 import io, re, sys
