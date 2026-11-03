@@ -33,7 +33,12 @@
         4 observed; a working adapter written with zero skill edits, verified by `diff -rq`. But
         the pack never picked it up — now a criterion on p8.30**
 
-## [r] p7.2 — Tag and announce
+## [x] p7.2 — Tag and announce · 2026-11-03 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/22
+
+- **`v0.1.0` is tagged and pushed; the GitHub release is NOT published.** Tagging is the
+  mechanic this task's body called untracked, and the criterion is met. Announcing is the first
+  public statement this repo makes, so the drafted text waits on the owner's wording rather than
+  on this task. Draft harvested into the worklog.
 
 - **Repos:** worksite
 - **Depends on:** p7.1
@@ -41,4 +46,9 @@
   that needs no tracking; the claim-by-claim verification is the part that can fail silently, so
   it is the whole task.
 - **Acceptance:**
-  - [ ] the README's claims all verified against the tagged tree
+  - [x] the README's claims all verified against the tagged tree — **39 checks, 0 failures,
+        against `git archive v0.1.0` extracted into an empty directory** (no `.git`, no branch,
+        nothing uncommitted). One claim was false: the gap table still named p7.1, which had
+        shipped the day before. The enumeration is now `scripts/check-readme-claims.sh`, whose
+        first version could not see the claims it was checking — nine false READMEs passed it
+        until a review mutated a copy. Mutation test now 17/17. p7.3 filed: nothing runs it

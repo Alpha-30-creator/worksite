@@ -82,7 +82,6 @@ today, so they do not have to wait for P1–P7.
 | p8.32 | A retired track leaves its parent directory behind | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |
 | p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
 | p8.30 | One rule for who may push the library | resolved by hand in the last batch, written down nowhere |
-| p7.2 | Tag and announce | cut to one criterion — the README's claims verified against the tagged tree, the part that can fail silently |
 
 ## Shipped
 
@@ -117,6 +116,7 @@ today, so they do not have to wait for P1–P7.
 | p8.38 | §6 blocked every publish — a local clone has no reflogs | 2026-11-03 |
 | p8.13 | `for r in <repos>` in three skills, one of which warned against it | 2026-11-03 |
 | p8.36 | The loop assumed a git remote and died rather than degrading | 2026-11-03 |
+| p7.2 | Tag and announce — the README's claims verified against the tagged tree | 2026-11-03 |
 
 ## Phases
 
