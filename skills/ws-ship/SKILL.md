@@ -127,11 +127,13 @@ for `$id`:
 1. **Resolve the repos and worktrees** from `task.md`'s `- Repos:` and `- Worktrees:` lines,
    cross-checked against `git worktree list --porcelain` per repo. `ws-start` creates one
    worktree **per repo the task touches**, so a single `worktree remove` under-removes.
-2. **Check every worktree is clean and pushed.** Uncommitted changes, unpushed commits, **or a
-   branch with no upstream at all** are each a **refusal**: report it and stop. Do not remove it,
-   do not stash it. The no-upstream case is the dangerous one — those commits exist nowhere
-   else — and the obvious `log @{u}..HEAD 2>/dev/null` cannot see it, so the shared block uses a
-   separate upstream check.
+2. **Check every worktree is clean, and that its commits are on a remote.** Uncommitted changes,
+   or commits reachable from `HEAD` and from no remote-tracking ref, are each a **refusal**:
+   report it and stop. Do not remove it, do not stash it. The obvious
+   `log @{u}..HEAD 2>/dev/null` cannot see the no-upstream case at all, and a plain test for
+   *whether an upstream exists* over-refuses instead — a branch created by `worktree add -b` and
+   never committed to has none and carries nothing. So the shared block counts commits, which
+   answers both.
 3. **Show what you are removing, then wait for a yes.** Yes, even here, with the harvest
    already committed — retirement is a delete, and the house rule has no exception for a delete
    the user will probably approve. One line: the worktrees, the track directory, and the branches
@@ -184,8 +186,8 @@ push a deploy branch directly, never force-push one, never deploy from a local m
 - Never delete the track before the harvest entry is committed.
 - **Never mark the task done before the track is removed and the removal verified.** With the
   rule above it, that brackets the closing step from both sides.
-- Never remove a worktree that holds uncommitted work, unpushed commits, or a branch with no
-  upstream. Report it and stop — retiring a track removes session state, never work.
+- Never remove a worktree that holds uncommitted work, or commits that are on no remote.
+  Report it and stop — retiring a track removes session state, never work.
 - **Never run the retirement block in pieces, and never with an unresolved id.** Both end in the
   same place: an `rm -rf` whose target is `<state_dir>/tracks/` itself.
 - Never leave a half-shipped multi-repo task without saying exactly which repos are merged.

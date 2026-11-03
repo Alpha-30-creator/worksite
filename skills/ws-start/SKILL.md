@@ -138,7 +138,7 @@ in step 3**, before the claim:
 | is the task still open? | its id **absent** from the adapter's open + claimed + blocked ids |
 | what stage it reached | the last journal entry heading in `journal.md` |
 | does a worktree exist | `git -C "<repo>" worktree list --porcelain`, per repo, matched as in *Retiring a track* |
-| does that worktree hold work | `status --porcelain` non-empty, **or** the separate upstream check *Retiring a track* uses: no upstream at all counts as holding work, and only where one exists does `rev-list --count '@{u}..HEAD'` decide. Never `log --oneline @{u}..HEAD` — with no upstream that exits 128, an agent reading failure as "empty" concludes the worktree holds nothing, and the track is then offered for removal |
+| does that worktree hold work | `status --porcelain` non-empty, **or** the commit test *Retiring a track* uses: commits reachable from `HEAD` and from no remote-tracking ref. Not a test for whether an upstream exists — a branch `worktree add -b` created and never committed to has none and holds nothing. Never `log --oneline @{u}..HEAD` — with no upstream that exits 128, and an agent reading failure as "empty" concludes the worktree holds nothing |
 | age | mtime of the newest file in the track directory |
 
 Match the worktree path **one whole segment at a time**, as *Retiring a track* in
@@ -157,22 +157,32 @@ says so: "no longer in the board's list — closed, or moved?" rather than "clos
 **Orphan worktrees need a second pass, in the other direction.** The loop above walks the track
 directories, so a worktree whose directory is already gone is never enumerated by it — and that
 is precisely the residue of a folder deleted by hand, and the thing that breaks the next
-`worktree add`. List the worktrees per repo, take the id segment of each, and subtract the set of
-track directories:
+`worktree add`. **Resolve the worktree root before this block** — *The worktree root* in
+[../ws-shared/tracks.md](../ws-shared/tracks.md). It is needed here, in §5, not only at the
+`worktree add` in §6, and it is what lets this sweep and that step agree on where to look without
+either of them naming the directory. Then list the worktrees per repo, take the id segment of
+each, and subtract the set of track directories:
 
 ```bash
 # every worktree id under the project's track root, per repo
+if [ -z "$wt_root" ]; then
+  # With wt_root empty, basename gives "", which awk matches against field 1 of every absolute
+  # path — empty, from the leading slash — so the sweep would print the FIRST path segment as a
+  # track id for every worktree in the project. Silence is better than invented ids.
+  echo "SWEEP SKIPPED: the worktree root is unresolved, so orphan worktrees are UNKNOWN"
+else
 while IFS= read -r r; do
   [ -n "$r" ] || continue
   _pfx=$(git -C "$r" rev-parse --show-prefix 2>/dev/null) && [ -z "$_pfx" ] \
     || { echo "NOT A REPO ROOT: $r — run that rev-parse by hand to see why"; continue; }
   git -C "$r" worktree list --porcelain | sed -n 's|^worktree ||p' \
-    | awk -F/ -v root="<project>-tracks" '
+    | awk -F/ -v root="$(basename "$wt_root")" '
         { for (i = 1; i < NF; i++) if ($i == root) { print $(i+1); next }
           if ($NF == root) next }'
 done <<'REPOS'
 <repo paths, one per line>
 REPOS
+fi
 # then: any id printed here with no <state_dir>/tracks/<id>/ is an orphan worktree
 ```
 
@@ -194,9 +204,9 @@ worded to match. With a marker-based adapter (`roadmap-files`, `tasks-file`) abs
 
 | Track | Tracker | Stage | Worktree | Holds work | Age |
 |---|---|---|---|---|---|
-| p3.2 | done | shipped | ../<project>-tracks/p3.2 | no | 6d |
+| p3.2 | done | shipped | /abs/<project>-tracks/p3.2 | no | 6d |
 | p4.1 | dropped | planned | — | — | 11d |
-| p5.4 | claimed | step 3 | ../<project>-tracks/p5.4 | **2 uncommitted** | 2d |
+| p5.4 | claimed | step 3 | /abs/<project>-tracks/p5.4 | **2 uncommitted** | 2d |
 
 p3.2 and p4.1 are closed. Retire both? (removes the track directory and the worktree; branches,
 commits and PRs are untouched)
@@ -211,7 +221,7 @@ than "absent", and the question must not launder that into "closed":
 
 | Track | Tracker | Stage | Worktree | Holds work | Age |
 |---|---|---|---|---|---|
-| p3.2 | not in the board's list | shipped | ../<project>-tracks/p3.2 | no | 6d |
+| p3.2 | not in the board's list | shipped | /abs/<project>-tracks/p3.2 | no | 6d |
 | p4.1 | not in the board's list | planned | — | — | 11d |
 
 p3.2 and p4.1 are no longer in the board's list — closed, or moved to another status? If they are
@@ -281,18 +291,29 @@ saying you took it over, and check out the branch the note names.
 
 ## 6. Worktree, if the project opted in
 
-Only when `worktrees: true`. Create one **per repo the task actually touches**, not all of them
-— the cost is a dependency install per worktree:
+Only when `worktrees: true`. **Resolve the worktree root first**, once, per *The worktree root* in
+[../ws-shared/tracks.md](../ws-shared/tracks.md), and run its other-reading check before creating
+anything. Everything below substitutes the `$wt_root` that resolution echoed — an absolute path,
+so it means the same thing from a repo directory, from the workspace root and from a cold session
+tomorrow.
+
+Then create one **per repo the task actually touches**, not all of them — the cost is a dependency
+install per worktree:
 
 ```bash
-git -C "<repo>" worktree add "../<project>-tracks/$id/<repo>" -b <branch-pattern-filled-in>
+git -C "<repo>" worktree add "$wt_root/$id/<repo>" -b <branch-pattern-filled-in>
 ```
 
-**Write every path you create into `task.md`'s `- Worktrees:` line**, repo by repo:
+**Write every path you create into `task.md`'s `- Worktrees:` line**, repo by repo, **absolute**:
 
 ```markdown
-- Worktrees: <repo> → ../<project>-tracks/<id>/<repo>, <repo> → ../<project>-tracks/<id>/<repo>
+- Worktrees: <repo> → /abs/path/<project>-tracks/<id>/<repo>, <repo> → /abs/path/<project>-tracks/<id>/<repo>
 ```
+
+Absolute, because of who reads that line: a **cold session** retiring the track, with no memory of
+which directory the relative path was once relative to. A `../` written here is resolved against
+whatever that session's cwd happens to be, and the retirement block would then look for a worktree
+in the wrong place, find none, and report `clean`.
 
 That line is what later retires the track without guessing. It is one line now and a git sweep
 later: *Retiring a track* in [../ws-shared/tracks.md](../ws-shared/tracks.md) falls back to

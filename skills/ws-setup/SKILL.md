@@ -150,6 +150,14 @@ containing the path, silently, and the agent then has no rules. See ws-shared.
 `.gitignore` — the root being a non-repo is what normally keeps state uncommittable, and that
 protection is absent here. Say so.
 
+**Say where the worktree root lands, too, and say it for the single-repo case explicitly.** The
+default is the workspace root's sibling — `<workspace>/../<project>-tracks` — so on a single-repo
+project it is necessarily **outside** the workspace, because the workspace *is* the repo and the
+only alternative puts every track worktree inside it. That is the right answer and it surprises
+people, so it is stated at setup rather than discovered when a folder appears one level up. A
+project that wants it elsewhere sets `worktree_root:`; see *The worktree root* in
+`../ws-shared/tracks.md` for how a value is resolved.
+
 Then wire it up:
 
 ```bash

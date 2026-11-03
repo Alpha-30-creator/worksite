@@ -213,8 +213,8 @@ Show the batch and **wait for a yes**:
 ```markdown
 | Track | Title | Repos | Files it owns | Worktree |
 |---|---|---|---|---|
-| p3.2 | Stock levels | northwind-api | src/modules/inventory/** | ../northwind-tracks/p3.2 |
-| p5.4 | Order history UI | northwind-web | src/app/(account)/orders/** | ../northwind-tracks/p5.4 |
+| p3.2 | Stock levels | northwind-api | src/modules/inventory/** | /w/northwind-tracks/p3.2 |
+| p5.4 | Order history UI | northwind-web | src/app/(account)/orders/** | /w/northwind-tracks/p5.4 |
 
 Dropped: p4.1 — touches `src/shared/money.ts`, which p3.2 owns. Run it after.
 ```
@@ -226,6 +226,12 @@ means that task went to someone else: drop it from the batch and say so.
 
 Then per track: create `<state_dir>/tracks/<id>/`, write `task.md`, append a `claimed` journal
 entry, and create the worktree if isolation is on.
+
+**Resolve the worktree root once, before the first `worktree add`**, per *The worktree root*
+in [../ws-shared/tracks.md](../ws-shared/tracks.md), and run its other-reading check. A lead
+creating N worktrees in one go is the worst place to have the root mean two things, and the
+`- Worktrees:` line each `task.md` gets must hold **absolute** paths — its reader is a cold
+session retiring the track, which has no cwd to resolve a `../` against.
 
 `task.md` carries one line beyond the shape in `ws-start`, because this gate is the only place the
 question is asked:
@@ -304,7 +310,8 @@ alone — the subagent has none of this conversation.
 Every brief contains:
 
 - **Its track id, and the directory it works in.** With isolation on, that is the worktree path,
-  and every `git -C` in the brief points there — not at the main checkout.
+  **absolute**, from the resolved root — not a `../` the subagent would resolve against its own
+  cwd, and every `git -C` in the brief points there — not at the main checkout.
 - **The approved plan, summarised in the brief itself** — the approach, the ordered steps and the
   verification it owes. Do not merely point at `plan.md`; the subagent should not have to go
   looking for its own instructions. **It implements the approved plan and does not re-plan.** A

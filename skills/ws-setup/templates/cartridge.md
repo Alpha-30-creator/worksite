@@ -7,6 +7,8 @@ docs_home: <project>-docs/agent      # or <repo>/docs/agent for a single-repo pr
 artifacts: workspace-state      # workspace-state | in-repo
 agents_file: copy               # copy | include | symlink  (copy unless you know why not)
 worktrees: true                 # each track its own checkout; false only where the per-worktree dependency install is genuinely prohibitive
+worktree_root:                  # optional. Default: the workspace root's SIBLING, <workspace>/../<project>-tracks.
+                                # A relative value is relative to the workspace root. Resolved absolutely once per session
 
 shared_stores: []               # places the work edits that are NOT repos above; [] = none, which is
                                 # the usual answer. Each: {id, path ($HOME-relative), publish, note}.
