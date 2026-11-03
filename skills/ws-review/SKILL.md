@@ -203,6 +203,16 @@ For each **confirmed** finding, ask: is this risk class already written down?
 Show the exact wording, wait for a yes, then write it. Stack-pack edits go through
 `agent-sync save`; project risks are a normal docs commit.
 
+**You run that save, not the reviewer, and it is not the whole job.** A stack pack is a library
+file, so editing one is a `ws-refine` change: after the save it still owes that skill's **graph
+audit** and its **publish** step, or the pack is edited in a state nobody audited and the public
+artifact never receives it. Either make the edit through `ws-refine`, or run those two steps here
+and say you did. The save itself is the lead's for the same reason a `ws-fanout` builder's is —
+it acts on the whole library — and this skill's reviewer is a background subagent by default.
+`ws-refine`'s *Who may run what* states the rule, including that a plain deploy (`agent-sync
+apply`) is local while `save` also commits and pushes; the "wait for a yes" above already implies
+a session that can ask, which a subagent is not.
+
 **Writing a finding down is not the same as filing a task.** A risk line records a class so the
 next review catches it; a task is work someone will do. `ws-task`'s *Where a finding belongs*
 decides which, and most confirmed findings are the first.

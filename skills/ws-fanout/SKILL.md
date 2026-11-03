@@ -145,13 +145,24 @@ safe to run alongside the others", and it costs the user one track instead of th
 Three audiences are told, and the third is the one a narrower rule would miss:
 
 1. **the user**, in the batch table, before the yes;
-2. **the owning builder**, in its brief: it owns the store for this batch, and where the entry has
-   a `publish:` command it may run it — `publish: null` means there is none, and then the cap above
-   rests on the shared working tree alone;
+2. **the owning builder**, in its brief: it owns the store for this batch, which means it is the
+   only track that may **write** to it — and that is all ownership means. Owning a store is not
+   permission to publish one. Where the entry has a `publish:` command, that command is **yours,
+   the lead's**, to run once after review, and the owner's brief forbids it by name like everyone
+   else's. `publish: null` means there is none, and then the cap above rests on the shared working
+   tree alone;
 3. **every other builder in the batch**, in its brief: the store's `path` and, where there is one,
    its `publish:` command, forbidden by name — *including* tracks that do not touch the store. A
    track that never edits the store but runs its publish command for an unrelated reason publishes
    the owner's half-finished work to wherever that command publishes.
+
+**For the agent-sync library specifically, the rule is written down once** — in `ws-refine`'s
+*Who may run what* section, under its Deploy step. It separates the two halves that matter: a
+**deploy** (`agent-sync apply`, local and reversible) from a **publish** (`save`'s commit and
+push), says a subagent does neither, and explains why the graph audit is downstream of the deploy
+rather than a separate duty. Read it rather than deciding again here — before p8.30 neither this
+file nor `ws-refine` acknowledged the other, and this one answered it in three places that did not
+agree.
 
 Say which declared stores this batch touches and who owns each, out loud, before continuing.
 
@@ -186,7 +197,7 @@ without a word of warning. Before claiming, name what the tracks will share and 
 | **One port per service** | the second track's dev server silently fails or attaches to the first's | assign ports per track in the brief; never let a builder discover 8000 is taken |
 | **One mail catcher, queue or other dev service** | one track's test run consumes or clears another's | same — assign, or say in the brief that it is shared and must be left as found |
 | **The docs repo** | it usually gets no worktree, so two tracks edit one working tree and their changes land in one uncommitted file for the lead to split by hunk | give the docs repo a worktree too, or name in the brief exactly which files each track may touch |
-| **A global deploy or publish command** — a declared store's `publish:`, such as one that validates, deploys to every agent, then commits and pushes the **whole** store | It publishes the store, not one track's changes. The **first** track to run it publishes the **second** track's half-finished edits and pushes them; the second track's own run then publishes a state nobody reviewed. **Not a file collision** — worktrees cannot see it, and both tracks' reports read as successes | One track per store per batch owns it, per the gate above. That brief names the command as its own; **every other brief forbids it by name**, including tracks that do not touch the store. It runs once, after review |
+| **A global deploy or publish command** — a declared store's `publish:`, such as one that validates, deploys to every agent, then commits and pushes the **whole** store | It acts on the store, not on one track's changes. The **first** track to run it carries the **second** track's half-finished edits with its own, and a command that pushes sends them to every machine; the second track's own run then publishes a state nobody reviewed. **Not a file collision** — worktrees cannot see it, and both tracks' reports read as successes | **No builder runs it, the owner included.** It is yours: the deploying half as often as verification needs, the commit-and-push half **once, after review**, and the audit it gates with it. One track per store per batch owns the store, per the gate above, which gives it exclusive *write* access and nothing more; **every brief forbids the command by name**, including tracks that do not touch the store. For the agent-sync library the whole rule is stated in `ws-refine`'s *Who may run what* |
 
 Say which of these this batch shares, out loud, before continuing. A builder that is told "another
 track holds port 8000 and the database is shared; leave its migration alone" behaves; one that is
@@ -306,17 +317,25 @@ Every brief contains:
   tracks' owned paths explicitly as forbidden. This is the single most important line in the
   brief.
 - **The declared stores it may touch, and the ones it may not.** For the batch's owner of a store:
-  its `path`, its `note` verbatim, and that it may run that store's `publish:` command where the
-  entry has one. For **every other** builder, including the ones that touch no store: that `path`
-  and, where there is one, that command, forbidden by name. A builder nobody told cannot avoid a
-  command it has no reason to think is dangerous.
+  its `path`, its `note` verbatim, and that it is the only track that may **write** there. For
+  **every** builder, the owner included and the ones that touch no store included: that `path`
+  and, where there is one, the store's `publish:` command, **forbidden by name** — you run it
+  yourself, once, after review. A builder nobody told cannot avoid a command it has no reason to
+  think is dangerous, and a builder told it *owns* the store will reasonably assume publishing is
+  part of owning it. For the agent-sync library, say which steps are the lead's by pointing at
+  `ws-refine`'s *Who may run what*.
 - **The rule skills and rulebooks to read**, named by path, in **two or three calls, never one** (a single
   batched read of a dozen files truncates silently): the project's
   `<prefix>-<area>` skills, `<docs_home>/rules/`, and the repo's own practices docs.
 - **The project's house rules** that override defaults — attribution, commit convention, never
   `--no-verify`, never `git add -A`.
 - **Commit, do not push, do not open a PR, do not merge.** Shipping is the lead's decision after
-  review. A subagent that pushes has taken a decision that was not its to take.
+  review. A subagent that pushes has taken a decision that was not its to take. **This covers a
+  declared store's `publish:` command too**, and that is the case that actually went wrong: a
+  command like `agent-sync save` validates, deploys to every agent, commits *and pushes* the whole
+  store, so running it is pushing — and not only for this batch: for every project the store holds.
+  Forbid it by name in every brief and run it yourself. Its deploying half (`agent-sync apply`) is
+  also yours, though that one is local and may run as often as verification needs.
 - **The risks to go after, as questions** — the same list `ws-review` step 2 builds, written into the *build*
   brief. A builder handed the questions catches the cheap ones itself; a review round costs a spawn, a report,
   the lead's verification, a fix round and a full re-run of the gates.
@@ -427,7 +446,8 @@ disk and not a word about them.
   outside them. The rest are dropped and run afterwards, and a track whose store usage cannot be
   determined is dropped too.
 - **Never the same agent for building and reviewing** a track.
-- **Subagents commit but never push, PR or merge.**
+- **Subagents commit but never push, PR or merge — and never run a declared store's `publish:`
+  command, nor deploy one.** Running that command *is* pushing, for every project the store holds.
 - **Never `tracks/current`** from the lead — pass the track id to `ws-ship` in the invocation
   instead; that is the only channel it has.
 - **Never end a batch without saying what happened to every track directory it created** —

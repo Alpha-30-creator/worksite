@@ -115,14 +115,57 @@ that task's record under `docs/records/` in the project that found them.
 
 ## Deploy
 
+**Only the lead runs either of these, and `apply` is not the same step as `save` — see
+*Who may run what* below before you run them.**
+
 ```bash
-agent-sync save        # validate, deploy to every agent, commit and push the library
+agent-sync apply       # deploy the library to this machine's agents. No commit, no push
+agent-sync save        # that, plus commit and push the library — the publish half
 agent-sync status      # expect no drift
 ```
 
 **The audit below reads this same `agent-sync status`.** These are not two independent checks
-you can satisfy separately: run the audit before this save and its first gate aborts, because
-the library has moved and the deployed copies have not.
+you can satisfy separately: run the audit before you have deployed and its first gate aborts,
+because the library has moved and the deployed copies have not.
+
+### Who may run what — deploying is not publishing
+
+**This is the one statement of the rule. `ws-fanout`, `ws-review` and
+[../ws-shared/trackers/README.md](../ws-shared/trackers/README.md) point here rather than
+answering it again.** It matters whenever more than one agent is involved, and the single-session
+case is one line: you are the lead, so all of it is yours.
+
+The two halves of `agent-sync save` have completely different costs, and the first draft of this
+section treated them as one — which made it forbid a step this skill *requires* earlier, under
+*Verifying a change to a skill's own text*: "**Verify in two runs, and the first one must fail.**
+Invoke the skill with arguments *before* deploying … Then deploy and invoke again.":
+
+| Step | What it costs | Who |
+|---|---|---|
+| **deploy** — `agent-sync apply`, or the first half of `save` | local and reversible. Writes each agent's copy; **commits nothing, pushes nothing** | **the lead**, as often as verification needs. A skill-body change cannot be verified until it is deployed, so this runs *before* review, more than once if need be |
+| **publish** — `save`'s commit-and-push half | the store's history, and every other machine | **the lead**, **once, after review** |
+| **either one** | — | **never a subagent.** A `ws-fanout` builder, or any agent you briefed, edits library files and **stops**: no `apply`, no `save`, no audit |
+
+Two mechanisms force the subagent row, so it is not a matter of taste:
+
+1. **Both halves are store-wide.** `apply` deploys the whole library and `save` also commits and
+   pushes it, so the first builder to run either carries every *other* track's half-finished edits
+   with its own — and `save` pushes them to every machine. No worktree isolates a store (see
+   `shared_stores:` in [../ws-shared/reference.md](../ws-shared/reference.md)), so nothing warns
+   either track and both reports read as successes. `save --no-push` is not a loophole: it still
+   deploys and still commits the whole store, so the collision is the commit, not the push.
+2. **The audit cannot run before a deploy.** Its first gate compares the library against each
+   agent's deployed copy and aborts while they differ — so the audit is downstream of a step a
+   subagent may not take. That settles who runs the audit without a second rule: **whoever
+   deployed runs the audit**, and only the lead deploys.
+
+A subagent that has finished a library change reports **what it edited**, not that it deployed. If
+its report claims a deploy or a save, treat the change as unreviewed and re-read the files
+yourself: it has published every project in the store, not just this batch.
+
+**"Lead" means the session that can ask the user.** Where a lead is itself someone's subagent, it
+is a subagent for this rule — the test is the one `ws-review` uses: a step that waits for a yes
+belongs to a session that can wait for one.
 
 ## Audit afterwards — always
 
