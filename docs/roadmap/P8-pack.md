@@ -738,7 +738,7 @@ defect by this phase's new goal line.
   `conflicted`, which `agent-sync save` reports and the audit does not read — and the cause of
   that conflict was a manual `cp` into a deployed copy.
 
-## [~] p8.25 — Shipping a task does not refresh the cartridge rows it invalidates
+## [r] p8.25 — Shipping a task does not refresh the cartridge rows it invalidates
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
