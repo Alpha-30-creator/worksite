@@ -168,7 +168,10 @@ block?
   state *is* now refused, closing the gap p8.32 recorded. What remains, beyond the two losses under
   *Consequences*: the reflog sweep **over**-reports as well, because `for-each-ref` asked of the
   repository does not list any worktree's `HEAD`, so a commit another worktree is standing on is
-  named here although it survives — which a note can afford and a refusal could not. Recorded in
+  named here although it survives — which a note can afford and a refusal could not, and the note
+  now says so itself. And a worktree whose branch something outside this pack deletes afterwards is
+  not retirement's business: nothing here promises a branch will go on existing, only that
+  retirement will not be what removed it. Recorded in
   [`records/known-limitations.md`](../records/known-limitations.md).
 - **Not that the fenced block is executed by `verify`.** It is not, on any platform. The five
   shapes above were exercised by extracting the block from the shipped document and running it.

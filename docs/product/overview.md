@@ -306,14 +306,18 @@ Finally, the boundary that makes all of this safe to clean up. **Retiring** a tr
 its session state — the track directory, the worktrees it was given, and `tracks/current` if it
 names that track. **It never touches a branch, a commit, a pushed PR or the tracker item.** Four
 callers need it and all four point at one definition rather than keeping a copy. That first
-guarantee is also what decides the refusal: because a branch outlives the worktree it was checked
+guarantee is also what decides the refusals: because a branch outlives the worktree it was checked
 out in, unpushed commits on a branch are not at risk from the removal, and they get a note rather
-than a refusal — what a remote adds is a copy on another machine. What it refuses is uncommitted
-work, and commits **removing the worktree would leave unreachable**, which in practice means a
-detached `HEAD` that committed. Then it shows what will go and waits for a yes. It also removes
-the directory the worktrees sat in when that leaves it empty, and refuses to call the retirement
-clean while anything is still there. The operator mechanics live with the skill that owns them;
-the guarantee is the part worth knowing from here.
+than a refusal — what a remote adds is a copy on another machine. **Three things are refused**,
+and the same three are what every caller tests before offering a track: uncommitted work; an
+**operation in progress**, because a half-finished rebase lives in the worktree and dies with it;
+and commits **removing the worktree would leave unreachable**, which in practice means a detached
+`HEAD` that committed. Two of the three leave `git status` clean, which is why a clean tree is not
+enough to go on. Then it shows what will go — including the ignored files, which the removal also
+takes — and waits for a yes. It also removes the directory the worktrees sat in when that leaves
+it empty, refuses to call the retirement clean while anything is still there, and stops before
+deleting the track's own record if a worktree would not go. The operator mechanics live with the
+skill that owns them; the guarantee is the part worth knowing from here.
 
 ## What this is not
 
