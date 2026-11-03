@@ -354,18 +354,41 @@ into data loss:
    `- Repos:` and `- Worktrees:` lines; the block re-derives them from `git worktree list` in
    every case, so an abandoned track whose `task.md` was never updated is recovered from git
    alone.
-2. **Refuse if any worktree holds work**, before removing anything. Uncommitted changes, and
-   commits that are on **no remote-tracking ref** — both are refusals, not warnings, because the
-   whole point of a worktree holding work is that nobody else knows it is there. It reports what
-   it found and removes nothing. Offer `ws-wrap` instead.
+2. **Refuse if removing a worktree would lose work**, before removing anything. Three refusals:
+   uncommitted changes; an **operation in progress** (rebase, cherry-pick, merge, revert, bisect),
+   whose state lives in the worktree and dies with it; and commits **reachable from no branch, tag
+   or remote-tracking ref**. It reports what it found and removes nothing. Two of the three leave
+   `status --porcelain` empty, which is why neither can be skipped on the strength of a clean tree.
+   A fourth check — the worktree's own **reflog**, for commits it made and then stepped off —
+   reports as a **note**, because a reflog is full of amended-away commits by design and refusing
+   on those made every rebased track unretirable.
 
-   The second test asks the question the guard is actually for. It used to ask a different one —
-   *is an upstream configured* — and refused when none was, which reads as cautious and is wrong
-   in a common case: a branch `worktree add -b` created and never committed to has no upstream and
-   carries nothing, so every library-only track was unretirable by a guard protecting commits that
-   did not exist. Counting commits on no remote covers the no-upstream case and the
-   pushed-then-committed-again case with one test, and a repo with **no remote at all** still
-   refuses every commit, which is correct and is the open question p8.40 holds.
+   The second test asks about the operation being performed. `git worktree remove` removes a
+   **checkout, not a branch**, so a branch-backed worktree's commits survive it whether or not
+   they were ever pushed — measured. What does not survive is a **detached HEAD** that committed:
+   nothing references the result afterwards. Two earlier drafts asked instead whether the work was
+   on a remote — first *is an upstream configured*, then *are there commits on no remote-tracking
+   ref* — and both over-refused, the first stranding every library-only track and the second
+   refusing **every** worktree in a repo with no remote, including a fresh one with no commits of
+   its own. p8.40 measured the five shapes and recorded them as a decision in the project that
+   owns this pack.
+
+   **These three refusals are the definition of "holds work"** for
+   every caller — `ws-start`'s stale sweep, `ws-ship`, `ws-fanout`, `ws-task`'s drop path. A caller
+   that tests fewer of them offers a track that retirement then refuses, which is the loop p8.40
+   was filed to close, so they are listed here once and pointed at rather than restated:
+
+   | # | refusal | how |
+   |---|---|---|
+   | 1 | uncommitted changes | `status --porcelain` non-empty |
+   | 2 | an operation in progress | `rev-parse --git-path` over `rebase-merge`, `rebase-apply`, `CHERRY_PICK_HEAD`, `MERGE_HEAD`, `REVERT_HEAD`, `BISECT_LOG` |
+   | 3 | commits reachable from no ref | `rev-list --count HEAD --not --branches --tags --remotes` |
+
+   **Being on no remote is a separate fact, and it is a note rather than a refusal**: those
+   commits survive the removal on their branch, so what the remote adds is a copy on another
+   machine. The block prints it and carries on, and says plainly when a repo has no remote to
+   answer with. Where a worktree is refused, or where that note matters to someone stopping for
+   the day, offer `ws-wrap`.
 3. **Show what will go, then wait for a yes. Every caller, no exceptions.** This is the house
    rule — *show it, then wait for a yes before any delete* — and retirement is a delete.
 
@@ -378,7 +401,11 @@ into data loss:
    So the prompt stays, and it is one line: name the worktrees, the track directory and the
    branches that survive, and wait.
 4. **Remove**: `worktree remove` per repo — never `rm -rf` a worktree folder — then `worktree
-   prune` **per repo** after that repo's removals. "Once" means once per repository: a single
+   prune` **per repo** after that repo's removals. **A removal that fails stops everything**,
+   before a byte of the track directory goes: measured with a worktree containing a submodule,
+   which git refuses to remove, where the earlier order deleted the track's plan, journal and
+   verify evidence anyway and left the worktree standing. The track directory is the cheapest
+   thing here to keep and the most expensive to reconstruct. "Once" means once per repository: a single
    global prune leaves every other repo's metadata stale, and stale metadata is exactly what makes
    the next `worktree add` fail. Then the track directory, `tracks/current` only if it names this
    track, and the journal mirror if it is tracked.
@@ -439,7 +466,13 @@ REPOS
 [ -n "$id" ] || { echo "REFUSING: no track id resolved. Nothing was touched."; exit 1; }
 
 wts_for() {    # the worktree paths in repo $1 that belong to this track
-  git -C "$1" worktree list --porcelain | sed -n 's|^worktree ||p' \
+  # The listing is captured on its own line, NOT piped straight into sed: a pipeline exits with
+  # its LAST command's status, so `git … | sed | awk` turns git's 128 in a non-repo into awk's 0,
+  # the caller's `if ! wts=$(wts_for "$r")` never fires, the loop body never runs, and the whole
+  # block then prints `clean: track <id> removed` while the worktree holding the work is still on
+  # disk — and `ws-ship` marks the task done on that line. Measured.
+  _wl=$(git -C "$1" worktree list --porcelain) || return 1
+  printf '%s\n' "$_wl" | sed -n 's|^worktree ||p' \
     | awk -F/ -v id="$id" '{for (i = 1; i <= NF; i++) if ($i == id) { print; next }}'
 }
 
@@ -461,21 +494,129 @@ $(dirname "$wt")"
     if [ -n "$st" ]; then
       echo "REFUSE: uncommitted work in $wt"; bad=1; continue
     fi
-    # Does this worktree hold commits that exist nowhere else? That is the question the guard
-    # is for, and it is asked directly: commits reachable from HEAD and from no remote-tracking
-    # ref. "No upstream" is not that question — a branch created by `worktree add -b` and never
-    # committed to carries nothing, and refusing it strands every library-only track (p8.32).
-    up=$(git -C "$wt" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null)
+    # An operation stopped half-way leaves `status --porcelain` EMPTY and dies with the directory:
+    # measured, a worktree parked at a `rebase -i` `edit` step reports nothing, every commit test
+    # below returns 0, and `worktree remove` succeeds and discards rebase-merge/, the todo list and
+    # any refs/rewritten. These paths are per-worktree, so `rev-parse --git-path` resolves them
+    # inside $wt rather than in the main checkout.
+    inprog=""
+    for _op in rebase-merge rebase-apply CHERRY_PICK_HEAD MERGE_HEAD REVERT_HEAD BISECT_LOG; do
+      _p=$(git -C "$wt" rev-parse --git-path "$_op" 2>/dev/null) || continue
+      [ -n "$_p" ] || continue        # before the rewrite below, not after: `$wt/` is non-empty
+                                      # AND -e, so an empty answer would report every op in
+                                      # progress. Only reachable if git ever answers rc 0 with an
+                                      # empty line, which it does not today.
+      # `--git-path` answers absolutely for a LINKED worktree and relatively (`.git/rebase-merge`)
+      # for a main one, and a relative answer is relative to the -C directory, not to this block's
+      # cwd — so testing it bare would silently find nothing.
+      case "$_p" in /*) : ;; *) _p="$wt/$_p" ;; esac
+      [ -e "$_p" ] && inprog="${inprog:+$inprog }$_op"
+    done
+    if [ -n "$inprog" ]; then
+      echo "REFUSE: an operation is in progress in $wt ($inprog); removing it would discard"
+      echo "        work that no commit holds. Finish it, or abort it, then retire:"
+      echo "        git -C \"$wt\" rebase --abort      # or cherry-pick/merge/revert/bisect --abort"
+      bad=1; continue
+    fi
+    # Would removing THIS WORKTREE make a commit unreachable? That is the only question that
+    # justifies refusing, and it is not the same as "is it pushed". `worktree remove` removes a
+    # checkout, not a branch: measured, a branch-backed worktree's unpushed commit is still
+    # pointed at by refs/heads/<branch> afterwards, so the removal never endangered it. The shape
+    # that does lose commits is a DETACHED HEAD that committed — no ref names the result and the
+    # worktree's reflog goes with the directory. So the test asks about refs, not about remotes,
+    # and a repo with no remote is no longer blocked by it (p8.40).
     if ! git -C "$wt" rev-parse --verify -q HEAD >/dev/null; then
       orphan=0                                      # unborn HEAD: no commits at all to lose
-    elif ! orphan=$(git -C "$wt" rev-list --count HEAD --not --glob=refs/remotes); then
-      echo "REFUSE: cannot count unpushed commits in $wt"; bad=1; continue
+    elif ! orphan=$(git -C "$wt" rev-list --count HEAD --not --branches --tags --remotes); then
+      echo "REFUSE: cannot count unreachable commits in $wt"; bad=1; continue
     fi
     case "$orphan" in
       ''|*[!0-9]*) echo "REFUSE: unreadable commit count for $wt"; bad=1; continue ;;
     esac
     if [ "$orphan" -gt 0 ]; then
-      echo "REFUSE: $orphan commit(s) in $wt are on no remote${up:+ (upstream $up)}"; bad=1; continue
+      echo "REFUSE: $orphan commit(s) in $wt are on no branch, tag or remote, so removing this"
+      echo "        worktree would leave them unreachable. Give them a ref first, from inside it:"
+      echo "        git -C \"$wt\" switch -c <branch>"
+      bad=1; continue
+    fi
+    # The count above reads only what the worktree is STANDING ON, which is not the whole question:
+    # a commit this worktree made and then stepped off — `switch --detach`, `reset --hard`, an
+    # abandoned experiment — is reachable from no ref AND absent from that count, and its last
+    # remaining name is this worktree's own per-worktree reflog, which is deleted with the
+    # directory. Measured: detached, commit, `switch --detach main`; clean status, count 0, plain
+    # `worktree remove` succeeds, and afterwards no ref and no reflog anywhere names the commit.
+    #
+    # So the reflog is walked — but what it finds is a NOTE, never a refusal, and that distinction
+    # is the whole design of this part. A reflog is FULL of commits no ref contains, by design:
+    # every `commit --amend`, every `pull --rebase` (which this pack instructs), every
+    # `reset --hard` that drops a mistake leaves the superseded commit there. Measured: amend once,
+    # push, and the entry for the pre-amend commit is reachable from nothing. Refusing on that made
+    # every amended or rebased track permanently unretirable — `ws-ship` holds the tracker
+    # transition on the verification line, so the track could not ship at all — and the only remedy
+    # on offer was to create a branch naming a commit the author had deliberately replaced. An
+    # abandoned experiment and an amended-away commit are indistinguishable from here, so this
+    # reports and the human decides at the yes.
+    #
+    # BEST EFFORT twice over: with reflogs disabled or expired there is nothing to walk, and
+    # `gc` expires unreachable entries at 30 days by default.
+    if _rl=$(git -C "$wt" rev-list -g HEAD 2>/dev/null); then
+      _lost=""
+      for _c in $_rl; do
+        # The reflog is read from the WORKTREE (it is per-worktree) and containment is asked of the
+        # REPO — not of the worktree, which is the difference between seeing this and missing it. A
+        # ref under `refs/worktree/*` is per-worktree too: from inside the worktree it answers
+        # "something contains it", and then it is deleted with the directory and the commit is
+        # unreachable after all. Measured both ways. The cost of asking the repo is that another
+        # worktree's detached HEAD is not listed by `for-each-ref` either, so a commit only that
+        # worktree holds is named here although it survives — over-reporting, which a note can
+        # afford and a refusal could not.
+        [ -n "$(git -C "$r" for-each-ref --contains "$_c" --count=1 --format='%(refname)' \
+                2>/dev/null)" ] || _lost="$_lost $_c"
+      done
+      if [ -n "$_lost" ]; then
+        echo "note: $wt's reflog names commit(s) that no ref in $r contains. Mostly these are"
+        echo "      superseded by an amend or a rebase and are meant to go. If one is an abandoned"
+        echo "      experiment worth keeping, removing this worktree drops the last pointer to it,"
+        echo "      so name it first: git -C \"$r\" branch <name> <sha>"
+        echo "      One false positive to know about: a commit ANOTHER worktree is standing on is"
+        echo "      listed here too, and that one survives."
+        for _c in $_lost; do
+          echo "        $(git -C "$wt" log -1 --format='%h %s' "$_c" 2>/dev/null)"
+        done
+      fi
+    fi
+    # A SEPARATE question, and deliberately NOT a refusal: is this work anywhere other than this
+    # machine? That is what the old remote-based test was really asking. It is a backup fact, not
+    # a retirement one — the commits above survive the removal either way — so it prints and the
+    # loop carries on. A repo with no remote cannot answer it at all, and says so.
+    if ! _rem=$(git -C "$wt" remote); then
+      echo "note: cannot read the remotes of $wt, so whether this is off-machine is UNKNOWN"
+    elif [ -z "$_rem" ]; then
+      echo "note: $wt is in a repo with no remote, so nothing in it is off this machine."
+    elif ! git -C "$wt" rev-parse --verify -q HEAD >/dev/null; then
+      echo "note: $wt has no commits yet, so there is nothing to be off this machine."
+    elif offm=$(git -C "$wt" rev-list --count HEAD --not --glob=refs/remotes); then
+      case "$offm" in
+        ''|*[!0-9]*) echo "note: cannot count off-machine commits in $wt" ;;
+        0)           : ;;
+        *)           echo "note: $offm commit(s) in $wt are on no remote. They survive this"
+                     echo "      removal on their branch, but they exist only on this machine." ;;
+      esac
+    else
+      echo "note: cannot count off-machine commits in $wt"
+    fi
+    # What else goes with the directory: everything git is not tracking. `worktree remove` takes
+    # the ignored files too — a built `dist/`, and also the env files `ws-start` materialised — so
+    # the yes in step 3 should be an informed one. Captured first, then printed, because a `| head`
+    # would replace git's exit status with head's.
+    if _ign=$(git -C "$wt" ls-files --others --ignored --exclude-standard); then
+      if [ -n "$_ign" ]; then
+        echo "note: removal also deletes $(printf '%s\n' "$_ign" | wc -l | tr -d ' ') ignored"
+        echo "      file(s) in $wt, starting with:"
+        printf '%s\n' "$_ign" | sed -n '1,5s|^|        |p'
+      fi
+    else
+      echo "note: cannot list the ignored files in $wt"
     fi
   done <<WT
 $wts
@@ -483,17 +624,26 @@ WT
 done <<REPOS
 $repos
 REPOS
-[ "$bad" -eq 0 ] || { echo "NOT RETIRED: that work exists nowhere else. Nothing was removed."; exit 1; }
+[ "$bad" -eq 0 ] || { echo "NOT RETIRED: nothing was removed. The REFUSE line(s) above say why."; exit 1; }
 
 # ---------- 3. show the lines above, and wait for a yes (see step 3) -------
 # ---------- 4. remove ----------
+rmfail=0
 while IFS= read -r r; do
   [ -n "$r" ] || continue
+  # The listing is captured with its status checked, NOT inlined as `<<WT $(wts_for "$r") WT`.
+  # Command substitution in a here-document discards the exit status, so a listing that failed
+  # here yielded an EMPTY list: the loop body never ran, nothing was removed, `rmfail` stayed 0,
+  # the guard below did not fire, and `rm -rf` deleted the track directory while the worktree it
+  # could not even list was still on disk. Measured — the same failure this step exists to stop.
+  if ! wts=$(wts_for "$r"); then
+    echo "could not list worktrees in $r — nothing in it was removed"; rmfail=1; continue
+  fi
   while IFS= read -r wt; do
     [ -n "$wt" ] || continue
-    git -C "$r" worktree remove "$wt" || echo "could not remove worktree $wt"
+    git -C "$r" worktree remove "$wt" || { echo "could not remove worktree $wt"; rmfail=1; }
   done <<WT
-$(wts_for "$r")
+$wts
 WT
 done <<REPOS
 $repos
@@ -565,6 +715,18 @@ done <<CANDS
 $cands
 CANDS
 
+# A worktree that would not go is a STOP, before anything in the track directory is deleted.
+# Measured with submodules, which git refuses to remove a worktree containing: every pre-check
+# passed, `worktree remove` failed, and the old order deleted the track's plan, journal and verify
+# evidence anyway — leaving the worktree on disk and its only record gone. The track directory is
+# the cheapest thing here to keep and the most expensive to reconstruct, so it is kept.
+if [ "$rmfail" -ne 0 ]; then
+  echo "NOT RETIRED: a worktree could not be removed or even listed (see above). The track"
+  echo "             directory is KEPT, so its plan, journal and evidence survive."
+  echo "             Nothing in $state_dir was deleted."
+  exit 1
+fi
+
 rm -rf "$state_dir/tracks/$id"                    # safe only because of the guard above
 if [ -f "$state_dir/tracks/current" ] && [ "$(cat "$state_dir/tracks/current")" = "$id" ]; then
   rm -f "$state_dir/tracks/current"
@@ -587,7 +749,16 @@ while IFS= read -r r; do
 done <<REPOS
 $repos
 REPOS
-[ -n "$left" ] && echo "NOT REMOVED:$left" || echo "clean: track $id removed"
+# The status matters as much as the line: a caller that branches on it must not read NOT REMOVED
+# as success, and `[ -n "$x" ] && echo … || echo …` exits 0 down both arms.
+if [ -n "$left" ]; then
+  # Status 1 reaches a caller from several places, which need opposite recoveries, so this line
+  # says which one it is: here the track directory IS gone and what is named below is residue.
+  echo "NOT REMOVED:$left"
+  echo "             The track directory was removed; the above is what is left beside it."
+  exit 1
+fi
+echo "clean: track $id removed"
 ```
 
 ### Why each awkward part is that way
@@ -598,38 +769,76 @@ REPOS
   at the id (`<wt_root>/p3.1`) with no `/<repo>` after it. The `awk` compares whole
   `/`-separated segments, so it matches `…/p3.1` and `…/p3.1/<repo>`, and neither `p3.10` nor
   `xp3.1`.
-- **`rev-list --count HEAD --not --glob=refs/remotes`, not `log @{u}..HEAD 2>/dev/null` and not a
-  test for an upstream.** The `2>/dev/null` idiom is the original trap: on a branch with **no**
-  upstream it prints `fatal: no upstream configured` to stderr, which the redirect discards, and
-  the empty output is then indistinguishable from "clean and pushed" — so the one case where the
-  commits exist nowhere else is the one case it waves through. `git worktree remove` does not
-  refuse it either. Refusing whenever an upstream is *absent* closes that hole and opens another,
-  because the commonest branch with no upstream is one that was never committed to. Counting
-  commits that are on no remote-tracking ref asks the real question once. Five states measured:
+- **`rev-list --count HEAD --not --branches --tags --remotes`, not a remote-based count and not
+  `log @{u}..HEAD 2>/dev/null`.** Three drafts, and the first two asked about the wrong thing.
+
+  `log @{u}..HEAD 2>/dev/null` is the original trap: on a branch with **no** upstream it prints
+  `fatal: no upstream configured` to stderr, the redirect discards it, and the empty output is
+  indistinguishable from "clean and pushed". Refusing whenever an upstream is *absent* closes that
+  hole and opens another, because the commonest branch with no upstream is one that was never
+  committed to — which stranded every library-only track. Counting commits on **no
+  remote-tracking ref** fixed both and still asked about the wrong place: a remote is where a
+  **copy** lives, and `worktree remove` does not touch the local refs that make a commit
+  reachable. Measured: after removing a worktree whose branch carried an unpushed commit,
+  `refs/heads/<branch>` still points at it. So the count asks which commits would be left
+  **unreachable from any ref**, and `--branches --tags --remotes` is how that is spelled.
+  **Not `--all`**: `--all` includes `HEAD`, so `rev-list HEAD --not --all` is `HEAD..HEAD` and
+  counts zero whatever is there — measured `0` on the detached-HEAD case below, where the right
+  answer is `1`. The one spelling that looks tidiest is the one that waves the loss case through.
 
   | State | Count | Right? |
   |---|---|---|
   | a fresh `worktree add -b` branch, nothing of its own | 0 | yes — retires |
-  | one commit that was never pushed | 1 | yes — refuses |
-  | a repo with **no remote at all** | every commit on `HEAD` | yes — refuses, and see p8.40 |
+  | a branch with one commit, never pushed | 0 | yes — retires; the branch outlives the worktree |
+  | a **detached HEAD** that committed | 1 | yes — refuses; nothing else names that commit |
+  | a worktree that committed and then **stepped off** (`switch --detach`, `reset --hard`) | 0 | **no — and the reflog sweep below only reports it, so this shape retires** |
+  | a detached HEAD sitting on an existing branch tip | 0 | yes — retires; nothing is unique to it |
+  | a repo with **no remote at all** | unchanged by the remote's absence | yes — the remote is not consulted |
   | an **unborn HEAD** | `rev-list` exits 128 and prints no number | handled before the count |
-  | pushed, then the remote branch deleted, **no prune since** | 0 | **no — waved through** |
 
   The unborn case is why `HEAD` is verified first and why a non-numeric count is its own refusal
-  rather than something `-gt 0` quietly reads as false. The last row is a genuine fail-open, and
-  it costs nothing here: retirement removes no branch and no commit, and after a `fetch --prune`
-  the count is right again. Five states measured is not five states proved sufficient.
-- **No `| head` anywhere.** A pipe into `head` replaces git's exit status with `head`'s, so a
-  failed command reads as a successful empty one.
+  rather than something `-gt 0` quietly reads as false. Six states measured is not six states
+  proved sufficient — a stash was checked separately and survives (`refs/stash` is shared between
+  worktrees, so the main checkout still lists it afterwards), and what the count still cannot see
+  is the subject of the next bullet.
+- **The reflog sweep, because the count only sees what the worktree is standing on.** `HEAD --not
+  --branches --tags --remotes` answers "is where I am now reachable another way". It cannot answer
+  "did this worktree make something and walk away from it" — and that commit is reachable from no
+  ref at all, which is worse. Measured: detached, commit, `switch --detach main`; clean status,
+  count `0`, plain `worktree remove` succeeds, and afterwards neither any ref nor any reflog
+  anywhere names the commit. The only place it was still named was the **per-worktree**
+  `logs/HEAD`, which is deleted with the directory, so the sweep walks that reflog
+  (`rev-list -g HEAD`) and asks `for-each-ref --contains` per entry. `rev-list -g HEAD --not
+  --branches …` is not a shortcut for this: it fails with `cannot walk reflogs for <branch>`, so
+  the two have to be separate calls. **What it finds is a note, not a refusal**, so it does not
+  subsume the detached-HEAD row above and nothing else may be dropped on the strength of it: that
+  row refuses and exits 1, this reports and exits 0. The demotion is not caution, it is a
+  measurement — a reflog holds every amended-away and rebased-away commit, so refusing on one
+  blocked `commit --amend` and `pull --rebase` on every project. It is also **best effort** twice
+  over: with reflogs disabled or expired there is nothing to walk, and `gc` expires unreachable
+  entries at 30 days by default.
+- **No `| head` anywhere, and no `git … | sed` either.** A pipeline exits with its last command's
+  status, so a pipe replaces git's exit status: `head` turns a failed command into a successful
+  empty one, and `git worktree list | sed | awk` turned git's `128` in a non-repo into `0`. That
+  one was live in `wts_for` until p8.40 — measured, the caller's `if ! wts=…` never fired, the loop
+  body never ran, and the block printed `clean: track <id> removed` while the worktree holding the
+  work sat on disk, with `ws-ship` marking the task done on the strength of that line. The listing
+  is captured on its own line now, with its own `|| return 1`.
 - **It asks the filesystem about the parent, having asked git about the worktrees.** Those are two
   different questions and the block needs both. The residue this task was filed for is a `<id>/`
   directory whose git metadata is already gone, so `worktree list` truthfully reports nothing, the
   old verification asked only git, and `clean` was printed over 9.6M. `rmdir` is the removal
   because it cannot take anything with it: it refuses a non-empty directory, which is the same
   refusal leftover build output deserves.
-- **Mid-rebase and mid-bisect state is a gap none of this sees.** The tree is clean and the commits
-  are pushed, so retirement proceeds and `worktree remove` discards an in-progress rebase. Lost
-  work, not lost commits — and not something a commit count can be made to catch.
+- **Mid-rebase and mid-bisect state is now a refusal, and used to be caught only by accident.**
+  The tree is clean and every commit test returns 0, so nothing in the counting half of this block
+  can see it: measured, a worktree parked at a `rebase -i` `edit` step reported nothing, and
+  `worktree remove` succeeded and discarded `rebase-merge/` with the todo list in it. It is not
+  something a commit count can be made to catch, so it is asked separately —
+  `rev-parse --git-path`, which resolves these per-worktree paths inside the worktree. What makes
+  this worth saying twice: in a repo with **no remote** the old remote-based count returned 2 here
+  and refused, so the loop *looked* safe for the exact projects p8.40 is about, for a reason that
+  had nothing to do with rebases.
 - **It asks git about worktrees, not the filesystem.** `[ -d <path> ]` is the wrong test: the
   state this guards against is git still *believing* a worktree exists after its folder was
   removed by hand, which is what breaks the next `worktree add`. Only `worktree list` after

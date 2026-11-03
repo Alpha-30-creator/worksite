@@ -138,7 +138,7 @@ in step 3**, before the claim:
 | is the task still open? | its id **absent** from the adapter's open + claimed + blocked ids |
 | what stage it reached | the last journal entry heading in `journal.md` |
 | does a worktree exist | `git -C "<repo>" worktree list --porcelain`, per repo, matched as in *Retiring a track* |
-| does that worktree hold work | `status --porcelain` non-empty, **or** the commit test *Retiring a track* uses: commits reachable from `HEAD` and from no remote-tracking ref. Not a test for whether an upstream exists — a branch `worktree add -b` created and never committed to has none and holds nothing. Never `log --oneline @{u}..HEAD` — with no upstream that exits 128, and an agent reading failure as "empty" concludes the worktree holds nothing |
+| does that worktree hold work | **all three** refusals in *Retiring a track*'s table, not a subset: `status --porcelain`, an operation in progress, and commits reachable from no branch, tag or remote-tracking ref. Testing fewer is how this sweep offers a track that retirement then refuses, every session — the loop p8.40 closed, and two of the three leave `status` clean. Unpushed is **not** holding work: `worktree remove` removes a checkout, not a branch, so those commits survive it. Never `log --oneline @{u}..HEAD` — with no upstream that exits 128, and an agent reading failure as "empty" concludes the worktree holds nothing |
 | age | mtime of the newest file in the track directory |
 
 Match the worktree path **one whole segment at a time**, as *Retiring a track* in
@@ -232,11 +232,18 @@ finished, retire both (track directory and worktree only).
   shows as done. Retiring is **Retiring a track** in
   [../ws-shared/tracks.md](../ws-shared/tracks.md), run only after a yes, **per track and with
   that track's id** — never once over a list, because the id guards the `rm -rf`.
-- **One question for the clearly-finished set** — closed task, no uncommitted and no unpushed
-  work — answerable in one word. Five separate prompts is how a sweep becomes an obstacle.
+- **One question for the clearly-finished set** — closed task, and none of *Retiring a track*'s
+  three refusals firing. **Unpushed does not disqualify a track from this set** (p8.40): a
+  remoteless project's tracks are all unpushed, so gating on that put every one of them in the
+  per-track branch below, which is the loop this project found. Answerable in one word. Five
+  separate prompts is how a sweep becomes an obstacle.
 - **A per-track question for anything that holds work** — and that question is never "remove
-  it?". A track holding uncommitted or unpushed work is reported and offered `ws-wrap`, which
-  pushes it and writes the note; offering removal is an invitation to lose it.
+  it?". Such a track is reported and offered `ws-wrap`, which saves it and writes the note;
+  offering removal is an invitation to lose it. **In a repo with no remote, say that `ws-wrap`
+  will commit but cannot push**, so the offer is not an exit the project does not have: that was
+  the loop p8.40 found, where the sweep re-offered a track every session and pointed it at a push
+  that could not run. Being unpushed no longer makes a track hold work, so the usual remoteless
+  track is now simply retirable.
 - **A still-claimed track is never offered**, whatever its age. It is your open work.
 - **Declining is remembered for this session only.** No new state file; a second `ws-start` in
   the same session does not re-ask.
@@ -341,8 +348,9 @@ applies, and anything unclear or blocked. **Do not plan. Do not write code.**
 - Never claim without the adapter's re-check-after-rejection step.
 - Never set `current` for a track you did not just claim or resume.
 - Never discard uncommitted work to make a clean start — ask.
-- **A stale track is reported and offered, never removed unasked** — and a track holding
-  uncommitted or unpushed work is never offered at all.
+- **A stale track is reported and offered, never removed unasked** — and a track whose removal
+  would lose work is never offered at all, by *Retiring a track*'s three refusals, all of them.
+  Merely unpushed is not that (p8.40).
 - One track is current per session; several tracks may exist at once.
 
 ## What next?

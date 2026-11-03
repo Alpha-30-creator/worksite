@@ -25,6 +25,24 @@ git -C "<repo>" commit -m "wip(<area>): <what is in this commit> (<id>)"
 git -C "<repo>" push -u origin <branch>
 ```
 
+**A repo with no remote cannot run that last line**, and unguarded it emits a raw
+`fatal: 'origin' does not appear to be a git repository` with no explanation — which is what a
+stranger on a local-only project actually sees, and the exit `ws-start`'s stale sweep points such
+a track at (p8.40). Check first, and say which of the two happened:
+
+```bash
+if [ -z "$(git -C "<repo>" remote)" ]; then
+  echo "no remote: the commit above is saved locally and nothing was pushed."
+  echo "The work is on branch <branch> in this repo, and the resume note has to say so."
+else
+  git -C "<repo>" push -u origin <branch>
+fi
+```
+
+The track is still wrapped either way — the commit is what stops work being lost to a stray
+`git checkout`, and the push is what gets it to another machine. Say plainly which protection the
+project has.
+
 `wip` is allowed **on a task branch only**. Show the commit and wait for a yes.
 
 Hooks still run. If lint or typecheck fails on half-finished work, say so and ask: fix it now,
@@ -76,7 +94,9 @@ it is the resume path.
 
 ## Rules
 
-- Never leave work only in the working tree. Unpushed work does not exist on the other machine.
+- Never leave work only in the working tree. Unpushed work does not exist on the other machine —
+  but a project with no remote has nowhere to push, so there the commit is the whole protection
+  and the note has to name the branch.
 - Never `--no-verify` without an explicit OK, and never silently.
 - Never write a resume note that assumes the reader was here. Name files, branches and commands.
 - Never release a task someone is waiting on without saying so.

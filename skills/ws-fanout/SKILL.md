@@ -423,8 +423,10 @@ knows these tracks exist. Each one gets exactly one of three endings, by name:
   track **claimed and unfinished**: that is a wrap, not a retirement.
 - **retired** — session state removed, per **Retiring a track** in
   [../ws-shared/tracks.md](../ws-shared/tracks.md): say what survives, show it, wait for a yes,
-  remove per repo, verify. Branches, commits and PRs are kept. A worktree holding uncommitted or
-  unpushed work is a refusal — wrap it instead.
+  remove per repo, verify. Branches, commits and PRs are kept — which is also why *unpushed* is
+  not a refusal: the branch outlives the worktree. What is refused is that section's three
+  refusals, read there rather than restated here: uncommitted work, an operation in progress, or
+  commits reachable from no branch, tag or remote-tracking ref (p8.40). Wrap such a track instead.
 
 ### Reconcile before you call the batch done
 

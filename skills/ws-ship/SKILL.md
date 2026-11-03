@@ -127,13 +127,19 @@ for `$id`:
 1. **Resolve the repos and worktrees** from `task.md`'s `- Repos:` and `- Worktrees:` lines,
    cross-checked against `git worktree list --porcelain` per repo. `ws-start` creates one
    worktree **per repo the task touches**, so a single `worktree remove` under-removes.
-2. **Check every worktree is clean, and that its commits are on a remote.** Uncommitted changes,
-   or commits reachable from `HEAD` and from no remote-tracking ref, are each a **refusal**:
-   report it and stop. Do not remove it, do not stash it. The obvious
-   `log @{u}..HEAD 2>/dev/null` cannot see the no-upstream case at all, and a plain test for
-   *whether an upstream exists* over-refuses instead — a branch created by `worktree add -b` and
-   never committed to has none and carries nothing. So the shared block counts commits, which
-   answers both.
+2. **Check every worktree is clean, and that removing it would lose nothing.** The shared block's
+   **three refusals** — uncommitted changes, an operation in progress, and commits reachable from
+   no branch, tag or remote-tracking ref — are listed in one table in *Retiring a track*; read them
+   there rather than from here, because a caller testing a subset offers a track the block then
+   refuses. Any of them: report it and stop. Do not remove it, do not stash it. `worktree remove`
+   removes a checkout and not a branch, so unpushed commits on a branch are not the risk — a
+   **detached HEAD** that committed is, because nothing names the result once the directory is
+   gone (p8.40).
+   Commits on no remote are reported as a **note** and do not block: they survive on their branch,
+   and what a remote adds is a copy on another machine. So *retirement* no longer needs a remote —
+   though `ws-ship` as a whole still does, because step 2 above pushes and opens a PR. A
+   local-only project reaches retirement through `ws-task`'s drop path or `ws-start`'s stale sweep,
+   not through this skill.
 3. **Show what you are removing, then wait for a yes.** Yes, even here, with the harvest
    already committed — retirement is a delete, and the house rule has no exception for a delete
    the user will probably approve. One line: the worktrees, the track directory, and the branches
@@ -186,7 +192,10 @@ push a deploy branch directly, never force-push one, never deploy from a local m
 - Never delete the track before the harvest entry is committed.
 - **Never mark the task done before the track is removed and the removal verified.** With the
   rule above it, that brackets the closing step from both sides.
-- Never remove a worktree that holds uncommitted work, or commits that are on no remote.
+- Never remove a worktree that any of *Retiring a track*'s three refusals fires on: uncommitted
+  work, an operation in progress, or commits reachable from no branch, tag or remote-tracking ref.
+  Commits that are merely unpushed are a note, not a refusal — removing the worktree does not
+  remove the branch that holds them.
   Report it and stop — retiring a track removes session state, never work.
 - **Never run the retirement block in pieces, and never with an unresolved id.** Both end in the
   same place: an `rm -rf` whose target is `<state_dir>/tracks/` itself.
