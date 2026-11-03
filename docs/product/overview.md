@@ -305,13 +305,15 @@ and the scratch, and says that the plan was kept.
 Finally, the boundary that makes all of this safe to clean up. **Retiring** a track means removing
 its session state — the track directory, the worktrees it was given, and `tracks/current` if it
 names that track. **It never touches a branch, a commit, a pushed PR or the tracker item.** Four
-callers need it and all four point at one definition rather than keeping a copy. Before removing
-anything it refuses outright if a worktree holds uncommitted work, or commits that are on no
-remote — those exist nowhere else — then shows what will go and waits for a yes. It also removes
+callers need it and all four point at one definition rather than keeping a copy. That first
+guarantee is also what decides the refusal: because a branch outlives the worktree it was checked
+out in, unpushed commits on a branch are not at risk from the removal, and they get a note rather
+than a refusal — what a remote adds is a copy on another machine. What it refuses is uncommitted
+work, and commits **removing the worktree would leave unreachable**, which in practice means a
+detached `HEAD` that committed. Then it shows what will go and waits for a yes. It also removes
 the directory the worktrees sat in when that leaves it empty, and refuses to call the retirement
-clean while anything is still there. The operator mechanics live with the skill that owns
-them; the guarantee is the
-part worth knowing from here.
+clean while anything is still there. The operator mechanics live with the skill that owns them;
+the guarantee is the part worth knowing from here.
 
 ## What this is not
 
