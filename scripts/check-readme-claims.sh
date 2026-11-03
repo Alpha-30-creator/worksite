@@ -97,8 +97,12 @@ _whynopy() {
 
 # word2num: the README spells quantities as words. Return -1 for anything unrecognised so a
 # missing claim is a failure rather than a silent 0.
+# `no` and `none` map to 0 because an empty board is a state the README has to be able to state in
+# English. This vocabulary has now been widened three times in one day as the board shrank — an
+# empty gap table, the singular "one open task", and zero — which is the shape to expect from any
+# check that encodes a count: it meets its boundary states last, and each one looks like a failure.
 w2n() { case "$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')" in
-  zero) echo 0;; one) echo 1;; two) echo 2;; three) echo 3;; four) echo 4;; five) echo 5;;
+  zero|no|none) echo 0;; one) echo 1;; two) echo 2;; three) echo 3;; four) echo 4;; five) echo 5;;
   six) echo 6;; seven) echo 7;; eight) echo 8;; nine) echo 9;; ten) echo 10;;
   eleven) echo 11;; twelve) echo 12;; thirteen) echo 13;; fourteen) echo 14;; fifteen) echo 15;;
   [0-9]*) echo "$1";; *) echo -1;; esac; }

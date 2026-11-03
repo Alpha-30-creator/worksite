@@ -1096,7 +1096,7 @@ third signal that it is not worth a track.
 - **Notes:** every item here is a place where an author writes something reasonable and is never
   told it was ignored, which is this phase's goal line applied to a data format.
 
-## [r] p8.34 — `ws-setup`'s profiles, and the cartridge keys it writes
+## [x] p8.34 — `ws-setup`'s profiles, and the cartridge keys it writes · 2026-11-03 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/29
 
 - **Repos:** worksite (pack)
 - **Depends on:** p3.1
@@ -1117,26 +1117,26 @@ third signal that it is not worth a track.
   template, both touch [`integration/cartridge-schema.md`](../integration/cartridge-schema.md),
   and both end in one `ws-refine` run — so merging saves an audit, a deploy and a publish.
 - **Acceptance** — the profile decisions first, because the key work depends on them:
-  - [ ] profile is chosen by a question the user actually answers, not inferred from folder shape
-        *(p8.3)*
-  - [ ] a third profile, or an explicit rule, for the long-lived single-repo case: tracker and
-        cartridge yes, the full docs tree no *(p8.3)*
-  - [ ] **the two `lite` sentences above agree**, resolved against whatever the criterion above
-        decides rather than by picking one *(p8.33, now dependent)*
-  - [ ] the generator creates a docs folder **when there is something to put in it**, matching
-        the pack's own living-docs rule, instead of seeding empty folders with READMEs *(p8.3)*
-  - [ ] `merge_style` is given a value in `ws-setup`'s cartridge template, or `ws-ship` stops
-        reading it — a key whose only behaviour is its fallback is worse than no key *(p8.33)*
-  - [ ] the rule-skill prefix gets a cartridge key. It is already load-bearing in `ws-setup`'s
+  - [x] profile is chosen by a question the user actually answers, not inferred from folder shape
+        *(p8.3)*. profile is now **one asked question** with a recommendation; the mode table's inferring row is gone. Mode is *what is already here*, which the filesystem answers; profile is *how much writing this will earn*, which it cannot — a weekend experiment and a five-year product are identical on disk
+  - [x] a third profile, or an explicit rule, for the long-lived single-repo case: tracker and
+        cartridge yes, the full docs tree no *(p8.3)*. **`standard`**, the middle rung: cartridge, tracker, `state_dir`, instruction files; no rule-skill family and no reference docs tree. **Not named for repo count** — this repo is a single repo carrying `profile: full`, correctly, so the axis is writing. The three rungs are numbered continuously, 1–21, which is what makes each one the rung below plus its own questions; `full` previously read "all of standard, plus…" and silently dropped three of standard's questions
+  - [x] **the two `lite` sentences above agree**, resolved against whatever the criterion above
+        decides rather than by picking one *(p8.33, now dependent)*. resolved **by the third rung**, not by picking a side: `tasks-file` is `standard`'s default and `lite` has no tracker at all, carrying `tracker.kind: none`, which now has a stated path defined once in `ws-shared/trackers/README.md`. Four more sites stated the old rule and were found by sweeping for the claim
+  - [x] the generator creates a docs folder **when there is something to put in it**, matching
+        the pack's own living-docs rule, instead of seeding empty folders with READMEs *(p8.3)*. `risks/common.md` is no longer written; `ws-review` creates `risks/` on its first real risk, starting from the template that used to seed it. The Generate table is per-profile and says what is **not** created and why
+  - [x] `merge_style` is given a value in `ws-setup`'s cartridge template, or `ws-ship` stops
+        reading it — a key whose only behaviour is its fallback is worse than no key *(p8.33)*. `git_flow.merge_style` is in the template with its parent stated — `git_flow`, because the merge is part of the flow rather than a property of one repo
+  - [x] the rule-skill prefix gets a cartridge key. It is already load-bearing in `ws-setup`'s
         own generator in four places — `:69`, `:138`, `:165`, `:189`; this line first cited `:157` and
         `:181`, which are unrelated prose and a blank line — and `ws-fanout` briefs
-        builders to read `<prefix>-<area>` skills on a value it cannot look up *(p8.33)*
-  - [ ] `house_rules.owned_by`'s degrade to `me` — the **permissive** branch — is reversed, or
-        warned about where it is read *(p8.33)*
-  - [ ] the schema states that `machine:` carries **notes only**, so nobody writes
-        `machine.<device>.repos[].dir` and gets silence *(p8.33)*
-  - [ ] p3.1's affected gap rows updated or closed to match what the pack then does *(p8.33)*
-  - [ ] changed through `ws-refine`, with its graph audit
+        builders to read `<prefix>-<area>` skills on a value it cannot look up *(p8.33)*. `rule_prefix`, with its read sites and its degrade. **Load-bearing in seven places, not the four cited here** — and the four cited were themselves wrong (`:157` is unrelated prose, `:181` a blank line). Required on `full` **where the project earns rule skills**: this repo is `full` and earns none, so `null` with a stated reason is an answer, not an unfinished interview
+  - [x] `house_rules.owned_by`'s degrade to `me` — the **permissive** branch — is reversed, or
+        warned about where it is read *(p8.33)*. **narrowed, not reversed.** Both read sites now say which branch they took. Reversing the default turns a silent permission into a silent refusal, which is harder to notice, and `ws-refine` asks before proposing either way
+  - [x] the schema states that `machine:` carries **notes only**, so nobody writes
+        `machine.<device>.repos[].dir` and gets silence *(p8.33)*. **already met by p3.1**, and marked so rather than re-claimed; §12 gained only the worked example this criterion names — `machine.<device>.repos[].dir` does nothing
+  - [x] p3.1's affected gap rows updated or closed to match what the pack then does *(p8.33)*. three rows to one. `merge_style` closed, `rule_prefix` a key, `tracker.lists` removed as a duplicate of `records/known-limitations.md`; `owned_by` stays with what changed
+  - [x] changed through `ws-refine`, with its graph audit. 1 finding, the pre-existing `UNLISTED EXIT` — and the audit **caught a second on the final commit**, `ws-task`'s new prose offering `ws-setup` with no entry in its *What next?*. `deployed check: claude 45/45 · codex 45/45 · cursor 45/45`
 - **Notes:** ten criteria makes this the second-largest open task after p8.31, and that is accepted
   deliberately — the alternative is the two-task dependency this merge exists to remove. If it has
   to be split later, the line is after the fourth criterion: the profiles are a decision, the

@@ -45,12 +45,19 @@ own removal would leave unreachable rather than what is missing from a remote, b
 
 ## In progress
 
-Nothing claimed.
+**Nothing claimed, and nothing open.** The board reached **zero** on 2026-11-03, from 32 a week
+earlier and 9 at the start of the day.
 
-**p8.41 dropped 2026-11-03, the day it was filed**, by the owner: it is a limitation that is honest
-once stated, it is stated in
-[records/known-limitations.md](records/known-limitations.md), and p8.25 already shipped the
-mitigation. Filing it was why the board went from two rows to two instead of two to one.
+**p8.34 shipped 2026-11-03** ([PR #29](https://github.com/Alpha-30-creator/worksite/pull/29)): the
+last row. `ws-setup`'s profile is **asked** rather than inferred from folder shape, on a three-rung
+ladder — `lite` / **`standard`** / `full`, six / fourteen / twenty-one questions, numbered
+continuously so each rung is the one below plus its own. The five cartridge keys that promised what
+nothing delivered are settled: `git_flow.merge_style` and `rule_prefix` exist and are written,
+`owned_by` is narrowed, `machine:` gained its worked example, and `artifacts`/`agents_file` are
+asked for the first time. Three review rounds, 32 must-fixes, of which **ten of round two's twelve
+were created by round one's fixes and seven of round three's nine by round two's** — one shape every
+time: a structural fix landing in the body of a document and missing its summary, its template, or a
+companion claim written in the same breath.
 
 **p8.25 shipped 2026-11-03** ([PR #28](https://github.com/Alpha-30-creator/worksite/pull/28)):
 `ws-ship` §4 now re-reads the cartridge rows a shipped task invalidates **without touching** —
@@ -108,12 +115,13 @@ its boundary in the next.
 
 ## Next up
 
-Highest value first. **P8 is independent of publishing** — those tasks improve every project
-today, so they do not have to wait for P1–P7.
-
-| id | title | why now |
-|---|---|---|
-| p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
+**Nothing.** All eight phase files have **zero** open rows — measured, not asserted. Four of them
+say so at the top (P2, P4, P5, P6); P1, P3, P7 and P8 are empty without a closing line, which is a
+difference in bookkeeping rather than in state, and worth one line here rather than four commits. What is left is recorded rather
+than tracked, in [records/known-limitations.md](records/known-limitations.md) — including the two
+boundaries this week chose not to close: a path named in a cartridge's prose has no check behind it
+(filed as p8.41 and dropped the same day, its measurement kept in the dropped row), and no profile
+has been generated end to end, which wants a stranger run rather than a task.
 
 ## Shipped
 
@@ -155,6 +163,7 @@ today, so they do not have to wait for P1–P7.
 | p8.32 | One resolved worktree root, and retirement that looks at the parent it leaves | 2026-11-03 |
 | p8.40 | Retirement refuses what its removal would lose, not what is unpushed | 2026-11-03 |
 | p8.25 | `ws-ship` re-reads the cartridge rows a shipped task invalidates without touching | 2026-11-03 |
+| p8.34 | `ws-setup`'s profiles asked rather than inferred, and the keys that follow | 2026-11-03 |
 
 ## Phases
 
