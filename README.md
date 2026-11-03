@@ -89,7 +89,7 @@ The gaps a reader would still hit, each carried as a task:
 |---|---|
 | a project with no git remote has no documented way to retire a finished track; the guard that refuses is correct, the workaround is undocumented | p8.40 |
 
-Three more open tasks are about this repo's own authoring and tooling rather than anything a reader
+Two more open tasks are about this repo's own authoring and tooling rather than anything a reader
 would meet; [docs/STATUS.md](docs/STATUS.md) has them.
 
 **To install it**, point your agent at [INSTALL.md](INSTALL.md) — it is written for the agent

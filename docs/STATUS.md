@@ -42,8 +42,16 @@ ADR 0004 that had rejected this shape, and accepts the one objection that still 
 
 ## In progress
 
-**p8.32 is claimed** — the worktree root becomes one resolved definition, and retirement
-stops reporting `clean` over the `<id>/` directory it leaves behind.
+Nothing claimed.
+
+**p8.32 shipped 2026-11-03** ([PR #26](https://github.com/Alpha-30-creator/worksite/pull/26)): the
+worktree root is one cartridge key resolved to a single absolute path per session, and retirement
+removes the `<id>/` directory it used to leave behind — or, when that directory holds files,
+reports its size and deletes nothing. The task's own second criterion was falsified first: the real
+9.6M instance is not empty, so the `rmdir` it prescribed would have reported success on the one
+case the task was filed for. Two review rounds, six must-fixes, every one measured before it was
+fixed; the worst had step 4b reporting residue while the verification line four steps later still
+printed `clean`.
 
 Previously: **p8.31 shipped 2026-11-03** ([PR #17](https://github.com/Alpha-30-creator/worksite/pull/17)):
 `scripts/check.sh` grew sections 5 and 6 — the state dir's ignore rule is asserted rather than
@@ -80,9 +88,8 @@ today, so they do not have to wait for P1–P7.
 
 | id | title | why now |
 |---|---|---|
-| p8.40 | A local-only project has no documented way to retire a track | the one place "degrade, never fail" and "never discard work" genuinely conflict, so it needs a decision |
+| p8.40 | A local-only project has no documented way to retire a track | p8.32 measured that a local bare mirror satisfies the guard, so what is missing is the documentation, not a way out |
 | p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
-| p8.32 | A retired track leaves its parent directory behind | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |
 | p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
 
 ## Shipped
@@ -122,6 +129,7 @@ today, so they do not have to wait for P1–P7.
 | p7.3 | The README's claims are section 7 of the one gate | 2026-11-03 |
 | p8.39 | Quote the pack's path placeholders — filed as loud, measured silent at three of five | 2026-11-03 |
 | p8.30 | One rule for who may deploy and publish the library — six contradicting sites, not two | 2026-11-03 |
+| p8.32 | One resolved worktree root, and retirement that looks at the parent it leaves | 2026-11-03 |
 
 ## Phases
 

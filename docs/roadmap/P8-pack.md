@@ -951,7 +951,7 @@ third signal that it is not worth a track.
   "a reflog keeps an abandoned commit reachable, so section 6 is weakest right after the mistake".
   The same sentence read from the other end predicts this, and nobody read it from that end.
 
-## [r] p8.32 — A retired track leaves its parent directory behind, and the root it lives under is undefined
+## [x] p8.32 — A retired track leaves its parent directory behind, and the root it lives under is undefined · 2026-11-03 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/26
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -959,28 +959,55 @@ third signal that it is not worth a track.
   first needs the second: removing the parent `<id>/` directory means naming it, and the root has
   no defined base. p8.14's third sweep pass is **dropped explicitly** — see its body above.
 - **Acceptance:**
-  - [ ] **the no-upstream refusal fires on a branch that carries nothing** *(met 2026-11-02 while
-        retiring p8.35)*. A library-only task never pushes its branch, because there is nothing
-        repo-side to push, so the branch sits at the claim commit with zero commits of its own and
-        `@{u}` is unset — and the guard, which exists to protect commits that live nowhere else,
-        refuses. Fail-safe rather than fail-open, so not urgent: the test wants to be "unpushed
-        commits exist", not "no upstream is configured"
-  - [ ] *Retiring a track* removes the parent `<id>/` directory when removing its last worktree
+  - [x] **the no-upstream refusal fires on a branch that carries nothing** *(met 2026-11-02 while
+        retiring p8.35)*. Replaced with `git rev-list --count HEAD --not --glob=refs/remotes` — the
+        count of commits reachable from `HEAD` and from no remote — guarded for an unborn `HEAD`
+        (count `0`, nothing to lose) and for a non-numeric result. The upstream ref is still read,
+        but only to name in the message; it no longer decides. **Three refusals collapsed into
+        one**, and the test now asks what the guard was always for: do these commits exist anywhere
+        else. Measured both ways — a branch with no upstream and no commits of its own retires
+        cleanly; one commit on no remote refuses, with the count in the message
+  - [x] *Retiring a track* removes the parent `<id>/` directory when removing its last worktree
         leaves it empty, so the residue is never created rather than reported afterwards. A
-        directory that still contains a working `.git` is not touched *(from p8.14)*
-  - [ ] the worktree root becomes a cartridge key with a stated default, resolved to an absolute
+        directory that still contains a working `.git` is not touched *(from p8.14)*. New step 4b.
+        **This criterion's own premise was false**: the real 9.6M instance is *not* empty, so the
+        `rmdir` it prescribes would have reported success on the one case the task was filed for.
+        What shipped removes a parent holding no files (OS metadata — `.DS_Store`, `Thumbs.db` —
+        cleared first, at any depth), and for a non-empty one prints its size, lists what is inside
+        and **deletes nothing**. A `.git` within two levels is reported and left untouched; the
+        depth bound keeps a vendored `node_modules/dep/.git` from blocking retirement forever
+  - [x] the worktree root becomes a cartridge key with a stated default, resolved to an absolute
         path once per session — one definition, not the seven literals across `ws-start` and
-        `ws-shared/tracks.md` *(from p8.15)*
-  - [ ] `task.md`'s `- Worktrees:` line records absolute paths, since its reader is a cold
-        session with no cwd *(from p8.15)*
-  - [ ] `ws-setup` writes the key, and states where the root lands in the **single-repo** case,
-        where it is necessarily outside the workspace *(from p8.15)*
-  - [ ] a project with an existing root under the other reading of `../` is detected and
-        reported, rather than a second root being created beside it *(from p8.15)*
-  - [ ] proven by execution against a fixture, not by reading: retire a track and confirm the
+        `ws-shared/tracks.md` *(from p8.15)*. `worktree_root:`, default
+        `<parent of the workspace root>/<project>-tracks`, resolved in *The worktree root — one
+        definition, resolved absolutely*. Refuses `/`, `~`, `~/`, `.`, `..` and a workspace root
+        directly under `/`; strips trailing slashes **after** validating, because stripping first
+        emptied the string and `dirname ""` is `.`, which made the root the caller's working
+        directory; `cd -P`/`pwd -P` throughout, and an existing root canonicalised whole, so a
+        symlinked workspace cannot yield two roots with half the tracks in each
+  - [x] `task.md`'s `- Worktrees:` line records absolute paths, since its reader is a cold
+        session with no cwd *(from p8.15)*. `ws-start` §6, and `ws-fanout` now requires an absolute
+        worktree path in every builder brief
+  - [x] `ws-setup` writes the key, and states where the root lands in the **single-repo** case,
+        where it is necessarily outside the workspace *(from p8.15)*. The template carries the key
+        with its default; a paragraph states the single-repo landing
+  - [x] a project with an existing root under the other reading of `../` is detected and
+        reported, rather than a second root being created beside it *(from p8.15)*. Checked before
+        the first worktree of a session: both candidate paths, skipping the one in use, printing
+        what the other holds and offering the cartridge key or a move — "not both at once"
+  - [x] proven by execution against a fixture, not by reading: retire a track and confirm the
         parent is gone, and confirm the resolved root is the same absolute path from a repo
-        directory and from the workspace root
-  - [ ] changed through `ws-refine`, with its graph audit
+        directory and from the workspace root. Nine fixture cases in the track's
+        `verify/fixture-runs.md`, each run with the shell block **extracted verbatim from the
+        shipped document** rather than retyped; seven resolution rows from two working directories;
+        `p3.1` proved not to match `p3.10`; and a read-only pass over the real 9.6M instance
+        confirming the default resolution lands on it and 4b reports it. **The fenced shell is
+        still never executed by `verify` on any platform** — recorded in
+        [`records/known-limitations.md`](../records/known-limitations.md), with GNU `find -delete`
+        on a `..`-bearing path untested because there is no GNU `find` on this machine
+  - [x] changed through `ws-refine`, with its graph audit. Audit at one finding, verified
+        pre-existing in a skill this task did not touch (`ws-ship`'s prose offering `ws-review`,
+        which the audit cannot distinguish from an exit)
 - **Notes:** 9.6M of orphaned build output on a real project, invisible to both sweep passes, is
   what this costs when the shell left behind is later filled.
 
