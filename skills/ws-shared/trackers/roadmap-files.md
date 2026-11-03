@@ -59,12 +59,12 @@ the same files as someone's `[~]`.
 ## Claim — a push is the lock
 
 ```bash
-git -C <docs> pull --rebase -q
+git -C "<docs>" pull --rebase -q
 # edit the task heading: [ ] -> [~] @<me> · <YYYY-MM-DD>
 # edit STATUS.md: add to "In progress", remove from "Next up", bump Updated
-git -C <docs> add <path>/P*.md STATUS.md
-git -C <docs> commit -m "docs(roadmap): claim <id>"
-git -C <docs> push origin main
+git -C "<docs>" add "<path>"/P*.md STATUS.md
+git -C "<docs>" commit -m "docs(roadmap): claim <id>"
+git -C "<docs>" push origin main
 ```
 
 **Push rejected → `pull --rebase`, re-check the task is still `[ ]`, then retry or pick another.**

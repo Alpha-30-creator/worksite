@@ -165,7 +165,7 @@ Reading a personal secret always costs a passphrase, which is the point:
 
 ```bash
 export SOPS_AGE_KEY="$(age -d ~/.config/sops/age/personal.age)"   # prompts
-sops -d personal/<file>
+sops -d "personal/<file>"
 ```
 
 Until that key exists, refuse to write into `personal/` and say why.

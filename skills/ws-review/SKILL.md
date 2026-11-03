@@ -25,9 +25,9 @@ better than it was.
 4. Read the task and the approved plan if they exist (`<state_dir>/tracks/<id>/`, or the
    project's own location — a project whose cartridge sets `artifacts: in-repo` keeps plans in
    the repo, typically under `implementation_plans/<id>/`).
-5. `git -C <repo> fetch -q` for each changed repo, **where one has a remote** — `fetch` exits 0
+5. `git -C "<repo>" fetch -q` for each changed repo, **where one has a remote** — `fetch` exits 0
    and establishes nothing in a repo that has none, so it proves nothing on its own. Check
-   `git -C <repo> remote` first and say which repos could not be refreshed. The gather in section 3
+   `git -C "<repo>" remote` first and say which repos could not be refreshed. The gather in section 3
    prints the base ref it actually used, which is what makes a stale or local-only base visible.
 
 ## 1. Choose the rulebooks
@@ -75,7 +75,7 @@ Carry on with something else while it runs.
 
 The reviewer has none of this conversation. Include:
 
-- **Layout**: workspace root path; that the root is *not* a git repo; use `git -C <repo>`; which
+- **Layout**: workspace root path; that the root is *not* a git repo; use `git -C "<repo>"`; which
   repos changed and on which branch; the integration branch to diff against.
 - **The task**: id, title, and the **acceptance criteria verbatim**, plus what is explicitly out
   of scope.

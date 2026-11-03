@@ -107,8 +107,12 @@ Report any repo that is dirty, behind, diverged, `[gone]`, or not on its integra
 Check in this order, because the answer changes what you ask:
 
 ```bash
-cat <state_dir>/tracks/current 2>/dev/null          # this session's track
-ls <state_dir>/tracks/ 2>/dev/null                  # every track on this machine
+# Quoted, and that is not cosmetic here: the `2>/dev/null` is for "the file is absent", and it
+# suppresses "you split my path" identically. Unquoted, a state_dir with a space makes both of
+# these print nothing and exit 1, which reads as "no current track" and "no tracks on this
+# machine" — so this step offers a fresh claim instead of resuming, silently (p8.39, measured).
+cat "<state_dir>/tracks/current" 2>/dev/null        # this session's track
+ls "<state_dir>/tracks/" 2>/dev/null                # every track on this machine
 ```
 
 - **`current` is set** → say which track, its stage from the last journal entry, and its "next"
@@ -133,7 +137,7 @@ in step 3**, before the claim:
 |---|---|
 | is the task still open? | its id **absent** from the adapter's open + claimed + blocked ids |
 | what stage it reached | the last journal entry heading in `journal.md` |
-| does a worktree exist | `git -C <repo> worktree list --porcelain`, per repo, matched as in *Retiring a track* |
+| does a worktree exist | `git -C "<repo>" worktree list --porcelain`, per repo, matched as in *Retiring a track* |
 | does that worktree hold work | `status --porcelain` non-empty, **or** the separate upstream check *Retiring a track* uses: no upstream at all counts as holding work, and only where one exists does `rev-list --count '@{u}..HEAD'` decide. Never `log --oneline @{u}..HEAD` — with no upstream that exits 128, an agent reading failure as "empty" concludes the worktree holds nothing, and the track is then offered for removal |
 | age | mtime of the newest file in the track directory |
 
@@ -247,8 +251,8 @@ the other person agreed.
 
 ```bash
 id=<track-id>                       # the tracker's own id, lowercased, fs-safe
-mkdir -p <state_dir>/tracks/"$id"/verify
-printf '%s\n' "$id" > <state_dir>/tracks/current
+mkdir -p "<state_dir>/tracks/$id/verify"
+printf '%s\n' "$id" > "<state_dir>/tracks/current"
 ```
 
 Write `task.md`. `<device-alias>` is the derived alias from
@@ -281,7 +285,7 @@ Only when `worktrees: true`. Create one **per repo the task actually touches**, 
 — the cost is a dependency install per worktree:
 
 ```bash
-git -C <repo> worktree add "../<project>-tracks/$id/<repo>" -b <branch-pattern-filled-in>
+git -C "<repo>" worktree add "../<project>-tracks/$id/<repo>" -b <branch-pattern-filled-in>
 ```
 
 **Write every path you create into `task.md`'s `- Worktrees:` line**, repo by repo:

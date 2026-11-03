@@ -76,15 +76,15 @@ degrading:
 ref=""                       # reset it: a value left over from an earlier run would be used silently
 # two quoted literals, not a path list — `for` is correct here, unlike over repo paths
 for cand in "origin/<integration>" "<integration>"; do
-  git -C <repo> rev-parse --verify -q "$cand" >/dev/null && { ref="$cand"; break; }
+  git -C "<repo>" rev-parse --verify -q "$cand" >/dev/null && { ref="$cand"; break; }
 done
 if [ -z "$ref" ]; then
   echo "NO INTEGRATION REF — neither origin/<integration> nor <integration> exists."
   echo "Read the working tree instead, and say in the plan that that is what you did."
 else
   echo "reading at: $ref"
-  git -C <repo> show "$ref:<path>"
-  git -C <repo> grep -n "<term>" "$ref" -- src/
+  git -C "<repo>" show "$ref:<path>"
+  git -C "<repo>" grep -n "<term>" "$ref" -- src/
 fi
 ```
 
@@ -164,14 +164,14 @@ Show the plan (and mockup) and **wait for a yes**. Then, per repo touched — as
 uncommitted work first, never discarding it:
 
 ```bash
-( git -C <repo> switch <integration> || exit 1   # a subshell: a bare exit would close a persistent terminal
-  if git -C <repo> rev-parse --verify -q '@{u}' >/dev/null; then
-    git -C <repo> pull --ff-only || echo "PULL FAILED — branching from a stale <integration>"
+( git -C "<repo>" switch <integration> || exit 1 # a subshell: a bare exit would close a persistent terminal
+  if git -C "<repo>" rev-parse --verify -q '@{u}' >/dev/null; then
+    git -C "<repo>" pull --ff-only || echo "PULL FAILED — branching from a stale <integration>"
   else
     echo "no usable upstream for <integration> (never pushed, or [gone]) — branching from the"
     echo "local tip, which may be behind"
   fi
-  git -C <repo> switch -c <branch> )
+  git -C "<repo>" switch -c <branch> )
 ```
 
 The `pull` is guarded because the unguarded pair ran the second command regardless: the pull failed

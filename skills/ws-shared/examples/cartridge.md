@@ -92,7 +92,7 @@ Read this before any work on northwind. Facts about the *product* live in the do
 ## Workspace layout
 
 The workspace root is **not** a git repo — it holds three repos side by side. That is what keeps
-the state directory uncommittable, and it is why every git command is `git -C <repo>`:
+the state directory uncommittable, and it is why every git command is `git -C "<repo>"`:
 
 | Path | GitHub | Role |
 |---|---|---|

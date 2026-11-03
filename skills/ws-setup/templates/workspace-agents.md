@@ -5,7 +5,8 @@ This folder is **not** a git repo. It holds:
 | Folder | Repository | What |
 |---|---|---|
 
-Use `git -C <repo>` and `gh -R <owner>/<repo>`.
+Use `git -C "<repo>"` — quoted, because a workspace path may contain a space — and
+`gh -R <owner>/<repo>`, which is a GitHub slug rather than a path and takes no quotes.
 
 ## Start here
 

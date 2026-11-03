@@ -52,7 +52,8 @@ The workspace root is **not** a git repo. It holds:
 | Path | GitHub | Role |
 |---|---|---|
 
-Always `git -C <repo>`. Never assume the cwd is a git root.
+Always `git -C "<repo>"`, with the quotes: a workspace path may contain a space. Never assume
+the cwd is a git root.
 
 ## Where things are
 

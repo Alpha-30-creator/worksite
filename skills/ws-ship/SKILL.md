@@ -55,10 +55,10 @@ ask before continuing — do not ship on an assumption.
 Per repo, on the task branch. **Stage explicit paths**, never `-A`:
 
 ```bash
-git -C <repo> status --short
-git -C <repo> add <paths…>
-git -C <repo> diff --cached --stat
-git -C <repo> commit -m "<type>(<scope>): <what> (<id>)"
+git -C "<repo>" status --short
+git -C "<repo>" add <paths…>        # <paths…> is deliberately UNQUOTED: it is several words
+git -C "<repo>" diff --cached --stat
+git -C "<repo>" commit -m "<type>(<scope>): <what> (<id>)"
 ```
 
 Show the exact diff stat and the message, and **wait for a yes**. Hooks always run; never
@@ -68,9 +68,9 @@ Show the exact diff stat and the message, and **wait for a yes**. Hooks always r
 ## 2. PR into the integration branch
 
 ```bash
-git -C <repo> push -u origin <branch>
+git -C "<repo>" push -u origin <branch>
 gh pr create -R <owner>/<repo> --base <integration> --head <branch> \
-  --title "<id>: <title>" --body-file <body>
+  --title "<id>: <title>" --body-file "<body>"
 ```
 
 Body: what changed, the acceptance criteria with their evidence, the PR links of sibling repos,

@@ -19,7 +19,7 @@ From each changed repo's `commands` in the cartridge. Prefer `verify` where the 
 otherwise run them individually, **batched into one call**:
 
 ```bash
-( cd <repo> && npm run typecheck && npm run lint && npm test && npm run build )   # plus `extra`
+( cd "<repo>" && npm run typecheck && npm run lint && npm test && npm run build ) # plus `extra`
 ```
 
 A `null` command means the repo genuinely does not have that check — **say so rather than

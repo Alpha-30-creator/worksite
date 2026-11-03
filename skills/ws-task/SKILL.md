@@ -11,7 +11,7 @@ description: Change what the work is, on whatever tracker the project uses - add
 
 Read [../ws-shared/reference.md](../ws-shared/reference.md), the cartridge, and the adapter for
 `tracker.kind` in `../ws-shared/trackers/`. Refresh first — for a file-based tracker,
-`git -C <docs> pull --rebase -q`.
+`git -C "<docs>" pull --rebase -q`.
 
 ## 1. Understand the change
 
@@ -56,7 +56,7 @@ Dropping is the only way a task legitimately ends **without shipping**, so this 
 that cleanup path has an owner. Nothing else ever looks.
 
 ```bash
-ls <state_dir>/tracks/<id>/ 2>/dev/null
+ls "<state_dir>/tracks/<id>/" 2>/dev/null
 ```
 
 Nothing there → done. If the directory exists:

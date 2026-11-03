@@ -19,10 +19,10 @@ Per repo with changes, on the task branch — create it if the work is still on 
 branch:
 
 ```bash
-git -C <repo> status --short
-git -C <repo> add <paths…>
-git -C <repo> commit -m "wip(<area>): <what is in this commit> (<id>)"
-git -C <repo> push -u origin <branch>
+git -C "<repo>" status --short
+git -C "<repo>" add <paths…>        # <paths…> is deliberately UNQUOTED: it is several words
+git -C "<repo>" commit -m "wip(<area>): <what is in this commit> (<id>)"
+git -C "<repo>" push -u origin <branch>
 ```
 
 `wip` is allowed **on a task branch only**. Show the commit and wait for a yes.

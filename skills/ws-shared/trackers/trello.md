@@ -12,7 +12,7 @@ Prefer the shell env, then `ws-env`. Never print a value, never paste one into c
 
 ```bash
 # once the secrets store holds them:
-( set -a; eval "$(tr -d '\r' < <workspace>/.cursor/mcp.env)"; set +a; ... )
+( set -a; eval "$(tr -d '\r' < "<workspace>/.cursor/mcp.env")"; set +a; ... )
 # or inject for one command without touching disk:
 ws-env run <project>/cursor-mcp.json '<command>'
 ```

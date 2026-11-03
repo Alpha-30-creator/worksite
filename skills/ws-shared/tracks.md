@@ -247,9 +247,22 @@ into data loss:
 
 ```bash
 # ---------- inputs ----------
-id=<track-id>                       # the resolved track id
-state_dir=<state_dir>
-docs=<docs repo>                    # only used for the journal mirror
+id=<track-id>                       # the resolved track id. A bare id takes no quotes: it is
+                                    # constrained to [a-z0-9-.] by convention and cannot hold a
+                                    # space. The two PATHS below must be quoted.
+state_dir="<state_dir>"             # a workspace path may contain a space, and an unquoted
+docs="<docs repo>"                  # assignment does not merely split: bash reads
+                                    # `state_dir=/x/My Projects/.p` as a prefix assignment for
+                                    # the command `Projects/.p`, which fails — and a prefix
+                                    # assignment does not persist, so state_dir is left EMPTY.
+                                    # `rm -rf "$state_dir/tracks/$id"` is then one argument,
+                                    # `/tracks/$id`, at the filesystem root: it exits 0, the
+                                    # verification below checks that same wrong path, and this
+                                    # block prints `clean: track removed` over a track it never
+                                    # touched. The error on the assignment line is printed, so
+                                    # this one is loud and then falsely reassuring rather than
+                                    # silent (p8.39, measured).
+                                    # `docs` is only used for the journal mirror.
 repos=$(cat <<'REPOS'
 <repo path>
 <another repo path, spaces are fine>
@@ -321,7 +334,7 @@ rm -rf "$state_dir/tracks/$id"                    # safe only because of the gua
 if [ -f "$state_dir/tracks/current" ] && [ "$(cat "$state_dir/tracks/current")" = "$id" ]; then
   rm -f "$state_dir/tracks/current"
 fi
-git -C "$docs" rm -q <docs_home>/journal/"$id".md 2>/dev/null   # the mirror, if it is tracked
+git -C "$docs" rm -q "<docs_home>/journal/$id.md" 2>/dev/null   # the mirror, if it is tracked
 
 # ---------- 5. verify ----------
 left=""
