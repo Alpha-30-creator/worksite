@@ -172,7 +172,8 @@ worktrees: true
 |---|---|---|---|---|---|
 | `schema_version` | integer | no | none — *template ships* `1` | **nothing reads this** | no effect — *inferred*, since nothing consumes it |
 | `project` | string, lowercase-kebab | **yes** | none | `ws-setup` | the cartridge cannot be matched to its `agent-sync` project id or workspace — *inferred* |
-| `profile` | `full` \| `lite` | no | none — *template ships* `full` | `ws-setup`; `lite` is read by concept by `ws-shared/tracks.md` and `ws-shared/reference.md` *(by concept, not by name)* | treated as `full`, so the full interview and the full artefact set apply — *inferred* |
+| `profile` | `lite` \| `standard` \| `full` | no | none — *template ships* `standard` | `ws-setup`, which **asks** for it and never infers it from folder shape (p8.34); the rungs are read by concept by `ws-shared/trackers/tasks-file.md` (`standard`'s default tracker) and `ws-review` (which creates `risks/` rather than finding it seeded) | treated as `full`, so the full interview and the full artefact set apply — *inferred*. **`standard` is the rung added by p8.34**: cartridge, tracker, `state_dir` and the workspace `AGENTS.md`, without the rule-skill family or a reference docs tree. It is not a repo count — this pack's own project is a single repo and is `full` |
+| `rule_prefix` | string, two or three letters | **conditional** — `full` needs it | none — *template ships* an empty key with its comment | `ws-setup`, which names `<rule_prefix>-<area>` skill directories and the `agent-sync include` call from it; `ws-fanout`, which briefs every builder to read those skills | **`ws-fanout` has nothing to brief with.** Added by p8.34: the value was asked in the interview, used to name four things, and recorded nowhere, so the one skill that needs to *look it up* could not — *stated* |
 | `state_dir` | path, relative to the workspace root | **conditional** — the track loop needs it | none — *template ships* `.<project>` | `ws-start`, `ws-plan`, `ws-verify`, `ws-ship`, `ws-wrap`, `ws-task`, `ws-fanout` | no track directory, so no `tracks/current`, plan, journal or evidence — *inferred* |
 | `docs_home` | path to the agent docs directory — **it ends `/agent`** | no | none | `ws-start`, `ws-plan`, `ws-verify`, `ws-wrap`, `ws-review`, `ws-ship`, `ws-setup`, `ws-refine`, `ws-fanout` | on a `lite` project, a local journal only, with no mirror and nothing on the other machine, said once when the track is created (`ws-shared/tracks.md`). What a **`full`** project without it does is *inferred*: the journal cannot be mirrored and `risks/`, `rules/` and `worklog/` have no location |
 | `artifacts` | `workspace-state` \| `in-repo` | no | `workspace-state` — stated (`ws-shared/tracks.md`) | `ws-plan`, `ws-review`, `ws-ship` | `workspace-state` — plans and journals in `<state_dir>`, never in a repo (`ws-plan`) |
@@ -469,6 +470,7 @@ whose repos release differently describes both in it.
 git_flow:
   branch_pattern: "<type>/<id>-<slug>"
   pr_into: integration_branch
+  merge_style: squash
   release: "PR from dev into main; merging main deploys production"
   forbidden:
     - force-push to dev or main
@@ -480,6 +482,7 @@ git_flow:
 | `git_flow` | map | no | none | `ws-setup` collects it; the generated workspace `AGENTS.md` renders it wholesale *(by concept, not by name)* | the workspace instructions lose their git-flow section — *inferred* |
 | `git_flow.branch_pattern` | string; the placeholders are `<type>`, `<id>`, `<slug>` | no | none | `ws-plan`, which names the branches per repo from it (`ws-plan`) | `ws-plan` has no pattern to form branch names from and must ask or invent — *inferred* |
 | `git_flow.pr_into` | string — a branch name, or the literal `integration_branch` to mean each repo's own. **Prefer the literal** — see below | no | `integration_branch` — *inferred* | `ws-ship`, which opens the PR `--base <integration>` *(by concept, not by name)* | each repo's `integration_branch` — *inferred* from `ws-ship`, which speaks only of "the integration branch" |
+| `git_flow.merge_style` | `squash` \| `merge` \| `rebase` | no | none — *template ships* `squash` | `ws-ship`, at the merge step | `ws-ship` asks, or takes the repo's own default, **once per ship forever**. Added to the template by p8.34: the key was read with nothing writing it, so every project sat permanently in the missing case, and its parent was unstated — it is `git_flow`, because the merge is part of the flow rather than a property of one repo — *stated* |
 | `git_flow.release` | string, free prose — how a release happens | no | none | `ws-ship`, whose Releases section treats a release as a separate explicit act *(by concept, not by name)* | `ws-ship` has no release procedure to follow and must ask — *inferred* |
 | `git_flow.forbidden` | list of strings — actions never to take in this project | no | `[]` — *inferred* | `ws-fanout`, which carries the project's overriding rules into every build brief *(by concept, not by name)* | the pack's own universal bans still apply — never `--no-verify`, never `git add -A`, no force-push (`ws-ship`, `ws-fanout`) — but nothing project-specific is passed on — *inferred* |
 
@@ -618,7 +621,10 @@ travel: a workspace root is not a repo, so `.agent-sync.yaml` is not committed a
 block over the top-level keys** — so the dependable use is **a per-device `note:`, read by whoever
 reads the cartridge**, which is what the pack's one worked example carries. Treat a device block
 that redefines a top-level key as a statement to a human reader, not as a merge the pack
-performs. What belongs here is only what is true of the *machine*: a platform difference, a tool
+performs. **Concretely: writing `machine.<device>.repos[].dir` does nothing** — no skill merges it,
+nothing warns, and the top-level `repos[].dir` is what every skill reads. That is the shape to
+avoid, and it is named here because a map keyed by device looks like an override mechanism and is
+not one. What belongs here is only what is true of the *machine*: a platform difference, a tool
 that is absent there, a path convention. Workspace paths never do — those come from
 `device.yaml`, and *"always resolve a workspace path from there. Never hardcode one"*
 (`ws-shared/reference.md`).
@@ -712,23 +718,35 @@ overridden, and "Open questions" is where a known unknown goes instead of being 
 
 ## Known gaps
 
-Three places where the pack and the schema do not line up **in a way a cartridge author has to
-know before writing a value**. Each is a candidate for `ws-task`, and none should be closed by
-writing documentation for a key that does not exist. The tracker carries the rest, which is the
-copy that can actually close them.
+**One** place where the pack and the schema do not line up in a way a cartridge author has to know
+before writing a value. It is a candidate for `ws-task`, and it should not be closed by writing
+documentation for a key that does not exist.
 
-- **`merge_style` is read and nothing writes it.** `ws-ship` uses *"the project's merge style
-  (`merge_style` in the cartridge)"*, and no template, example or adapter defines the key — so
-  **every project is permanently in the missing case**, where `ws-ship` asks or takes the repo's
-  own default. Its parent key is unstated too, so setting it is a guess either way.
-- **`house_rules.owned_by` degrades to the permissive branch.** Absent — or holding a `TODO:` —
-  it reads as `me`, so `ws-refine` may propose changes to rules you do not own, with no error and
-  no prompt. `company` is the switch that stops it. Write the value even when it is `me`: a
-  decision and a gap nobody noticed are the same value with different provenance.
-- **`tracker.lists` cannot name the done list.** The `trello` adapter defines the key as *"the
-  names of the lists that mean open and in progress"* — two lists — and then asks, once per card
-  forever, where a finished card goes and where review happens. Unlike `merge_style` the key
-  exists: its documented contract simply excludes the two values a writer most wants to set.
+- **`house_rules.owned_by` still degrades to the permissive branch**, and p8.34 narrowed this
+  rather than closing it. Absent — or holding a `TODO:` — it reads as `me`, so `ws-refine` may
+  propose changes to rules you do not own. What changed is that **both sites that read it now say
+  which branch they took**: `ws-refine` states "`owned_by` is not set, so I am treating these as
+  yours to change" before it proposes anything, and `ws-setup` tells you to write the value even
+  when it is `me`. *Reversing* the default was considered and rejected — it would turn a silent
+  permission into a silent refusal, which is not obviously better and is harder to notice. Write
+  the value: a decision and a gap nobody noticed are otherwise the same value with different
+  provenance.
+
+**Closed by p8.34**, and recorded here because the page said these were gaps for a week:
+
+- **`merge_style` was read with nothing writing it.** `ws-setup`'s template now ships
+  `git_flow.merge_style: squash`, and its parent is stated — `git_flow`, because the merge is part
+  of the flow rather than a property of one repo. Every project generated before that is still in
+  the missing case, where `ws-ship` asks.
+- **`rule_prefix` was asked and never recorded** — not previously listed here, which is itself
+  worth noting: the gap was in `ws-setup` rather than in a key, so a page organised by key had
+  nowhere to put it. It is a key now.
+
+**Moved, not closed:** `tracker.lists` cannot name the done list — the `trello` adapter defines it
+as *"the names of the lists that mean open and in progress"* and then asks, once per card forever,
+where a finished card goes. That is a boundary rather than a mismatch, and it lives in
+[`records/known-limitations.md`](../records/known-limitations.md), where it already was. This page
+carried a parallel copy; two copies of one finding is how they come to disagree.
 
 ## See also
 

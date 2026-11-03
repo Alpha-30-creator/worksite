@@ -1,7 +1,8 @@
 ---
 schema_version: 1
 project: worksite
-profile: full
+profile: full                       # lite | standard | full. No rule_prefix: this project has no
+                                    # rule skill, deliberately — see Settled, below
 state_dir: .worksite
 docs_home: docs/agent
 artifacts: workspace-state
@@ -40,6 +41,8 @@ repos:
 git_flow:
   branch_pattern: "<type>/<id>-<slug>"
   pr_into: integration_branch
+  merge_style: merge              # what every PR here has actually used; written so ws-ship
+                                  # stops asking once per ship (p8.34)
   release: "tag v<x.y.z> on main; no deploy, nothing is published to a registry"
   forbidden:
     - force-push to main
