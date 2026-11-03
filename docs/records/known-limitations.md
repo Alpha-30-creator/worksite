@@ -83,14 +83,18 @@ a marker for a human, not a compatibility mechanism.
 
 ## Tracks
 
-**The retirement guard asks whether commits are on a remote, and a repo with no remote therefore
-refuses every time.** Until p8.32 it asked whether an *upstream was configured*, which refused a
-branch `worktree add -b` had created and never committed to — carrying nothing, and so stranding
-every library-only track behind a guard protecting commits that did not exist. It now counts
-commits reachable from `HEAD` and from no remote-tracking ref, which covers the no-upstream case
-and the pushed-then-committed-again case with one question. **A repo with no remote at all still
-refuses, correctly** — those commits really do exist nowhere else — and that is the open question
-p8.40 holds, not a defect in the guard.
+**The retirement guard asks whether its own removal would lose commits — it took three drafts to
+ask that.** The first asked whether an *upstream was configured*, which refused a branch
+`worktree add -b` had created and never committed to, stranding every library-only track behind a
+guard protecting commits that did not exist. p8.32 replaced it with a count of commits on no
+remote-tracking ref, which fixed that and still asked about the wrong place: **a remote is where a
+copy lives, and `git worktree remove` removes a checkout, not a branch.** Measured — after
+removing a worktree whose branch held an unpushed commit, `refs/heads/<branch>` still points at
+it. So p8.40 made the count ask which commits would be left reachable from **no branch, tag or
+remote-tracking ref**, which refuses a shape that really loses work — a detached `HEAD` that
+committed — and stops refusing three that do not. Being on no remote is now a printed note:
+true, worth knowing, and not a reason to refuse. The decision is
+[ADR 0006](../decisions/0006-retirement-refuses-what-removal-would-lose.md).
 
 **A non-empty `<id>/` directory after retirement is reported, never deleted.** `git worktree
 remove` takes gitignored build output with it (measured), so a successful removal leaves the
@@ -211,26 +215,30 @@ because the `sed` that produces the ids constrains them to `[a-z0-9-]`, and
 — stated here because they look like the bug p8.13 fixed and the next reader will want to "fix"
 them.
 
-**What still assumes a remote, after p8.36.** `ws-ship`'s push and PR steps and `ws-wrap`'s push
-are unchanged: a local-only project genuinely cannot push or open a PR, and refusing is right.
-But neither *says* so — both run `git push -u origin <branch>` unguarded, so what a stranger
-actually sees is a raw git fatal, not an explanation. **And the consequence reaches past the
-push:** retiring a track refuses a **worktree** holding commits that are on no
-remote — by design, because those commits exist nowhere else. On a local-only project there is no
-remote at all, so **every** commit counts, and `ws-start`'s sweep keeps offering the same stale
-tracks. The refusal is the correct guard and must not be weakened.
+**What still assumes a remote, after p8.36 and p8.40.** `ws-ship`'s push and PR steps are
+unchanged: a local-only project genuinely cannot push or open a PR, and stopping is right, but
+neither *says* so. Its step 2 runs `git push -u origin <branch>` and then `gh pr create`, both
+unguarded, so what a stranger sees is a raw git or `gh` failure rather than an explanation. A
+local-only project therefore does not reach retirement through `ws-ship` at all; it gets there
+through `ws-task`'s drop path or `ws-start`'s stale sweep. `ws-wrap`'s push was the same until p8.40, which guarded
+it, because `ws-start`'s stale sweep names `ws-wrap` as the exit for a track that holds work and a
+remoteless project would be sent to a command that cannot run.
 
-**This is not an absolute bar, and three drafts of this paragraph have now got it wrong in both
-directions.** The first two named an escape that worked only against the old test — set a local
-upstream — and p8.32 removed the test that made it work. The third, written by p8.32 itself, then
-called the result "an absolute bar", which is equally false. What satisfies the current guard on a
-project with no remote is a **push to a local bare mirror**: measured, 2 commits on no remote,
-`git push` to a `--bare` repo on the same disk, count 0. It needs no network and no hosting, and
-it satisfies the guard's *meaning* — the commits really are in a second place — rather than
-dressing an unsatisfied guard in a ref. The remaining gap is that nothing in the pack tells anyone
-this, which is **p8.40**, whose acceptance is a written decision, amended there on 2026-11-03.
-A track configured `worktrees: false` is also never checked, since the guard only loops over the
-track's worktrees.
+**Retirement no longer assumes a remote at all** (p8.40,
+[ADR 0006](../decisions/0006-retirement-refuses-what-removal-would-lose.md)), and the paragraph
+that used to live here was wrong in both directions across three drafts — worth keeping as a
+record of how. The first two named an escape that worked only against the old test (set a local
+upstream); p8.32 removed the test that made it work. The third, written by p8.32, called the
+result "an absolute bar", which was equally false, and replaced it with the **local bare
+mirror**: measured, 2 commits on no remote, `git push` to a `--bare` repo on the same disk, count
+0. That measurement still holds, and it is still the honest answer to *"is this work anywhere but
+this machine"* — but it was being offered as the answer to *"may I remove this worktree"*, and
+p8.40 measured that the second question never depended on a remote. The bare mirror is a backup,
+not a precondition. Four drafts, and what finally settled it was measuring the operation rather
+than arguing about the test.
+
+A track configured `worktrees: false` is still never checked by the guard at all, since it only
+loops over the track's worktrees.
 
 **The retirement block's fenced shell is never executed by `verify`, on any platform.** `check.sh`
 reads the pack as text — frontmatter, links, parity — and CI runs `check.sh`, so a GNU-vs-BSD
@@ -241,10 +249,26 @@ still produce when the root's parent does not exist. No GNU `find` exists on the
 This is the general shape of the p7.3 lesson and it has not been closed: the pack's executable
 content is proved by whoever runs it, not by the gate.
 
-**Mid-rebase and mid-bisect state in a worktree is invisible to every check retirement makes.**
-The tree is clean and the commits are pushed, so retirement proceeds and `worktree remove` discards
-an in-progress rebase. Lost work rather than lost commits, and not something a commit count can be
-made to catch — recorded here because the guard's stated promise is about work, and this is work.
+**Mid-rebase and mid-bisect state in a worktree was invisible to every check retirement makes —
+closed by p8.40.** The tree is clean and every commit count returns zero, so nothing in the
+counting half of the guard could see it, and `worktree remove` discarded an in-progress rebase.
+It is now a refusal of its own, asked with `rev-parse --git-path` over `rebase-merge`,
+`rebase-apply`, `CHERRY_PICK_HEAD`, `MERGE_HEAD`, `REVERT_HEAD` and `BISECT_LOG`. Measured: a
+worktree parked at a `rebase -i` `edit` step reported a clean `status`, both commit tests returned
+0, and plain `worktree remove` succeeded and took `rebase-merge/` with it.
+
+**What replaced it as the open edge**, from p8.40's two review rounds. The sweep that finds a
+commit a worktree made and then **stepped off** is a **note, not a refusal**, and that is a
+deliberate loss: a reflog is full of commits no ref contains by design — every `amend`, every
+`pull --rebase`, every `reset --hard` — so as a refusal it blocked the ordinary path on every
+project and could not be satisfied without creating branches for commits the author had replaced.
+The consequence, measured: a stepped-off commit whose reflog has **expired** (default `gc` policy,
+30 days for unreachable entries) is lost on retirement with a `clean` line, and so is one named
+only by a `refs/worktree/*` ref. The sweep also **over**-reports in the other direction, because
+`for-each-ref` asked of the repository lists no worktree's `HEAD`: a commit another worktree is
+standing on is named although it survives. And `for-each-ref --contains` runs once per reflog
+entry — measured at 1.2s for 187 entries against 39 refs in this repo, and never benchmarked on a
+large one.
 
 The tracker adapter `ws-shared/trackers/roadmap-files.md`
 degrades with a named `COULD NOT REFRESH` message, but phrases it as "may be stale" even where

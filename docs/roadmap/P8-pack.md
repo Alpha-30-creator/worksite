@@ -488,7 +488,7 @@ a decision about its safety rules — but if a second safety-rule change comes u
   built a wrong tree; and `cd <repo> && npm …` exits **0** in the first fragment, because bash's
   `cd` silently ignores extra arguments — so the checks run in the wrong directory and report.
 
-## [~] p8.40 — A local-only project has no documented way to retire a track
+## [r] p8.40 — A local-only project has no documented way to retire a track
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -499,6 +499,9 @@ a decision about its safety rules — but if a second safety-rule change comes u
   same stale tracks at every session and nothing documents a way out. p8.36 made the loop usable
   without a remote; this is where "degrade, never fail" and "never discard work" meet, so it wants a
   written decision rather than a patch.
+- **The clause "those commits exist nowhere else" is false, and it is this task's own premise.**
+  See the second amendment below. Kept as written because three records and this `Why` all
+  repeated it, and what it cost is the point.
 - **Amended 2026-11-03 by p8.32, which changed what satisfies this guard.** This entry previously
   carried a **Measured** claim that setting a local upstream
   (`git branch --set-upstream-to=main <branch>`) satisfies the check once the work is merged. **That
@@ -514,6 +517,18 @@ a decision about its safety rules — but if a second safety-rule change comes u
   is **not** "the guard became impossible": it is "the guard now has one honest answer, and nothing
   tells anybody about it". A track configured `worktrees: false` is still never checked at all,
   since the guard only loops over the track's worktrees.
+- **Amended again 2026-11-03, while doing the task, and this one moves the question.** Both the
+  `Why` above and p8.32's amendment accept that a worktree holding unpushed commits is a worktree
+  whose removal would lose them. **Measured: it would not.** `git worktree remove` removes a
+  checkout, not a branch — after removing a worktree whose branch held an unpushed commit,
+  `refs/heads/<branch>` still points at it. The shape that does lose commits is a **detached
+  `HEAD`** that committed, and the shipped remote-based test cannot tell the two apart: in a
+  remoteless repo it refuses a fresh worktree with no commits of its own, a branch with an
+  unpushed commit, and a detached `HEAD` with nothing of its own, all three of which lose nothing.
+  So the decision this task asks for is not how to let a remoteless project past the guard, but
+  that the guard should ask whether **this removal** would leave a commit unreachable — which
+  consults no remote. The bare-mirror measurement above stands; it answers the backup question,
+  which becomes a printed note.
 - **Acceptance:**
   - [ ] a written decision on how a remoteless project retires a track without the guard losing
         its meaning — a bundle, an explicit acknowledgement, or a stated refusal with a reason
