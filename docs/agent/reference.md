@@ -99,13 +99,14 @@ The workspace root **is** the repo — a single-repo project. That matters twice
 - The state dir is normally uncommittable because the workspace root is not a git repo. Here it
   is, so `.worksite/` is protected by `.gitignore` alone. **Do not remove that line** — and since
   p8.31, removing it is a **check** rather than a reminder: `scripts/check.sh` section 5 reads
-  `state_dir` from this file and asserts `git check-ignore` matches it.
+  `state_dir` from this file and asserts `git check-ignore` matches it, and says so in its output
+  rather than passing silently ([ADR 0004](../decisions/0004-a-check-must-state-what-it-read.md)).
 
 | Path | Role |
 |---|---|
 | `skills/` | the pack as published: the thirteen workflow skills plus `ws-shared`, a plain copy out of the library ([ADR 0001](../decisions/0001-library-is-the-source-of-truth.md)). All Markdown except `ws-refine/audit.sh`, the graph audit — the one executable the pack ships, published by name and not by extension |
-| `examples/` | worked examples a stranger can read: two whole cartridges, `device.yaml`, `manifest.tsv`, a tracker example. Exists — the second cartridge landed with p8.5 |
-| `docs/` | STATUS, roadmap, decisions, worklog and this cartridge, plus the reference pages — the cartridge schema under `integration/`, the concepts page under `product/`, sync direction under `engineering/` — and `records/` for what a validation run found, `runbooks/` for procedures to follow under pressure, including purging a leak from history |
+| `skills/ws-shared/examples/` | worked examples a stranger can read: two whole cartridges, `device.yaml`, `manifest.tsv`, a tracker example. **There is no top-level `examples/`**, and git history shows there never was — this row named one until p8.25 measured it |
+| `docs/` | STATUS, roadmap, `decisions/`, worklog and this cartridge, plus the reference pages: the cartridge schema under `integration/`, the concepts page under `product/`, and **four** pages under `engineering/` — `layout.md` (what each check covers and misses), `stacks.md`, `sync-direction.md`, `trackers.md`. Then `records/` for what a validation run found, and `runbooks/` for procedures to follow under pressure, including purging a leak from history |
 | `scripts/check.sh` | the whole test suite, and the only thing any gate runs: leak scan, frontmatter, links, library parity, the state-dir ignore assertion, the object store, and the README's own claims (section 7 calls `scripts/check-readme-claims.sh`, p7.3) |
 | `scripts/publish.sh` | copies the `ws-*` skills out of the agent-sync library into the repo it sits in, behind the guard — the only way skills reach this repo ([ADR 0002](../decisions/0002-publishing-is-a-guarded-copy-from-the-library.md)). Which workspaces get published into is resolved by `ws-refine` from configuration that is never published, because a workspace path is itself a private name |
 | `scripts/leak-patterns.txt` | the patterns section 1 scans for, **and the `!` allowlist entries it strips before matching** — this file alone defines the scan's coverage. A private name that is not in here is invisible to the guard |
@@ -122,6 +123,7 @@ The workspace root **is** the repo — a single-repo project. That matters twice
 | The cartridge format | [../integration/cartridge-schema.md](../integration/cartridge-schema.md). The template in the pack's `ws-setup/templates/`, and this file, are worked examples of it |
 | Project-specific review risks | [risks/common.md](risks/common.md) |
 | **What each check actually covers, and what it misses** | [../engineering/layout.md](../engineering/layout.md) — the only page with the per-section blind spots, and it was unreachable from here until 2026-11-02 |
+| **Why the system is shaped as it is** | [../decisions/](../decisions/) — six ADRs. The ones that bind daily work: [0001](../decisions/0001-library-is-the-source-of-truth.md) the library is the source of truth, [0002](../decisions/0002-publishing-is-a-guarded-copy-from-the-library.md) publishing is a guarded copy, [0006](../decisions/0006-retirement-refuses-what-removal-would-lose.md) what retirement refuses |
 | Limitations that are recorded rather than tracked | [../records/known-limitations.md](../records/known-limitations.md) |
 | What a shipped task left behind | [worklog/](worklog/) — one file per track, written by `ws-ship` at harvest |
 | An in-flight track's journal | `.worksite/tracks/<id>/journal.md` — **local only** here, not mirrored. The entry header carries a derived device **alias** since p8.31, so the mirror is no longer the leak it was; `.gitignore` keeps it local anyway, because a journal records what was done on which machine and this repo is public. The reason is in the ignore file, not in memory |
@@ -144,6 +146,13 @@ The workspace root **is** the repo — a single-repo project. That matters twice
 - **No rule skill, deliberately.** `ws-setup` would normally generate one per code repo. This
   repo's "code" is the pack itself, and `ws-refine` already governs editing it — a rule skill
   would duplicate it. Revisit if `skills/` grows a build step.
+
+## Settled, and worth knowing
+
+The three below sat under *Open questions* until p8.25 — every sentence in them accurate, under a
+heading that had stopped describing its contents some tasks earlier. They are answers now, and
+they are kept because the reasoning is load-bearing.
+
 - **`worktrees: true`**, matching the new pack default (p8.6). Free here — a repo of Markdown
   has no dependency install to repeat, and fanout batches have run here on worktrees. What a
   worktree cannot isolate is work in the agent-sync library, which is not in `repos:`, so the
@@ -155,8 +164,9 @@ The workspace root **is** the repo — a single-repo project. That matters twice
   including the owner's, because it acts on the whole store rather than one track's changes. Its
   deploying half (`agent-sync apply`) is the lead's too, though that one is local and reversible
   and may run as often as verification needs. The rule, and why the graph audit follows the
-  deploy, is stated once in `ws-refine`'s *Who may run what* (p8.30, which corrected this
-  paragraph).
+  deploy, is stated once in `ws-refine`'s *Who may run what* —
+  [ADR 0003](../decisions/0003-shared-external-stores-are-declared-in-the-cartridge.md), whose
+  item 5 was amended to say it.
 - **No environments and nothing deploys.** `environments: {}` is accurate, not unfinished.
 - **CI runs `scripts/check.sh`** on every pull request and on pushes to `main` (p4.3), so the
   pre-commit hook is no longer the only guard — a contributor who never ran

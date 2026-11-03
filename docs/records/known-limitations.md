@@ -83,6 +83,19 @@ a marker for a human, not a compatibility mechanism.
 
 ## Tracks
 
+**A path written as a bare `` `path/` `` in a table cell has no check behind it, anywhere.**
+`scripts/check.sh` section 3 checks **relative links**, so a path inside Markdown link syntax is
+verified and a path inside backticks is not — and a cartridge's layout table is almost entirely the second kind. Measured
+by p8.25: this repo's own cartridge had a row for a top-level `examples/` directory that **no
+commit in the repo's history ever contained**, and someone had later added the word "Exists" to
+it. The files are at `skills/ws-shared/examples/`. Nothing could have caught it: the row named a
+path, not a link, and no gate reads paths out of prose. `ws-ship` now re-reads that class of row at
+harvest, which is a prompt rather than a check — the honest distinction, since a prompt depends on
+an agent doing it and a check does not. (Section 3 also reads link syntax out of **inline code**,
+which this entry discovered by writing an example of a link into it and watching the gate fail on
+the example. Worth knowing before quoting link syntax in any page this gate reads.) A `check.sh` section asserting that every backticked path
+in the cartridge exists would close it, and is not written.
+
 **The retirement guard asks whether its own removal would lose commits — it took three drafts to
 ask that.** The first asked whether an *upstream was configured*, which refused a branch
 `worktree add -b` had created and never committed to, stranding every library-only track behind a
