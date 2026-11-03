@@ -488,7 +488,7 @@ a decision about its safety rules — but if a second safety-rule change comes u
   built a wrong tree; and `cd <repo> && npm …` exits **0** in the first fragment, because bash's
   `cd` silently ignores extra arguments — so the checks run in the wrong directory and report.
 
-## [~] p8.40 — A local-only project has no documented way to retire a track
+## [r] p8.40 — A local-only project has no documented way to retire a track
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
