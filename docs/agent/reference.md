@@ -105,8 +105,8 @@ The workspace root **is** the repo — a single-repo project. That matters twice
 | Path | Role |
 |---|---|
 | `skills/` | the pack as published: the thirteen workflow skills plus `ws-shared`, a plain copy out of the library ([ADR 0001](../decisions/0001-library-is-the-source-of-truth.md)). Markdown apart from three files, and `scripts/publish.sh` classifies the two kinds differently: `ws-refine/audit.sh` is allowed by **exact relative path** (its `PACK_EXEC` list, deliberately not a `*.sh` glob), while `ws-shared/examples/manifest.tsv` and `ws-shared/examples/device.yaml` are allowed as **data extensions** and listed on every run. The audit is the only script here, is mode 644, and is run as `bash audit.sh` rather than executed ([ADR 0005](../decisions/0005-the-graph-audit-is-a-script-in-the-library.md)) |
-| `skills/ws-shared/examples/` | worked examples a stranger can read: two whole cartridges, `device.yaml`, `manifest.tsv`, a tracker example. **There is no top-level `examples/`**, and git history shows there never was — this row named one until p8.25 measured it |
-| `docs/` | STATUS, roadmap, `decisions/`, worklog and this cartridge, plus the reference pages: the cartridge schema under `integration/`, the concepts page under `product/`, and **four** pages under `engineering/` — `layout.md` (what each check covers and misses), `stacks.md`, `sync-direction.md`, `trackers.md`. Then `records/` for what a validation run found, and `runbooks/` for procedures to follow under pressure, including purging a leak from history |
+| `skills/ws-shared/examples/` | worked examples a stranger can read — six files: two whole cartridges, `device.yaml`, `manifest.tsv`, a tracker example, and the `README.md` that indexes them. **There is no top-level `examples/`**, and git history shows there never was — this row named one until p8.25 measured it |
+| `docs/` | every page is reachable from [`docs/README.md`](../README.md), which is the index and is the answer to "what is in here" — this row is a tour, not an inventory. `STATUS.md` and `roadmap/`; `decisions/` (ADRs); `integration/` (the cartridge schema); `product/` (the concepts page); `engineering/`, four pages, of which `layout.md` says what each check covers and misses; `records/` for dated findings **and** the standing `known-limitations.md`; `runbooks/` for procedures to follow under pressure; and `agent/` — this cartridge, plus `risks/`, `workspace/` and `worklog/` |
 | `scripts/check.sh` | the whole test suite, and the only thing any gate runs: leak scan, frontmatter, links, library parity, the state-dir ignore assertion, the object store, and the README's own claims (section 7 calls `scripts/check-readme-claims.sh`, p7.3) |
 | `scripts/publish.sh` | copies the `ws-*` skills out of the agent-sync library into the repo it sits in, behind the guard — the only way skills reach this repo ([ADR 0002](../decisions/0002-publishing-is-a-guarded-copy-from-the-library.md)). Which workspaces get published into is resolved by `ws-refine` from configuration that is never published, because a workspace path is itself a private name |
 | `scripts/leak-patterns.txt` | the patterns section 1 scans for, **and the `!` allowlist entries it strips before matching** — this file alone defines the scan's coverage. A private name that is not in here is invisible to the guard |
@@ -138,8 +138,15 @@ The workspace root **is** the repo — a single-repo project. That matters twice
 - **`verify` is `bash scripts/check.sh`.** There is no typecheck, lint, test or build here, and
   those are `null` on purpose. A repo of Markdown does not get an invented test runner.
 - **No AI attribution** in any commit or PR. No `Co-Authored-By`, no "Generated with".
-- `LICENSE` and the public npm scope `@abdur-codes/...` are allowed to contain the author's
-  name. Nothing else is.
+- **Where the author's name may appear, in full.** `LICENSE` and the public npm scope
+  `@abdur-codes/...` are the two places it belongs. The leak scan's own exclusion list is wider,
+  and reading it as the rule is the mistake to avoid: `excluded()` in `scripts/check.sh` exempts
+  `LICENSE`, `scripts/check.sh` itself, `scripts/leak-patterns.txt` and **all of `.githooks/*`**,
+  because a pattern file and the scanner that reads it necessarily contain the patterns. Those
+  exemptions are a scanning necessity, **not permission** — a name added to a hook or to the
+  scanner is published and unscanned. Everywhere else, a name is a defect. (This bullet said
+  "Nothing else is" until p8.25 measured the list: a security rule with an exhaustive clause and
+  three entries missing.)
 
 ## Open questions
 

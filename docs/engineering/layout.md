@@ -201,12 +201,12 @@ for each folder. This is that structure as it actually stands in this repo.
 | Folder | What belongs in it here | Kind | Stale means |
 |---|---|---|---|
 | [`product/`](../product/overview.md) | what the pack is, the design moves and why | living, slow | drift |
-| `engineering/` (this folder) | how the pack is built and composed: this page, [trackers.md](./trackers.md), [stacks.md](./stacks.md) | **living, fast** | **confidently wrong** — changes in the same PR as what it describes |
+| `engineering/` (this folder) | how the pack is built and composed — four pages: this one, [trackers.md](./trackers.md), [stacks.md](./stacks.md), [sync-direction.md](./sync-direction.md) | **living, fast** | **confidently wrong** — changes in the same PR as what it describes |
 | [`integration/`](../integration/cartridge-schema.md) | the contracts, key by key — the cartridge schema | living, contract | another reader builds against a shape that is not there |
-| [`decisions/`](../decisions/0001-library-is-the-source-of-truth.md) | ADRs, `NNNN-<slug>.md` | **immutable** | never edited; superseded by a newer ADR |
+| [`decisions/`](../decisions/0001-library-is-the-source-of-truth.md) | ADRs, `NNNN-<slug>.md` | **immutable in substance** | a decision is superseded by a newer ADR rather than rewritten — but an item inside one may be **amended in place**, with the date and task in the header (ADR 0003's item 5 was). "Never edited" was too strong |
 | [`roadmap/`](../roadmap/) | phases and tasks — this project's tracker | living | the plan is wrong, and the loop reads it |
 | [`runbooks/`](../runbooks/purge-a-leak-from-history.md) | a recurring operational procedure | living | **dangerous** — someone follows it |
-| [`records/`](../records/2026-11-01-documentation-pack-validation.md) | dated point-in-time reports: validations, audits, experiments | **immutable, dated** | cannot be stale — it records a moment |
+| [`records/`](../records/2026-11-01-documentation-pack-validation.md) | dated point-in-time reports: validations, audits, experiments — **and** the standing [`known-limitations.md`](../records/known-limitations.md), which is the one living file here | **mixed** | a dated report cannot be stale, since it records a moment; `known-limitations.md` is edited whenever a limitation is closed or its cause turns out to be different, and it can be wrong |
 | [`agent/`](../agent/reference.md) | the cartridge, plus [`risks/`](../agent/risks/common.md), `workspace/` and [`worklog/`](../agent/worklog/p3.1.md) | living | skills read a wrong fact, or read nothing |
 | [`STATUS.md`](../STATUS.md) | where the work is right now | living | the first thing anyone reads is wrong |
 

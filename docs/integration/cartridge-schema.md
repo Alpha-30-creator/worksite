@@ -30,7 +30,11 @@ shared files this page cites.
 The frontmatter holds the machine-readable facts: repos, tracker, git flow, environments, house
 rules and per-device overrides (`ws-shared/reference.md`). The prose below it holds the
 things a table cannot carry — the workspace layout, where to find what, the rules that override
-an agent's defaults, and the open questions.
+an agent's defaults, and the open questions. Those four are what `ws-setup` writes; a project may
+add sections of its own, and one worth knowing about is a home for items that have **stopped**
+being open questions. Leaving a settled answer under *Open questions* is the commonest instance of
+the tense defect the docs step looks for, and deleting it loses reasoning that is often
+load-bearing.
 
 **The division of labour matters.** Facts about *how to work on the project* belong here. Facts
 about *the product* belong in the docs tree, and facts about the *system* belong in
@@ -38,9 +42,10 @@ about *the product* belong in the docs tree, and facts about the *system* belong
 `ws-shared/review/documentation.md`). A cartridge that starts explaining the product has absorbed something that will go stale in it.
 
 **The prose half rots, and it rots from edits made elsewhere.** It is the only document in a
-project whose staleness is caused by work that never touched it, so `ws-ship` re-reads four
-classes of row at harvest — anything naming a task id, a phase, a path that does not exist yet, or
-a count — and asks whether each still *reads* correctly rather than whether it is still true. Two
+project whose staleness is caused by work that never touched it, so `ws-ship`'s **docs step**
+(section 4, before the merge — not the harvest) re-reads four classes of row: anything naming a
+task id, a phase, a path that does not exist yet, or a count. It asks whether each still *reads*
+correctly rather than whether it is still true, and its closing line reports whether it ran. Two
 rules for writing it so there is less to re-read:
 
 - **Prefer a link to a decision record over a task id.** `(p8.30)` tells a reader which task
