@@ -88,7 +88,6 @@ The gaps a reader would still hit, each carried as a task:
 | Gap | Task |
 |---|---|
 | a project with no git remote has no documented way to retire a finished track; the guard that refuses is correct, the workaround is undocumented | p8.40 |
-| `ws-refine` ends by pushing the whole library while `ws-fanout` forbids its subagents to push, so a library track inside a fanout batch is instructed both ways | p8.30 |
 
 Three more open tasks are about this repo's own authoring and tooling rather than anything a reader
 would meet; [docs/STATUS.md](docs/STATUS.md) has them.

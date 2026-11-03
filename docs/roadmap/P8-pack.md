@@ -749,7 +749,7 @@ citation is advisory and the quote is the durable half.
 **Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. Flagged twice and deliberately not taken twice, which is the
 third signal that it is not worth a track.
 
-## [r] p8.30 — Two skills give opposite instructions about pushing the library
+## [x] p8.30 — Two skills give opposite instructions about pushing the library · 2026-11-03 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/25
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
@@ -760,22 +760,55 @@ third signal that it is not worth a track.
   the lead resolved it by hand — the builder edited library files and stopped, the lead ran `save`
   and the graph audit before review. That resolution is nowhere in the pack.
 - **Acceptance:**
-  - [ ] one of the two skills states the rule for a library change run by a subagent, and the other
-        points at it — not two independent answers
-  - [ ] the rule covers who runs the graph audit, since the audit cannot see per-agent deployment
-        until `save` has run (p8.9)
-  - [ ] `ws-fanout`'s builder-brief bullet and `ws-refine`'s closing step agree in writing
-  - [ ] **the adapter path says a deploy is required, and that there is no way to test one without
-        publishing** *(from p7.1, 2026-11-02)*. `ws-shared/trackers/README.md`:12 says adding an
-        adapter "is adding a file in this folder" without saying which copy — authoring is the
-        library, reading is the deployed `~/.claude/skills/…`, and only `save` bridges them. A
-        stranger wrote a correct `pitwall` adapter with zero skill edits, and **the pack never
-        picked it up.** The author's own test of this passes, because the author's library is
-        already deployed. Added here rather than as its own task because it is this task's
-        mechanism: who crosses from library to deployed, and what it costs
-  - [ ] changed through `ws-refine`, with its graph audit
+  - [x] one of the two skills states the rule for a library change run by a subagent, and the other
+        points at it — not two independent answers. `ws-refine`'s *Who may run what — deploying is
+        not publishing*; pointed at from `ws-fanout` (×3), `ws-review`,
+        `ws-shared/trackers/README.md`, this project's cartridge and ADR 0003. **There were six
+        sites, not two**: `ws-fanout` disagreed with *itself* in three places, and two of the six
+        were records outside the pack — including the cartridge `AGENTS.md` orders every agent to
+        read first
+  - [x] the rule covers who runs the graph audit, since the audit cannot see per-agent deployment
+        until a deploy has run (p8.9) — measured: one undeployed library edit gives three
+        `AUDIT ABORTED … (pending)` lines and exit 1 before a single check runs; after
+        `agent-sync apply`, exit 0. So **whoever deployed runs the audit**, and only the lead
+        deploys
+  - [x] `ws-fanout`'s builder-brief bullet and `ws-refine`'s closing step agree in writing — five
+        `ws-fanout` sites reconciled, the fifth (its canonical Rules list) found by review
+  - [x] **the adapter path says a deploy is required, and what it costs** *(from p7.1,
+        2026-11-02)*. `ws-shared/trackers/README.md`:12 said adding an adapter "is adding a file in
+        this folder" without saying which copy — authoring is the library, reading is the deployed
+        `~/.claude/skills/…`, and measured, the four copies are independent files with different
+        inodes and no link between them: a probe written to the library alone was invisible to all
+        three agents. Added here rather than as its own task because it is this task's mechanism:
+        who crosses from library to deployed, and what it costs.
+
+        **Two claims in this criterion as written were false, and review caught both.** *"only
+        `save` bridges them"* — `agent-sync apply` bridges with no commit and no push, so the
+        criterion's headline "no way to test one without publishing" was wrong: trying an adapter
+        costs a local, reversible deploy. And *"a stranger wrote a correct `pitwall` adapter"* —
+        the record it cites says **two briefed agents**, explicitly calls that run "the one place
+        this is not a true stranger run", and the name `pitwall` appears nowhere in this repo. What
+        the record does say is that an agent with none of this project's history wrote a complete,
+        correct adapter for an invented tracker kind with zero skill edits and the pack never
+        picked it up. The third claim — that the author's own test passes because their library is
+        already deployed — had the wrong mechanism too: a *new* adapter file is undeployed in the
+        author's library as well; what makes their walk work is that `ws-refine` makes them deploy
+        before they test
+  - [x] changed through `ws-refine`, with its graph audit — exit 0, links 9 → 12 with 0 broken, and
+        its one finding (`ws-ship`'s prose offers `ws-review`, which its `What next?` does not
+        list) verified pre-existing by `cmp` against the published copy
 - **Notes:** the generic version of p8.5. p8.5 taught the gate that a shared store exists; this
   teaches the two skills who is allowed to publish one.
+- **The rule's first draft was unsatisfiable**, which is the finding worth carrying forward. It
+  said the lead runs `save` "once, after review" — but `ws-refine`'s own *Verify in two runs, and
+  the first one must fail* requires invoking a skill **before** deploying and again after, and
+  verification precedes review in this loop. So a skill-body change *must* be deployed before
+  review. It was already being violated: this change was deployed to all three agents before its
+  own review ran, because it had to be. The rule now separates a **deploy** (`agent-sync apply` —
+  local, reversible, commits and pushes nothing; the lead, as often as verification needs) from a
+  **publish** (`save`'s commit-and-push half; the lead, once, after review). A subagent does
+  neither. General form: **when one command does two things with different costs, a rule about
+  "the command" will be wrong about one of them.**
 
 ## [x] p8.31 — The leak surface has three uncovered edges and nothing asserts any of them · 2026-11-03 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/17
 

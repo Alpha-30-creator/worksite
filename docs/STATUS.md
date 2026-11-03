@@ -81,7 +81,6 @@ today, so they do not have to wait for P1–P7.
 | p8.25 | Shipping does not refresh the cartridge rows it invalidates | it defends the first file every agent reads, and this session hit it three times in one day |
 | p8.32 | A retired track leaves its parent directory behind | 9.6M of orphaned worktree on a real project, invisible to both sweep passes |
 | p8.34 | `ws-setup`'s profiles and the cartridge keys it writes | merged from p8.3 and p8.33 on 2026-11-02: the lite-profile contradiction cannot be resolved without the profile decision |
-| p8.30 | One rule for who may push the library | resolved by hand in the last batch, written down nowhere |
 
 ## Shipped
 
@@ -119,6 +118,7 @@ today, so they do not have to wait for P1–P7.
 | p7.2 | Tag and announce — the README's claims verified against the tagged tree | 2026-11-03 |
 | p7.3 | The README's claims are section 7 of the one gate | 2026-11-03 |
 | p8.39 | Quote the pack's path placeholders — filed as loud, measured silent at three of five | 2026-11-03 |
+| p8.30 | One rule for who may deploy and publish the library — six contradicting sites, not two | 2026-11-03 |
 
 ## Phases
 
