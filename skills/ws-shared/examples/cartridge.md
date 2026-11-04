@@ -71,6 +71,29 @@ environments:
   staging:    "https://staging.northwind.example — deploys from dev"
   production: "https://northwind.example — deploys from main"
 
+services:
+  # The AGENT's own access, one row per service, with `access:` the researched conclusion rather
+  # than a value anyone picks. Two kinds appear here because this project really has both.
+  - id: host
+    access: cli-session          # signed in once per machine; NO credential exists anywhere
+    cli: hostctl
+    install: npm i -g hostctl
+    check: hostctl whoami
+    human_step: "run `hostctl login` in your own terminal"
+    source_of_truth: "the host's dashboard; this workspace holds no copy"
+    forbidden: ["deploy from a local machine — deploys belong to CI"]
+  - id: db-platform
+    access: token                # a credential the human pastes, once
+    cli: dbctl
+    install: brew install dbctl
+    check: dbctl projects list
+    credential: DB_PLATFORM_TOKEN
+    human_step: "create a token at the url below and paste it into agents.env, once"
+    obtain: "the account-tokens page of its dashboard"
+    scope: "account-wide — reads and writes every project you own"
+    source_of_truth: "the dashboard; the file below is your copy"
+agent_env: .northwind/env/agents.env   # exists because one service above is `token`
+
 house_rules:
   ai_attribution: false
   owned_by: me

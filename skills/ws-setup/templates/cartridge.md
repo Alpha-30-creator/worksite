@@ -44,6 +44,29 @@ git_flow:
 
 environments: {}                # omit any that don't exist yet
 
+services: []                    # managed services the AGENT must drive; [] = none, and it is a
+                                # real answer. One row each, and `access:` is the agent's
+                                # researched conclusion, not a value the user picks:
+                                #   cli-session  a CLI the human signs in once; NO credential
+                                #   token        a credential the human pastes
+                                #   runtime-var  the credential is already in a runtime env file
+                                #   none         dashboard only; the agent stops and asks
+                                # - id: <as the user named it>
+                                #   access: cli-session
+                                #   cli: <command>
+                                #   install: <how to get it>
+                                #   check: <read-only command that PROVES access>
+                                #   human_step: "what the human does ONCE, per machine" — every
+                                #               kind that has one: a login, a token pasted
+                                #   credential: <ONE var name>           # token AND runtime-var
+                                #   env_file: <file that already holds it>    # runtime-var only
+                                #   obtain: <url the human visits>       # token only
+                                #   scope: <what it can reach, in a clause>   # token only
+                                #   source_of_truth: <where the live values are>
+                                #   forbidden: [<never run these from a local machine>]
+agent_env: null                 # <state_dir>/env/agents.env where some service is `token`;
+                                # null where none is, which writes no file and no folder
+
 house_rules:
   ai_attribution: false
   owned_by: me                  # me | company (company = rules followed, not authored)

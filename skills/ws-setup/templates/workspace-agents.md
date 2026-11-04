@@ -31,6 +31,26 @@ repo they cover.
 | `ws-sync` | Make this machine current |
 | `ws-env` | Credentials |
 
+## Services, and how you reach them
+
+<Generated from the cartridge's `services:`. Omit this whole section where that list is empty.
+One row per service: how access works, what proves it, and what must never be run from here.>
+
+| Service | How you reach it | What you did once | Proves it works | Never from a local machine |
+|---|---|---|---|---|
+
+<The third column is `human_step:` — the thing a human did, or still has to do, once per machine:
+a `login`, a token pasted, nothing. It is in the table because a session that finds a service
+unreachable needs to know whose step is missing before it starts debugging.
+
+Where a service is `runtime-var`, name the file `env_file:` points at — the credential is already
+there and an agent that is not told which file cannot find it, which is the state that kind exists
+to replace.
+
+Where a service is `token`, say which file holds it and how to load it:
+`set -a; source "<state_dir>/env/agents.env"; set +a`. Where a service is `none`, say in one line
+that there is no programmatic access and the agent asks instead of looking for one.>
+
 ## Rules that override defaults
 
 <from the cartridge's house_rules and git_flow>

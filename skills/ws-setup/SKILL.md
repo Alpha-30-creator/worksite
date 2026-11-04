@@ -1,6 +1,6 @@
 ---
 name: ws-setup
-description: Set up or upgrade one project's agentic workspace - interview for the repos, tracker, git flow, environments and house rules, then generate the state directory, the cartridge, the workspace instruction files, the per-area rule skills and the agent-sync wiring. On a project that already has some of this it detects what exists, shows a table of what it would add or change, and waits for a yes. Ends with a project an agent can work in, and never with something overwritten that you did not approve. Use when starting a new project, onboarding an existing one, or bringing an older one up to the current workflow. Not for making this machine current, which is ws-sync.
+description: Set up or upgrade one project's agentic workspace - interview for the repos, tracker, git flow, environments, house rules and the managed services the agent itself must drive, then generate the state directory, the cartridge, the workspace instruction files, any credential file those services need, the per-area rule skills and the agent-sync wiring. On a project that already has some of this it detects what exists, shows a table of what it would add or change, and waits for a yes. Ends with a project an agent can work in, and never with something overwritten that you did not approve. Use when starting a new project, onboarding an existing one, or bringing an older one up to the current workflow. Not for making this machine current, which is ws-sync.
 ---
 
 # Set up a workspace
@@ -100,10 +100,13 @@ confirmation — never ask what you can read.
 6. AI attribution on or off.
 
 Then generate and stop, writing **`tracker.kind: none`**, which the rung decides rather than a
-question. It is not the only unasked value: the template also ships `artifacts`, `agents_file`,
+question. **`services: []` and `agent_env: null` go in the same way**: question 13 is `standard`'s,
+so this rung writes no credential file — say in one line that a service the agent must drive gets
+declared by re-running `ws-setup` in upgrade mode, and that `ws-env init` is what creates a store
+if there is none yet. It is not the only unasked value: the template also ships `artifacts`, `agents_file`,
 `state_dir` and `worktrees`, and on this rung **say the four defaults out loud in one line** rather
 than letting them arrive silently — `workspace-state`, `copy`, `.<project>`, `true`. The one that
-must **not** be written unasked is `house_rules.owned_by`: question 11 exists because an unstated
+must **not** be written unasked is `house_rules.owned_by`: question 12 exists because an unstated
 `me` and a chosen `me` are the same value with different provenance, and writing it here would
 collapse exactly that. On `lite`, leave it absent. `ws-start` has a stated path for it: no board
 to read, so the task is written into `task.md` from the answer to "what is the work" rather than
@@ -143,7 +146,13 @@ plus its own questions:
     value even when it is `me`**: absent, it is *read* as `me`, so the guard that stops `ws-refine`
     proposing changes to rules you do not own never fires, and a decision and a gap nobody noticed
     become the same value with different provenance.
-13. **Credentials**, if any — whether the project has env files worth syncing (`ws-env`).
+13. **Credentials, and the services the agent will have to drive** — one question with two
+    halves. First: does the project have env files worth syncing (`ws-env`)? Those are the
+    *application's* credentials. Second, and new: **which managed services will the agent itself
+    have to operate** — the host, the database platform, the queue, whatever the project actually
+    runs on. **Offer nothing and name nothing**: the user lists them in their own words, and this
+    skill holds no list of services to prompt with. Then run *Services, and how the agent reaches
+    them* below, once per service, before you generate anything.
 14. **Environments** that exist *now*, and which do not exist yet — record the absent ones with
     a note rather than leaving them out, so a plan can say "this needs staging, which doesn't
     exist".
@@ -228,6 +237,182 @@ Where an answer is genuinely unknown, write `TODO:` into the cartridge. **Never 
 to fill a field** — a wrong fact in the cartridge is worse than a missing one, because every
 skill reads it.
 
+## Services, and how the agent reaches them
+
+Question 13's second half, worked once per service the user named. It ends with a `services:` row
+per service, possibly a credential file, a section in the generated `AGENTS.md`, and a pass/fail
+line per service that was **run** rather than assumed.
+
+**This skill knows no services, and that is deliberate.** A table of them here would do two
+things, both bad: scope a project to whatever was in the table, and go stale at the rate those
+services change their CLIs and their auth. What is generic is not *which* services exist but
+**what shapes access takes**, and there are four.
+
+### 1. Research each one, and establish rather than assume
+
+For each service the user named, work out how an agent operates it **from the service's own
+current documentation**, not from memory. You are looking for: is there a CLI; how does it
+authenticate; what exactly does the agent need in its hands; and what read-only command proves
+that access works.
+
+**Never assume a CLI is signed in.** That is the failure this section exists to prevent: a CLI on
+`PATH` looks like working access and is not, and the first thing to find out is a failed deploy
+mid-task. Where a CLI is present, **run its check command** and read the result.
+
+Where you cannot establish how access works — the documentation is unclear, the service is
+internal, the answer depends on a plan tier you cannot see — that is `TODO:` in the cartridge and
+a question to the user (R2). **Never invent a credential name**: a wrong variable name is worse
+than an absent one, because the user will paste a real token into it.
+
+**A service often offers more than one way in, and the row records the one *this project uses*.**
+Measured while this section was written: of two widely used platforms researched from their own
+current documentation, **both** supported a signed-in CLI session *and* an environment-variable
+token. So the question is never "which kind is this service" — it is "which kind is this project
+on", which depends on what the human already has. Someone who signed the CLI in last year is
+`cli-session` and needs nothing; the same service on a machine that has never seen it may be
+`token`. Record the one in use, say in a clause why, and leave the alternatives out: a row listing
+two mechanisms is a row nothing can check.
+
+**Two rules about *how* you research and test, and both are there because of what the agent can do
+to itself:**
+
+- **Never run the human's login step yourself.** An interactive login is a browser or
+  device-code flow, and running one from an agent session either hangs it waiting for input it
+  cannot give or opens a flow the human has to finish anyway. `human_step` is a line you
+  **print**. This was measured as a real hazard during this section's own research: one platform's
+  interactive login is documented by a third party as hanging an agent harness outright.
+- **Never put a credential on a command line, in `check:` or anywhere else.** Arguments reach
+  shell history and the process list, where a token outlives the command. Every CLI worth
+  recording reads its credential from the environment; `check:` is a bare command, and the
+  credential arrives via `set -a; source …; set +a`.
+- **A service whose `check:` is `null` reports `UNPROVED`, never `ok`.** That is the honest output
+  for a service with no read-only way to ask, and it is the same word 3b uses.
+- **Record only a read-only `check:`, and refuse anything else.** `ws-sync` runs whatever is in
+  that key, unprompted, on every machine catch-up — so a `check:` that deploys, writes, migrates,
+  deletes or costs money is **refused here**, at the only point where a human is in the
+  conversation. A service whose only proof of access is a write has **no** check: record `null`,
+  and let the report say `UNPROVED` rather than recording something that will be run.
+
+### 2. Conclude which of the four kinds it is
+
+The kind is **your conclusion, which the user confirms** — not a question they answer, because it
+is a fact about the service and they are entitled to not know it.
+
+| `access:` | What it means | What it needs from the human | What gets written |
+|---|---|---|---|
+| `cli-session` | a CLI the human signs in once, which then holds its own session | one `… login`, once per machine, **in their own terminal** | the CLI, its check, the login step. **No credential and no file** |
+| `token` | the service issues a credential the agent carries | create it, paste it, once | a block in `<state_dir>/env/agents.env` with the value **empty** |
+| `runtime-var` | the credential the control plane needs is already in a runtime env file | nothing | `credential:` for the variable's **name** and `env_file:` for the file that already holds it. Nothing new is created |
+| `none` | no programmatic access — a dashboard, a console, a human-only flow | the operation itself, every time | that the agent **stops and asks**, which is the correct behaviour rather than a gap |
+
+`none` is an answer. A service recorded that way makes an agent ask for a deploy instead of
+hunting for a way to do it itself, which is the behaviour you want and the opposite of what an
+absent row produces.
+
+### 3. Record it in the cartridge
+
+One row per service under `services:`, per the schema page. The two keys worth saying out loud
+when you fill them:
+
+- **`scope:`** — what that credential can reach, in a clause. The user is about to paste it; what
+  it can touch is the fact they need and the one nobody writes down.
+- **`source_of_truth:`** — where the live values actually are. For a hosted service it is the
+  dashboard, and the file in the workspace is *a copy, so nobody is ever locked out of knowing
+  what is configured*. A credential file that does not say this gets half-believed.
+
+Also propose the **`stack:` tags** those services imply, since those are what select the review
+packs — a managed Postgres with row-level security and a serverless host both have rules already
+written, and a tag is how a review finds them.
+
+### 4. Write a credential file only if something needs one
+
+**A project whose services are all `cli-session`, `runtime-var` or `none` gets no file and no
+folder**, and `agent_env: null` is the complete answer. Say so rather than creating an empty file:
+an empty credential file is a promise, which is the same rule that keeps `risks/` unseeded.
+
+Where at least one service came out `token`:
+
+| Write | What it is |
+|---|---|
+| `<state_dir>/env/agents.env` | **only** the agent's own credentials, one block per `token` service, **every value empty** |
+| `<state_dir>/env/README.md` | generated: a file / where-it-goes / is-it-secret table, the loading line, and the source-of-truth sentence |
+
+**`env/` rather than the state dir root**, and the reason is not cosmetic: reading
+`<state_dir>/*.md` is a routine agent habit — the journal, `task.md`, `plan.md` — and a secret must
+never be in the path of a habit. One subdirectory keeps the two apart.
+
+**No new ignore rule is needed and none is added.** The state dir is already uncommittable, and
+`ws-start` asserts that on every single run rather than trusting it. On a single-repo project the
+`.gitignore` line this skill already writes is what provides it — say that out loud here, because
+on that layout the line is the only thing between a pasted token and a public commit.
+
+The file is **written once and appended to**. It holds values the human typed, so a later service
+adds a block and nothing already in the file is rewritten, re-ordered or diffed into. **The agent
+writes no value, ever** — not a placeholder that looks like a value, not a token it found in
+another file, not one it generated.
+
+The loading line goes in the generated README and is the one an agent will need later:
+
+```bash
+set -a; source "<state_dir>/env/agents.env"; set +a   # export everything defined from here on, then stop
+```
+
+The `is-it-secret` column is honest rather than uniformly alarming. A publishable or anon key that
+is compiled into a browser bundle is **not** a secret — anyone who opens the site has it, and what
+protects the data is the service's own row-level rules. Marking it secret teaches the user to
+ignore the column.
+
+### 5. Then prove it, and say what the human must do
+
+Close the services step with two short blocks, in this order:
+
+```
+services, checked just now:
+  <service>   cli-session   `<check>`   ok — signed in as <account the command printed>
+  <service>   cli-session   `<check>`   NOT SIGNED IN — run <human_step>
+  <service>   token         `<check>`   NOT YET — <VAR> is empty in <path>
+  <service>   token         `<check>`   CLI MISSING — <install>
+  <service>   <any>         `<check>`   CHECK FAILED (exit <n>): <the command's own last line>
+  <service>   <any>         `<check>`   TIMED OUT after <n>s — it wanted input or kept polling
+  <service>   <any>         —           no check recorded, so access is UNPROVED, not ok
+  <service>   none          —           no programmatic access; the agent will ask you
+
+what you need to do, once:
+  1. run `<cli> login` in your own terminal                      (<service>)
+  2. install the CLI: <install>                                  (<service>)
+  3. create a token at <url> and paste it into <path> as <VAR>   (<service>)
+```
+
+Eight shapes, of which **seven** are `ws-sync` step 3b's too, because the two reports answer the
+same question on different days. Exactly one is this report's alone: `NOT YET`, the only moment
+where a value has not been pasted *yet* — on any later day that is simply a check that fails. (3b
+has an eighth of its own, for a row with no `access:` at all, which cannot happen here because this
+step is what writes the row.)
+Run each check the way 3b does — **run each check the way 3b does**, with stdin at `/dev/null` and
+bounded in time. Measured there: a real platform CLI, installed and unauthenticated, blocks
+indefinitely on its own login prompt. A check that times out is not a pass and is not a machine
+problem; it means the `check:` can prompt, so record one that cannot, or `null`. **`CLI MISSING` is the common first run**, not an edge case: a project
+is usually set up before its tooling is installed, and a report with no shape for it either says
+nothing or says `ok`. Where the check exits non-zero for a reason none of these covers, print the
+exit status and the command's own last line rather than a guess at what it meant.
+
+The first block is **run, not asserted** — an agent reporting access it did not test is the exact
+shape this pack exists to refuse. A check that fails is not a setup failure: it is the correct
+output of a setup where the human has a step left, which is why the two blocks are adjacent.
+
+**Then say how the credential reaches the second machine, because nothing else will.** A pasted
+token lives in one file on one laptop until it is encrypted into the store: `ws-env push` adds the
+`manifest.tsv` row for `agent_env`, and `ws-env init` offers that row when it is the step that
+created the store. Name the command in the same breath as asking for the paste — the definition is
+`ws-env`'s *init* section and this is a pointer at it, not a second copy — and say it only **after**
+a value exists, because a row whose file is still empty decrypts to blanks and overwrites a
+filled-in copy on the next `pull`.
+
+The operations a service must **never** be driven through from a local machine — a deploy that
+belongs to CI, a migration against production — go in `forbidden:` on the row, and from there into
+the generated `AGENTS.md`, where every later session meets them without being asked.
+
+
 ## Generate
 
 Show the full file list first and wait for a yes. Then, from `templates/`:
@@ -241,6 +426,8 @@ Show the full file list first and wait for a yes. Then, from `templates/`:
 | `<state_dir>/`, `<state_dir>/tracks/` | — | all three | and `me` if there are collaborators |
 | the tracker's own file | the adapter | standard, full | `TASKS.md` for `tasks-file`; nothing to write for a hosted kind |
 | the docs repo's `README.md` | — | **full, and only where question 17 created a docs repo** | what the repos are and where each page lives — content that exists the moment the project does. **Not `STATUS.md`**: that path is the tracker's `status_file` on a `roadmap-files` project, and "where the work stands" on a minutes-old project is the same promise-not-fact that keeps `risks/` unseeded |
+| `<state_dir>/env/agents.env` | — | standard, full — **and only where a service came out `token`** | one block per such service, **every value empty**. No `token` service means no file and no `env/` folder: see *Services, and how the agent reaches them* |
+| `<state_dir>/env/README.md` | — | same as above | the where-it-goes and is-it-secret table, the loading line, and where the live values actually live |
 | `<docs_home>/rules/<area>.md` | — | **full only** | one per rule skill; start from what the repo already does |
 | `~/.agent-sync/store/skills/<rule_prefix>-<area>/SKILL.md` | `templates/rule-skill.md` | **full only** | thin: points at `rules/<area>.md` |
 
@@ -333,6 +520,14 @@ loop has been used on a real task in that project. Never in the same change as t
   changes and ship through a task, not through setup.
 - No AI attribution in anything generated, including the library commit.
 - Adding a tracker or a stack means adding a file in `ws-shared/`, never editing a skill (R4).
+- **Never run a service's `login`, and never open its browser flow.** It needs a terminal the agent
+  is not, and an interactive login can hang the session outright. `human_step` is printed.
+- **The agent writes no credential value, ever** — not into the generated file, not a placeholder
+  that looks like a value, not one copied out of another file.
+- **Record only a read-only `check:`.** `ws-sync` runs it unprompted on every machine; a service
+  whose only proof is a write gets `check: null`.
+- **No service is named in this skill, and none is proposed from a list.** The user names them;
+  you research them.
 
 ## What next?
 
