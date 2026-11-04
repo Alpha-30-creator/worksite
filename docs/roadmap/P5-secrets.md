@@ -1,7 +1,8 @@
 # P5 — Credentials sync that starts from nothing
 
-**Reopened 2026-11-04.** It closed on 2026-11-02 because an init mode was "work for a user who
-does not exist yet. Revisit when one does." That condition is met: the owner asked for an init
+**Reopened and closed again on 2026-11-04**, with p5.3 shipped. It had closed on 2026-11-02 because
+an init mode was "work for a user who does not exist yet. Revisit when one does." That condition was
+met: the owner asked for an init
 path for new users, and for the setup interview to ask which managed services the agent will have
 to operate and then write the credentials file it needs. p5.1 and p5.2 stay dropped — ids are
 never reused — and the work is one row, p5.3, because the two halves share the file they hand
@@ -17,7 +18,7 @@ each other.
 
 **Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. It documents p5.1, which is dropped.
 
-## [r] p5.3 — `ws-env` cannot start a new user, and nothing asks which services the agent must operate · claimed 2026-11-04 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/30
+## [x] p5.3 — `ws-env` cannot start a new user, and nothing asks which services the agent must operate · 2026-11-04 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/30
 
 - **Repos:** worksite (pack)
 - **Depends on:** —

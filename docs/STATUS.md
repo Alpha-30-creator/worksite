@@ -49,15 +49,25 @@ author's own setup disproved its central assumption.
 
 ## In progress
 
-**p5.3 is claimed** (2026-11-04). The board had reached **zero** on 2026-11-03, from 32 a week
-earlier and 9 at the start of that day; p5.3 is the one row on it since, and it **reopened P5**,
-which had closed on the reasoning that an init mode was work for a user who did not exist yet.
-That user is the owner: `ws-env` gains an `init` mode that creates a store from nothing, and
-`ws-setup` gains the question that asks which managed services the agent must drive — the user
-names them, the agent researches each and concludes **how** access works from four kinds, and a
-credential file is generated **only where a service needs one**, which is the minority case: a CLI
-the human signed in once needs none. One row, because where a file does exist it is what `init`
-encrypts.
+**Nothing claimed, and nothing open.** The board is back at **zero**: it reached zero on 2026-11-03
+from 32 a week earlier, and the one row opened since — p5.3 — shipped on 2026-11-04.
+
+**p5.3 shipped 2026-11-04** ([PR #30](https://github.com/Alpha-30-creator/worksite/pull/30)), and it
+**reopened P5**, which had closed on the reasoning that an init mode was work for a user who did not
+exist yet. That user is the owner. `ws-env` gained a fifth mode, `init`, which creates an encrypted
+store from nothing — the other four all assumed one existed, and its own pre-flight told a
+first-ever machine to clone a store it does not have. `ws-setup`'s question 13 now also asks which
+managed services **the agent itself** must drive: the user names them, the agent researches each and
+concludes *how* access works from a closed vocabulary of four kinds, and a credential file is
+written **only where a service needs one** — the minority case, since a CLI the human signed in once
+needs none. `ws-sync` gained step 3b, which re-runs each service's own read-only check, because
+access is per machine. The first design was a table of named services, rejected by the owner and
+then falsified by his own setup. **Four review rounds, 42 findings, and every round found defects
+created by the previous round's fixes** — 12, 10, 10, 10, a count that never fell. Three of the
+sharpest were a guard written but never made executable (git ignores a non-executable hook and
+commits anyway), an inverted `.sops.yaml` rule order that would have left `personal/` readable
+without its passphrase, and a credential value printed into a report by the very code added to
+redact it.
 
 **p8.34 shipped 2026-11-03** ([PR #29](https://github.com/Alpha-30-creator/worksite/pull/29)): the
 last row. `ws-setup`'s profile is **asked** rather than inferred from folder shape, on a three-rung
@@ -127,11 +137,10 @@ its boundary in the next.
 
 ## Next up
 
-**p5.3, and nothing behind it.** Seven of the eight phase files have **zero** open rows —
-measured, not asserted; P5 holds the one. Three of the seven say so at the top (P2, P4, P6); P1,
-P3, P7 and P8 are empty without a closing line, which is a difference in bookkeeping rather than
-in state, and worth one line here rather than four commits. What is otherwise left is recorded
-rather than tracked, in [records/known-limitations.md](records/known-limitations.md) — including the two
+**Nothing.** All eight phase files have **zero** open rows — measured, not asserted. Four of them
+say so at the top (P2, P4, P5, P6); P1, P3, P7 and P8 are empty without a closing line, which is a
+difference in bookkeeping rather than in state, and worth one line here rather than four commits.
+What is left is recorded rather than tracked, in [records/known-limitations.md](records/known-limitations.md) — including the two
 boundaries this week chose not to close: a path named in a cartridge's prose has no check behind it
 (filed as p8.41 and dropped the same day, its measurement kept in the dropped row), and no profile
 has been generated end to end, which wants a stranger run rather than a task.
@@ -177,6 +186,7 @@ has been generated end to end, which wants a stranger run rather than a task.
 | p8.40 | Retirement refuses what its removal would lose, not what is unpushed | 2026-11-03 |
 | p8.25 | `ws-ship` re-reads the cartridge rows a shipped task invalidates without touching | 2026-11-03 |
 | p8.34 | `ws-setup`'s profiles asked rather than inferred, and the keys that follow | 2026-11-03 |
+| p5.3 | `ws-env init`, and the services the agent must drive | 2026-11-04 |
 
 ## Phases
 
@@ -186,7 +196,7 @@ has been generated end to end, which wants a stranger run rather than a task.
 | [P2](roadmap/P2-depersonalise.md) | The pack in the repo, generic — **closed** | no |
 | [P3](roadmap/P3-reference.md) | The docs a stranger needs | no |
 | [P4](roadmap/P4-install.md) | README and an agent-readable install — **complete** | no |
-| [P5](roadmap/P5-secrets.md) | Credentials sync that starts from nothing — **reopened 2026-11-04** (p5.3) | no |
+| [P5](roadmap/P5-secrets.md) | Credentials sync that starts from nothing — **reopened and closed again 2026-11-04** (p5.3) | no |
 | [P6](roadmap/P6-updates.md) | Publishing, and how users take updates — **closed** | no |
 | [P7](roadmap/P7-release.md) | Proven by a stranger, then tagged | no |
 | [P8](roadmap/P8-pack.md) | Pack defects | **yes** |

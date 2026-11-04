@@ -83,15 +83,15 @@ and each one closed as a fix, a written limitation or a filed task rather than a
 `INSTALL.md` fixes, three limitations, two tasks that have both since shipped, and one criterion
 added to the third row below.
 
-The gaps a reader would still hit, each carried as a task:
+No gap a reader would hit is open right now. The last one closed on 2026-11-04: a first-time user
+with no encrypted store could not be started by `ws-env` at all — every one of its modes assumed a
+store already existed — and the setup interview never asked which managed services the agent itself
+must drive, so the token it needs, or the CLI session it already has, was never named, obtained or
+checked.
 
-| Gap | Task |
-|---|---|
-| a first-time user with no encrypted store cannot be started by `ws-env` — all four of its modes assume the store exists — and the setup interview never asks which managed services the agent itself must drive, so the credential it needs to run their CLIs is never named, obtained or synced | p5.3 |
-
-No more open tasks: the board reached zero on 2026-11-03, from 32 a week earlier, and p5.3 is the
-one row on it since. [docs/STATUS.md](docs/STATUS.md) records what shipped and what is
-deliberately recorded rather than tracked.
+No open tasks are left. The board was at zero on 2026-11-03, from 32 a week earlier; p5.3 reopened
+P5 on 2026-11-04 and shipped the same day. [docs/STATUS.md](docs/STATUS.md) records what shipped
+and what is deliberately recorded rather than tracked.
 
 **To install it**, point your agent at [INSTALL.md](INSTALL.md) — it is written for the agent
 rather than for you, and it stops rather than guessing whenever only you can answer. If you would
