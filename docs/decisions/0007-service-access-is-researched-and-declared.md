@@ -70,7 +70,7 @@ agent writes no value, ever.
 ## Consequences
 
 - A service's access can be **unverifiable**: where it offers no read-only check, `check:` is
-  `null` and the report says `no check` rather than `ok`. That is recorded as a boundary in
+  `null` and both reports say `UNPROVED` rather than `ok`. That is recorded as a boundary in
   `records/known-limitations.md`.
 - `ws-sync` grows a step that runs commands against third-party CLIs. They are read-only by
   construction — the skill that records a `check:` refuses one that is not — and the enforcement is

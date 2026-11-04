@@ -6,10 +6,9 @@ skills are generic; the cartridge is what makes them act like they were written 
 This page is the format. It documents the schema **as the pack actually implements it**, which
 means it also names the places where the schema and the pack disagree — see
 [Known gaps](#known-gaps). Every key here is one the pack **writes or reads**, and the handful that
-nothing reads say so in their own row — `repos[].role`, `schema_version`, and three `services[]`
+nothing reads say so in their own row — `repos[].role`, `schema_version`, and the two `services[]`
 keys written for a human rather than for a skill: `scope` and `source_of_truth`, which the person
-pasting a credential needs, and `env_file`, which tells a reader where a `runtime-var` credential
-already lives. None is documentation for
+pasting a credential needs. None is documentation for
 a key that does not exist, which is the thing this sentence is for; "nothing here describes a key
 the pack does not read" is what it used to say, and the page's own rows had disproved it since
 p3.1 counted two of them.
@@ -568,7 +567,7 @@ services:
 agent_env: <state_dir>/env/agents.env
 ```
 
-**`access:` is a closed vocabulary of four, and the pack names no service anywhere.** A list of
+**`access:` is a closed vocabulary of four, and no skill holds a list of services to prompt with (the stack packs are named for platforms, which ADR 0007 scopes).** A list of
 services in a skill would scope a project to that list and go stale at the services' own rate;
 what generalises is the *shape* of access:
 
@@ -594,7 +593,7 @@ running it would be the step contradicting the declaration it just read.
 | `services[].check` | string — **read-only** | no | `null` | `ws-sync` 3b, `ws-setup`'s closing report | **access is unverifiable**, which is the one gap that matters: a CLI on `PATH` then reads as access. `null` is honest where the service offers no such command, and both reports then say `UNPROVED` rather than `ok` |
 | `services[].human_step` | string | no | none | `ws-setup`, `ws-sync` | a failed check names no remedy — *inferred* |
 | `services[].credential` | string — **one** variable name | **conditional** — `access: token` and `access: runtime-var` both need it | none | `ws-setup` (generates the block for `token`), `ws-sync` 3b (names it in a failed `token` row), `ws-env` | nothing to generate, nothing to paste into, and a failed check cannot name what is missing — *inferred* |
-| `services[].env_file` | path — the runtime env file that already holds `credential:` | **conditional** — `access: runtime-var` needs it | none | nothing reads it; it is the second half of what `runtime-var` records, and without it that kind cannot be fully declared | the row says a credential exists somewhere and does not say where, which is the state `runtime-var` exists to replace — *inferred* |
+| `services[].env_file` | path — the runtime env file that already holds `credential:` | **conditional** — `access: runtime-var` needs it | none | `ws-setup`, which names the file in the generated `AGENTS.md` so a later session knows where the credential already is | the row says a credential exists somewhere and does not say where, which is the state `runtime-var` exists to replace — *inferred* |
 | `services[].obtain` | string — a url | no | none | `ws-setup`'s closing report | the user is told to paste a token and not where to get one — *inferred* |
 | `services[].scope` | string — what the credential reaches | no | none | nothing reads it; it is **for the human**, who is about to paste it | the user hands over an unknown blast radius — *inferred* |
 | `services[].source_of_truth` | string | no | none | nothing reads it; for the human | a copied credential file gets half-believed, because nothing says whether it or the dashboard is live — *inferred* |
@@ -786,7 +785,7 @@ environments: {}                # record the ones that DON'T exist too, with a n
 
 services: []                    # what the AGENT must drive. [] = none, and it is a real answer.
                                 # access: cli-session | token | runtime-var | none — a closed
-                                # vocabulary of SHAPES; the pack names no service anywhere.
+                                # vocabulary of SHAPES; no skill holds a list of services to prompt with (the stack packs are named for platforms, which ADR 0007 scopes).
                                 # cli-session needs no credential at all, which is the common case
 agent_env: null                 # a credential file only where some service is `token`
 
