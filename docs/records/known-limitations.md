@@ -1,6 +1,6 @@
 # Known limitations
 
-**Started 2026-11-02 with eleven entries; it has grown with every task since** — 52 now, under six
+**Started 2026-11-02 with eleven entries; it has grown with every task since** — 53 now, under six
 headings. (Both numbers were wrong one draft ago: the preamble said seventeen, and the correction
 said 49 — a count that includes this paragraph's own bold lead-in. The file's first commit is
 titled "record eleven known limitations". **How to re-measure it**, since every previous count was
@@ -12,7 +12,7 @@ line**; a bold phrase that merely begins a wrapped line inside an entry does not
 awk 'prev=="" && /^\*\*/ {n++} {prev=$0} END {print n-1}' docs/records/known-limitations.md
 ```
 
-`n-1` because this paragraph's own lead-in qualifies. It prints 52.) Each names a mechanism in this repo or in the pack that works, and the boundary it
+`n-1` because this paragraph's own lead-in qualifies. It prints 53.) Each names a mechanism in this repo or in the pack that works, and the boundary it
 stops at: the mechanism in one clause, the boundary in the next. This is a record rather than a
 task list, and it is the one **living** file in `records/` — an entry is edited when the mechanism
 changes, when a limitation closes, and when its stated cause turns out to have been wrong. All
@@ -90,6 +90,15 @@ followed by prose the closing `---` and the next top-level heading both terminat
 has not bitten, and it is an assumption rather than a guarantee. Every clause here was measured
 2026-11-04 by running the block against three cartridge shapes and a six-service fixture.
 
+**`ws-env pull` writes before the compare-and-ask it promises, and the comparator reads names
+only.** The mode's code block writes every destination, and the rule that a differing local file is
+compared and asked about follows it, with a `diff` of variable **names**. So two things it is relied
+on for, it cannot do: a value that changed is invisible to it, and a file whose values are still
+empty — the hazard `ws-env init` and `ws-setup` both warn about when a generated `agents.env` has
+not been filled in — compares equal and overwrites a filled-in copy. Pre-existing, found
+2026-11-04 while the init-paste-push path was being written, and recorded rather than fixed because
+re-ordering that mode is its own change.
+
 **`ws-env status` cannot be fully answered without the age key.** Its table promises whether each
 file matches the store "by variable names, never values", which requires decrypting. So the mode
 the skill calls "read-only and always safe" is complete only on a machine that already holds the
@@ -100,7 +109,7 @@ that itself rather than only this record: it names the columns it could not answ
 **A service's access can be unverifiable, and then nothing proves it.** `services[].check:` is the
 read-only command that turns "the agent has access" into evidence, and `ws-setup` and `ws-sync`
 step 3b both run it. Where a service offers no such command the key is `null` and both report
-`no check` rather than `ok` — which is honest and is still an absence of proof. The case it leaves
+`UNPROVED` rather than `ok` — which is honest and is still an absence of proof. The case it leaves
 open is the one the mechanism exists for: a CLI that is present, unauthenticated, and has no way to
 be asked. Measured as a design limit on 2026-11-04 rather than from an instance.
 

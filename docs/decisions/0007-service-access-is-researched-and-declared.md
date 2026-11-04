@@ -24,8 +24,12 @@ was modelled on.
 
 ## Decision
 
-**The pack names no service. The user names them; the agent researches each one; what the pack
-defines is the closed vocabulary of how access works.** Four kinds:
+**No skill asks about, proposes or knows a particular service. The user names them; the agent
+researches each one; what the pack defines is the closed vocabulary of how access works.** The
+claim is scoped deliberately: `ws-shared/stacks/` does carry packs named for particular platforms,
+because a review rulebook is about a technology by nature, and `ws-setup`'s services step proposes
+those tags. What no skill contains is a list of services to prompt with, or any fact about how one
+of them authenticates. Four kinds:
 
 | `access:` | What it means |
 |---|---|
@@ -38,7 +42,8 @@ The conclusion is **the agent's, confirmed by the user** — it is a fact about 
 user is entitled not to know it. It is written into the cartridge as `services:`, reaches every
 later session through the generated `AGENTS.md`, and is **proved by running** each service's own
 read-only `check:` rather than asserted: `ws-setup` runs them at the end, and `ws-sync` re-runs
-them, because access is per machine and a signed-in CLI is signed in on exactly one.
+them, because access is per machine and a signed-in CLI is signed in on exactly one. Where no
+read-only check exists, `check:` is `null` and both reports say `UNPROVED` — never `ok`.
 
 A credential file is written **only where some service is `token`**, at
 `<state_dir>/env/agents.env`, holding only the agent's own credentials with every value empty. The

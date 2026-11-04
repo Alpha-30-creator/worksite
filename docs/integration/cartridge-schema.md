@@ -6,8 +6,10 @@ skills are generic; the cartridge is what makes them act like they were written 
 This page is the format. It documents the schema **as the pack actually implements it**, which
 means it also names the places where the schema and the pack disagree — see
 [Known gaps](#known-gaps). Every key here is one the pack **writes or reads**, and the handful that
-nothing reads say so in their own row — `repos[].role`, `schema_version`, and the two
-`services[]` keys that exist for the human about to paste a credential. None is documentation for
+nothing reads say so in their own row — `repos[].role`, `schema_version`, and three `services[]`
+keys written for a human rather than for a skill: `scope` and `source_of_truth`, which the person
+pasting a credential needs, and `env_file`, which tells a reader where a `runtime-var` credential
+already lives. None is documentation for
 a key that does not exist, which is the thing this sentence is for; "nothing here describes a key
 the pack does not read" is what it used to say, and the page's own rows had disproved it since
 p3.1 counted two of them.
@@ -578,16 +580,18 @@ what generalises is the *shape* of access:
 | `none` | the operation itself, every time | n/a | no |
 
 `access: none` is a positive answer, not a gap: it is what makes an agent **ask** for a deploy
-instead of hunting for a way to do it itself.
+instead of hunting for a way to do it itself. `ws-sync` step 3b therefore does not run a check
+against such a service even if one is recorded — it reports `UNPROVED` and says why, because
+running it would be the step contradicting the declaration it just read.
 
 | key | type | required | default | read by | missing → |
 |---|---|---|---|---|---|
 | `services` | list of maps | no | `[]` — a real answer, meaning the agent drives none | `ws-setup` writes it; `ws-sync` step 3b runs each `check:`. **Nothing else reads it yet** — neither `ws-plan` nor `ws-debug` mentions services, and calling that "by concept" would borrow a phrase section 4 reserves for a skill that acts on the value | nobody knows how the agent reaches anything, so each session works it out again and the `cli-session` case is assumed rather than tested — *inferred* |
 | `services[].id` | string — the user's own word for it | **conditional** — a row needs it | none | every reader | the row cannot be named in a report — *inferred* |
 | `services[].access` | `cli-session` \| `token` \| `runtime-var` \| `none` | **conditional** — a row needs it | none | `ws-setup`, `ws-sync` | the row says nothing actionable; treat as `TODO:` and ask rather than guessing the shape — *inferred* |
-| `services[].cli` | string, or `null` where control is HTTP-only | no | `null` | `ws-sync`, `ws-setup` | no command to look for, so `check:` is the only signal — *inferred* |
+| `services[].cli` | string, or `null` where control is HTTP-only | no | `null` | `ws-setup`, for the interview and the generated `AGENTS.md`. **`ws-sync` does not read it** — step 3b takes the command to test for from the first word of `check:`, so the two cannot disagree | nothing is lost in 3b, which never consulted it; `ws-setup`'s report and the generated instructions lose the command's name — *inferred* |
 | `services[].install` | string | no | none | `ws-sync` 3b, which prints it when the CLI is absent | the report can say the CLI is missing but not how to get it — *inferred* |
-| `services[].check` | string — **read-only** | no | `null` | `ws-sync` 3b, `ws-setup`'s closing report | **access is unverifiable**, which is the one gap that matters: a CLI on `PATH` then reads as access. `null` is honest where the service offers no such command, and the report says `no check` rather than `ok` |
+| `services[].check` | string — **read-only** | no | `null` | `ws-sync` 3b, `ws-setup`'s closing report | **access is unverifiable**, which is the one gap that matters: a CLI on `PATH` then reads as access. `null` is honest where the service offers no such command, and both reports then say `UNPROVED` rather than `ok` |
 | `services[].human_step` | string | no | none | `ws-setup`, `ws-sync` | a failed check names no remedy — *inferred* |
 | `services[].credential` | string — **one** variable name | **conditional** — `access: token` and `access: runtime-var` both need it | none | `ws-setup` (generates the block for `token`), `ws-sync` 3b (names it in a failed `token` row), `ws-env` | nothing to generate, nothing to paste into, and a failed check cannot name what is missing — *inferred* |
 | `services[].env_file` | path — the runtime env file that already holds `credential:` | **conditional** — `access: runtime-var` needs it | none | nothing reads it; it is the second half of what `runtime-var` records, and without it that kind cannot be fully declared | the row says a credential exists somewhere and does not say where, which is the state `runtime-var` exists to replace — *inferred* |
