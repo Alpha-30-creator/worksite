@@ -1,9 +1,12 @@
 # Known limitations
 
-**Started 2026-11-02 with eleven entries; it has grown with every task since** — 48 now, under six
+**Started 2026-11-02 with eleven entries; it has grown with every task since** — 50 now, under six
 headings. (Both numbers were wrong one draft ago: the preamble said seventeen, and the correction
 said 49 — a count that includes this paragraph's own bold lead-in. The file's first commit is
-titled "record eleven known limitations".) Each names a mechanism in this repo or in the pack that works, and the boundary it
+titled "record eleven known limitations". **How to re-measure it**, since every previous count was
+taken by hand and two were wrong: `grep -c '^\*\*'` gives 52, from which two lines are not
+entries — this paragraph's lead-in, and the bolded `**template**:` continuation inside the
+repo-path-loops entry.) Each names a mechanism in this repo or in the pack that works, and the boundary it
 stops at: the mechanism in one clause, the boundary in the next. This is a record rather than a
 task list, and it is the one **living** file in `records/` — an entry is edited when the mechanism
 changes, when a limitation closes, and when its stated cause turns out to have been wrong. All
@@ -53,14 +56,33 @@ project.
 **Three of the pack's documented steps cannot be run in a sandbox.** `ws-sync` step 1
 (`agent-sync sync` — pull, apply, push against the real library, with no read-only form),
 `ws-env pull` (decrypts to disk), and `agent-sync save` (deploys to every agent and pushes) all
-write outside a working directory, and none has a `--store` or dry-run escape. A cautious
+write outside a working directory, and none has a `--store` or dry-run escape. **`ws-env init`,
+added 2026-11-04, is the one that does**: `--store <dir>` points it at a throwaway directory and
+every line of its output names the store it acted on, so creating a store can be trialled and
+proved without touching the real one. That is one mode of one skill, not a pattern the other three
+have adopted, and the three above are unchanged. A cautious
 first-time user therefore cannot trial the pack without writing to their own machine. Measured
 2026-11-02 when two agents following `INSTALL.md` refused all three.
 
 **`ws-env status` cannot be fully answered without the age key.** Its table promises whether each
 file matches the store "by variable names, never values", which requires decrypting. So the mode
 the skill calls "read-only and always safe" is complete only on a machine that already holds the
-key; elsewhere the match column is unverified rather than clean.
+key; elsewhere the match column is unverified rather than clean. Since 2026-11-04 the skill says
+that itself rather than only this record: it names the columns it could not answer, because
+"unverified" and "matches" must not render the same.
+
+**A service's access can be unverifiable, and then nothing proves it.** `services[].check:` is the
+read-only command that turns "the agent has access" into evidence, and `ws-setup` and `ws-sync`
+step 3b both run it. Where a service offers no such command the key is `null` and both report
+`no check` rather than `ok` — which is honest and is still an absence of proof. The case it leaves
+open is the one the mechanism exists for: a CLI that is present, unauthenticated, and has no way to
+be asked. Measured as a design limit on 2026-11-04 rather than from an instance.
+
+**Nothing enforces that a `check:` is read-only.** The rule is written where the key is recorded —
+`ws-setup` refuses to record a command that is not — and `ws-sync` runs whatever it finds there. So
+a cartridge that was hand-edited, or whose author ignored the rule, hands a machine catch-up an
+arbitrary command. It is a written rule rather than a mechanism, stated here because the step that
+relies on it runs unprompted.
 
 **A retirement block that must run whole can be refused for being exactly that.**
 `ws-shared/tracks.md` requires its removal block to run in one shell, because an in-script `$id`

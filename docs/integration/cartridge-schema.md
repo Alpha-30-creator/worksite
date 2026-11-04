@@ -5,7 +5,12 @@ skills are generic; the cartridge is what makes them act like they were written 
 
 This page is the format. It documents the schema **as the pack actually implements it**, which
 means it also names the places where the schema and the pack disagree — see
-[Known gaps](#known-gaps). Nothing here describes a key the pack does not read.
+[Known gaps](#known-gaps). Every key here is one the pack **writes or reads**, and the handful that
+nothing reads say so in their own row — `repos[].role`, `schema_version`, and the two
+`services[]` keys that exist for the human about to paste a credential. None is documentation for
+a key that does not exist, which is the thing this sentence is for; "nothing here describes a key
+the pack does not read" is what it used to say, and the page's own rows had disproved it since
+p3.1 counted two of them.
 
 A cell that makes a **specific** claim — a stated default, a stated degrade behaviour, a quoted
 rule — carries the quote and the file it came from, and a reader greps the quote, because line
@@ -501,7 +506,7 @@ diffs against the wrong branch.
 
 ---
 
-## 9. Environments
+## 9. Environments, and the services the agent drives
 
 ```yaml
 environments:
@@ -528,6 +533,71 @@ That applies to an environment you have **established** does not exist. One nobo
 gets a quoted `TODO:` naming the question, or no key at all — writing "does not exist" for an
 environment you merely were not told about asserts a fact you do not have (R2). And
 `environments: {}` where nothing is deployed is accurate, not unfinished.
+
+### `services:` — what the agent itself has to operate
+
+`environments:` says where the project runs. `services:` says **what the agent must be able to
+drive, and how it gets in**. The two are separate because the answers differ per machine: an
+environment's URL is the same everywhere, and a signed-in CLI is not.
+
+```yaml
+services:
+  - id: <as the user named it>
+    access: cli-session          # cli-session | token | runtime-var | none
+    cli: <command>
+    install: <how to get the CLI>
+    check: <read-only command that proves access>
+    human_step: "run `<cli> login`"
+    source_of_truth: "the dashboard; the file in the workspace is a copy"
+    forbidden: [<operations never run from a local machine>]
+  - id: <another>
+    access: token
+    cli: <command>
+    check: <read-only command>
+    credential: <ONE variable name>
+    obtain: <url the human visits to create it>
+    scope: <what that credential can reach, in a clause>
+agent_env: <state_dir>/env/agents.env
+```
+
+**`access:` is a closed vocabulary of four, and the pack names no service anywhere.** A list of
+services in a skill would scope a project to that list and go stale at the services' own rate;
+what generalises is the *shape* of access:
+
+| `access:` | The human does | A credential exists | A file is written |
+|---|---|---|---|
+| `cli-session` | one `… login`, per machine | no — the CLI holds its session | no |
+| `token` | creates it and pastes it, once | yes, named in `credential:` | yes, a block in `agent_env` |
+| `runtime-var` | nothing | yes, but it is already in a runtime env file | no |
+| `none` | the operation itself, every time | n/a | no |
+
+`access: none` is a positive answer, not a gap: it is what makes an agent **ask** for a deploy
+instead of hunting for a way to do it itself.
+
+| key | type | required | default | read by | missing → |
+|---|---|---|---|---|---|
+| `services` | list of maps | no | `[]` — a real answer, meaning the agent drives none | `ws-setup` writes it; `ws-sync` step 3b runs each `check:`; `ws-plan` and `ws-debug` read it by concept — a plan that needs a deploy, a failure that is a service's rather than the code's | nobody knows how the agent reaches anything, so each session works it out again and the `cli-session` case is assumed rather than tested — *inferred* |
+| `services[].id` | string — the user's own word for it | **conditional** — a row needs it | none | every reader | the row cannot be named in a report — *inferred* |
+| `services[].access` | `cli-session` \| `token` \| `runtime-var` \| `none` | **conditional** — a row needs it | none | `ws-setup`, `ws-sync` | the row says nothing actionable; treat as `TODO:` and ask rather than guessing the shape — *inferred* |
+| `services[].cli` | string, or `null` where control is HTTP-only | no | `null` | `ws-sync`, `ws-setup` | no command to look for, so `check:` is the only signal — *inferred* |
+| `services[].install` | string | no | none | `ws-sync` 3b, which prints it when the CLI is absent | the report can say the CLI is missing but not how to get it — *inferred* |
+| `services[].check` | string — **read-only** | no | `null` | `ws-sync` 3b, `ws-setup`'s closing report | **access is unverifiable**, which is the one gap that matters: a CLI on `PATH` then reads as access. `null` is honest where the service offers no such command, and the report says `no check` rather than `ok` |
+| `services[].human_step` | string | no | none | `ws-setup`, `ws-sync` | a failed check names no remedy — *inferred* |
+| `services[].credential` | string — **one** variable name | **conditional** — `access: token` needs it | none | `ws-setup` (generates the block), `ws-env` | nothing to generate and nothing to paste into — *inferred* |
+| `services[].obtain` | string — a url | no | none | `ws-setup`'s closing report | the user is told to paste a token and not where to get one — *inferred* |
+| `services[].scope` | string — what the credential reaches | no | none | nothing reads it; it is **for the human**, who is about to paste it | the user hands over an unknown blast radius — *inferred* |
+| `services[].source_of_truth` | string | no | none | nothing reads it; for the human | a copied credential file gets half-believed, because nothing says whether it or the dashboard is live — *inferred* |
+| `services[].forbidden` | list of strings | no | `[]` | `ws-setup` (into the generated `AGENTS.md`), and read there by every later session | an operation that belongs to CI is reachable from a laptop with nothing saying so — *inferred* |
+| `agent_env` | path, workspace-relative, or `null` | no | `null` | `ws-setup` writes it; `ws-env init` offers its first manifest row | no credential file; correct whenever no service is `token`, which is why the default is `null` rather than a path — *inferred* |
+
+**`agent_env` is `null` far more often than it is set.** A project whose services are all
+`cli-session` needs no file, and `ws-setup` writes neither the file nor its `env/` folder — an
+empty credential file is a promise, which is the same rule that keeps `risks/` unseeded.
+
+Where it is set, the path is `<state_dir>/env/agents.env` by convention, and the `env/`
+subdirectory is not cosmetic: reading `<state_dir>/*.md` is a routine agent habit, and a secret
+must not sit in the path of a habit. It holds **only** the credentials the agent itself needs —
+never the application's runtime values, which are `ws-env`'s manifest rows and go to the repos.
 
 ---
 
@@ -702,6 +772,11 @@ git_flow:
     - "--no-verify"
 
 environments: {}                # record the ones that DON'T exist too, with a note
+
+services: []                    # what the AGENT must drive. [] = none, and it is a real answer.
+                                # access: cli-session | token | runtime-var | none — a closed
+                                # vocabulary of SHAPES; the pack names no service anywhere
+agent_env: null                 # a credential file only where some service is `token`
 
 house_rules:
   ai_attribution: false

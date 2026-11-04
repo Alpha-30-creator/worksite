@@ -54,6 +54,14 @@ git_flow:
 
 environments: {}
 
+services: []                    # the agent drives nothing here: no host, no database platform, no
+                                # queue. The one thing it operates outside this repo is the
+                                # agent-sync library, which is a `shared_stores:` entry above
+                                # because it is a path on this machine rather than a managed
+                                # service with a CLI and a login
+agent_env: null                 # follows from `services: []` — no service is `token`, so no
+                                # credential file and no `.worksite/env/` folder exists
+
 house_rules:
   ai_attribution: false
   owned_by: me
@@ -129,7 +137,7 @@ The workspace root **is** the repo — a single-repo project. That matters twice
 | The cartridge format | [../integration/cartridge-schema.md](../integration/cartridge-schema.md). The template in the pack's `ws-setup/templates/`, and this file, are worked examples of it |
 | Project-specific review risks | [risks/common.md](risks/common.md) |
 | **What each check actually covers, and what it misses** | [../engineering/layout.md](../engineering/layout.md) — the only page with the per-section blind spots, and it was unreachable from here until 2026-11-02 |
-| **Why the system is shaped as it is** | [../decisions/](../decisions/) — six ADRs. The ones that bind daily work: [0001](../decisions/0001-library-is-the-source-of-truth.md) the library is the source of truth, [0002](../decisions/0002-publishing-is-a-guarded-copy-from-the-library.md) publishing is a guarded copy, [0006](../decisions/0006-retirement-refuses-what-removal-would-lose.md) what retirement refuses |
+| **Why the system is shaped as it is** | [../decisions/](../decisions/) — seven ADRs. The ones that bind daily work: [0001](../decisions/0001-library-is-the-source-of-truth.md) the library is the source of truth, [0002](../decisions/0002-publishing-is-a-guarded-copy-from-the-library.md) publishing is a guarded copy, [0006](../decisions/0006-retirement-refuses-what-removal-would-lose.md) what retirement refuses |
 | Limitations that are recorded rather than tracked | [../records/known-limitations.md](../records/known-limitations.md) |
 | What a shipped task left behind | [worklog/](worklog/) — one file per track, written by `ws-ship` at harvest |
 | An in-flight track's journal | `.worksite/tracks/<id>/journal.md` — **local only** here, not mirrored. The entry header carries a derived device **alias** since p8.31, so the mirror is no longer the leak it was; `.gitignore` keeps it local anyway, because a journal records what was done on which machine and this repo is public. The reason is in the ignore file, not in memory |

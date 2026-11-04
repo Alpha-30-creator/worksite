@@ -9,7 +9,7 @@
 out of the private library behind the leak guard, and the pack has reached this repo that way
 since 2026-11-01. The reference documentation exists — the cartridge schema at
 `docs/integration/cartridge-schema.md`, the concepts page at `docs/product/overview.md`, the four
-extension guides under `docs/engineering/`, six ADRs under `docs/decisions/` — and `check.sh` is
+extension guides under `docs/engineering/`, seven ADRs under `docs/decisions/` — and `check.sh` is
 green on all **seven** sections. **Section 7 reads the README's own claims** (p7.3): every
 quantity it enumerates is read out of `README.md` and compared to the tree, so a stale front-page
 claim now fails the same gate as a private name. It was a script nothing ran until 2026-11-03. **CI runs it** on every pull request and every push to `main`, so a
@@ -41,7 +41,11 @@ the audit's own awk programs did not survive delivery; it overturns the parts of
 ADR 0004 that had rejected this shape, and accepts the one objection that still binds. ADR 0006
 (`docs/decisions/0006-retirement-refuses-what-removal-would-lose.md`) — retirement refuses what its
 own removal would leave unreachable rather than what is missing from a remote, because
-`git worktree remove` removes a checkout and not a branch.
+`git worktree remove` removes a checkout and not a branch. ADR 0007
+(`docs/decisions/0007-service-access-is-researched-and-declared.md`) — the agent's access to a
+managed service is researched at setup and declared in the cartridge, from a closed vocabulary of
+four access kinds; the pack names no service, and a table of named services was rejected after the
+author's own setup disproved its central assumption.
 
 ## In progress
 
