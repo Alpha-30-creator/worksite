@@ -17,7 +17,7 @@ each other.
 
 **Dropped 2026-11-02.** The reasoning is in this file's git history at `9c973ee`. It documents p5.1, which is dropped.
 
-## [~] p5.3 — `ws-env` cannot start a new user, and nothing asks which services the agent must operate · claimed 2026-11-04 · @Alpha-30-creator
+## [r] p5.3 — `ws-env` cannot start a new user, and nothing asks which services the agent must operate · claimed 2026-11-04 · @Alpha-30-creator · https://github.com/Alpha-30-creator/worksite/pull/30
 
 - **Repos:** worksite (pack)
 - **Depends on:** —
