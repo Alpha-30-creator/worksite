@@ -115,8 +115,9 @@ Nothing.
 ## The 2026-11-02 triage
 
 **32 open tasks became 12, plus one deliberate thirteenth.** Done on the owner's instruction,
-after an independent audit of the board, and implemented rather than re-triaged. **P2, P5 and P6
-are closed as phases** — each says so at the top of its file. P8 is renamed from *Pack
+after an independent audit of the board, and implemented rather than re-triaged. **P2 and P6 remain closed as
+phases** and each says so at the top of its file; **P5 was closed by that same triage and reopened
+on 2026-11-04** for p5.3, which is what a phase closed on "revisit when a user exists" is for. P8 is renamed from *Pack
 improvements* to *Pack defects* and now holds only the defects where something reports success
 while doing the wrong thing; its 23 open tasks became eight, three of them merges of several.
 Everything else was dropped with its reason on the heading line and **its body kept**, because the

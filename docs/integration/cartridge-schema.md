@@ -557,6 +557,12 @@ services:
     credential: <ONE variable name>
     obtain: <url the human visits to create it>
     scope: <what that credential can reach, in a clause>
+  - id: <a third>
+    access: runtime-var          # the control-plane credential is already in a runtime env file
+    cli: <command>
+    check: <read-only command>
+    credential: <the variable's name>
+    env_file: <the file that already holds it>
 agent_env: <state_dir>/env/agents.env
 ```
 
@@ -568,7 +574,7 @@ what generalises is the *shape* of access:
 |---|---|---|---|
 | `cli-session` | one `… login`, per machine | no — the CLI holds its session | no |
 | `token` | creates it and pastes it, once | yes, named in `credential:` | yes, a block in `agent_env` |
-| `runtime-var` | nothing | yes, but it is already in a runtime env file | no |
+| `runtime-var` | nothing | yes — `credential:` names it, `env_file:` says which file holds it | no |
 | `none` | the operation itself, every time | n/a | no |
 
 `access: none` is a positive answer, not a gap: it is what makes an agent **ask** for a deploy
@@ -583,7 +589,8 @@ instead of hunting for a way to do it itself.
 | `services[].install` | string | no | none | `ws-sync` 3b, which prints it when the CLI is absent | the report can say the CLI is missing but not how to get it — *inferred* |
 | `services[].check` | string — **read-only** | no | `null` | `ws-sync` 3b, `ws-setup`'s closing report | **access is unverifiable**, which is the one gap that matters: a CLI on `PATH` then reads as access. `null` is honest where the service offers no such command, and the report says `no check` rather than `ok` |
 | `services[].human_step` | string | no | none | `ws-setup`, `ws-sync` | a failed check names no remedy — *inferred* |
-| `services[].credential` | string — **one** variable name | **conditional** — `access: token` needs it | none | `ws-setup` (generates the block), `ws-env` | nothing to generate and nothing to paste into — *inferred* |
+| `services[].credential` | string — **one** variable name | **conditional** — `access: token` and `access: runtime-var` both need it | none | `ws-setup` (generates the block for `token`), `ws-sync` 3b (names it in a failed `token` row), `ws-env` | nothing to generate, nothing to paste into, and a failed check cannot name what is missing — *inferred* |
+| `services[].env_file` | path — the runtime env file that already holds `credential:` | **conditional** — `access: runtime-var` needs it | none | nothing reads it; it is the second half of what `runtime-var` records, and without it that kind cannot be fully declared | the row says a credential exists somewhere and does not say where, which is the state `runtime-var` exists to replace — *inferred* |
 | `services[].obtain` | string — a url | no | none | `ws-setup`'s closing report | the user is told to paste a token and not where to get one — *inferred* |
 | `services[].scope` | string — what the credential reaches | no | none | nothing reads it; it is **for the human**, who is about to paste it | the user hands over an unknown blast radius — *inferred* |
 | `services[].source_of_truth` | string | no | none | nothing reads it; for the human | a copied credential file gets half-believed, because nothing says whether it or the dashboard is live — *inferred* |
@@ -775,7 +782,8 @@ environments: {}                # record the ones that DON'T exist too, with a n
 
 services: []                    # what the AGENT must drive. [] = none, and it is a real answer.
                                 # access: cli-session | token | runtime-var | none — a closed
-                                # vocabulary of SHAPES; the pack names no service anywhere
+                                # vocabulary of SHAPES; the pack names no service anywhere.
+                                # cli-session needs no credential at all, which is the common case
 agent_env: null                 # a credential file only where some service is `token`
 
 house_rules:
