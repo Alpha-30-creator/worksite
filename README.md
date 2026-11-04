@@ -83,13 +83,15 @@ and each one closed as a fix, a written limitation or a filed task rather than a
 `INSTALL.md` fixes, three limitations, two tasks that have both since shipped, and one criterion
 added to the third row below.
 
-No gap a reader would hit is open right now. The last one — a project with no git remote could not
-retire a finished track — closed on 2026-11-03: the guard was asking whether the commits were on a
-remote, and removing a worktree does not remove the branch that holds them.
+The gaps a reader would still hit, each carried as a task:
 
-No open tasks are left. The board reached zero on 2026-11-03, from 32 a week earlier;
-[docs/STATUS.md](docs/STATUS.md) records what shipped and what is deliberately recorded rather
-than tracked.
+| Gap | Task |
+|---|---|
+| a first-time user with no encrypted store cannot be started by `ws-env` — all four of its modes assume the store exists — and the setup interview never asks which managed services the agent itself must drive, so the credential it needs to run their CLIs is never named, obtained or synced | p5.3 |
+
+No more open tasks: the board reached zero on 2026-11-03, from 32 a week earlier, and p5.3 is the
+one row on it since. [docs/STATUS.md](docs/STATUS.md) records what shipped and what is
+deliberately recorded rather than tracked.
 
 **To install it**, point your agent at [INSTALL.md](INSTALL.md) — it is written for the agent
 rather than for you, and it stops rather than guessing whenever only you can answer. If you would

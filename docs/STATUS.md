@@ -45,8 +45,13 @@ own removal would leave unreachable rather than what is missing from a remote, b
 
 ## In progress
 
-**Nothing claimed, and nothing open.** The board reached **zero** on 2026-11-03, from 32 a week
-earlier and 9 at the start of the day.
+**p5.3 is claimed** (2026-11-04). The board had reached **zero** on 2026-11-03, from 32 a week
+earlier and 9 at the start of that day; p5.3 is the one row on it since, and it **reopened P5**,
+which had closed on the reasoning that an init mode was work for a user who did not exist yet.
+That user is the owner: `ws-env` gains an `init` mode that creates a store from nothing, and
+`ws-setup` gains the question that asks which managed services the agent must drive and then
+generates the credential file those services need — one row, because the generated file is what
+`init` encrypts.
 
 **p8.34 shipped 2026-11-03** ([PR #29](https://github.com/Alpha-30-creator/worksite/pull/29)): the
 last row. `ws-setup`'s profile is **asked** rather than inferred from folder shape, on a three-rung
@@ -115,10 +120,11 @@ its boundary in the next.
 
 ## Next up
 
-**Nothing.** All eight phase files have **zero** open rows — measured, not asserted. Four of them
-say so at the top (P2, P4, P5, P6); P1, P3, P7 and P8 are empty without a closing line, which is a
-difference in bookkeeping rather than in state, and worth one line here rather than four commits. What is left is recorded rather
-than tracked, in [records/known-limitations.md](records/known-limitations.md) — including the two
+**p5.3, and nothing behind it.** Seven of the eight phase files have **zero** open rows —
+measured, not asserted; P5 holds the one. Three of the seven say so at the top (P2, P4, P6); P1,
+P3, P7 and P8 are empty without a closing line, which is a difference in bookkeeping rather than
+in state, and worth one line here rather than four commits. What is otherwise left is recorded
+rather than tracked, in [records/known-limitations.md](records/known-limitations.md) — including the two
 boundaries this week chose not to close: a path named in a cartridge's prose has no check behind it
 (filed as p8.41 and dropped the same day, its measurement kept in the dropped row), and no profile
 has been generated end to end, which wants a stranger run rather than a task.
@@ -173,7 +179,7 @@ has been generated end to end, which wants a stranger run rather than a task.
 | [P2](roadmap/P2-depersonalise.md) | The pack in the repo, generic — **closed** | no |
 | [P3](roadmap/P3-reference.md) | The docs a stranger needs | no |
 | [P4](roadmap/P4-install.md) | README and an agent-readable install — **complete** | no |
-| [P5](roadmap/P5-secrets.md) | Credentials sync that starts from nothing — **closed, both tasks dropped** | no |
+| [P5](roadmap/P5-secrets.md) | Credentials sync that starts from nothing — **reopened 2026-11-04** (p5.3) | no |
 | [P6](roadmap/P6-updates.md) | Publishing, and how users take updates — **closed** | no |
 | [P7](roadmap/P7-release.md) | Proven by a stranger, then tagged | no |
 | [P8](roadmap/P8-pack.md) | Pack defects | **yes** |
