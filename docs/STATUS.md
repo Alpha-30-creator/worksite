@@ -53,9 +53,11 @@ author's own setup disproved its central assumption.
 earlier and 9 at the start of that day; p5.3 is the one row on it since, and it **reopened P5**,
 which had closed on the reasoning that an init mode was work for a user who did not exist yet.
 That user is the owner: `ws-env` gains an `init` mode that creates a store from nothing, and
-`ws-setup` gains the question that asks which managed services the agent must drive and then
-generates the credential file those services need — one row, because the generated file is what
-`init` encrypts.
+`ws-setup` gains the question that asks which managed services the agent must drive — the user
+names them, the agent researches each and concludes **how** access works from four kinds, and a
+credential file is generated **only where a service needs one**, which is the minority case: a CLI
+the human signed in once needs none. One row, because where a file does exist it is what `init`
+encrypts.
 
 **p8.34 shipped 2026-11-03** ([PR #29](https://github.com/Alpha-30-creator/worksite/pull/29)): the
 last row. `ws-setup`'s profile is **asked** rather than inferred from folder shape, on a three-rung

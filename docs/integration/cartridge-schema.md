@@ -576,7 +576,7 @@ instead of hunting for a way to do it itself.
 
 | key | type | required | default | read by | missing → |
 |---|---|---|---|---|---|
-| `services` | list of maps | no | `[]` — a real answer, meaning the agent drives none | `ws-setup` writes it; `ws-sync` step 3b runs each `check:`; `ws-plan` and `ws-debug` read it by concept — a plan that needs a deploy, a failure that is a service's rather than the code's | nobody knows how the agent reaches anything, so each session works it out again and the `cli-session` case is assumed rather than tested — *inferred* |
+| `services` | list of maps | no | `[]` — a real answer, meaning the agent drives none | `ws-setup` writes it; `ws-sync` step 3b runs each `check:`. **Nothing else reads it yet** — neither `ws-plan` nor `ws-debug` mentions services, and calling that "by concept" would borrow a phrase section 4 reserves for a skill that acts on the value | nobody knows how the agent reaches anything, so each session works it out again and the `cli-session` case is assumed rather than tested — *inferred* |
 | `services[].id` | string — the user's own word for it | **conditional** — a row needs it | none | every reader | the row cannot be named in a report — *inferred* |
 | `services[].access` | `cli-session` \| `token` \| `runtime-var` \| `none` | **conditional** — a row needs it | none | `ws-setup`, `ws-sync` | the row says nothing actionable; treat as `TODO:` and ask rather than guessing the shape — *inferred* |
 | `services[].cli` | string, or `null` where control is HTTP-only | no | `null` | `ws-sync`, `ws-setup` | no command to look for, so `check:` is the only signal — *inferred* |

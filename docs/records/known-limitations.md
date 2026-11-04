@@ -1,10 +1,10 @@
 # Known limitations
 
-**Started 2026-11-02 with eleven entries; it has grown with every task since** — 50 now, under six
+**Started 2026-11-02 with eleven entries; it has grown with every task since** — 52 now, under six
 headings. (Both numbers were wrong one draft ago: the preamble said seventeen, and the correction
 said 49 — a count that includes this paragraph's own bold lead-in. The file's first commit is
 titled "record eleven known limitations". **How to re-measure it**, since every previous count was
-taken by hand and two were wrong: `grep -c '^\*\*'` gives 52, from which two lines are not
+taken by hand and two were wrong: `grep -c '^\*\*'` gives 54, from which two lines are not
 entries — this paragraph's lead-in, and the bolded `**template**:` continuation inside the
 repo-path-loops entry.) Each names a mechanism in this repo or in the pack that works, and the boundary it
 stops at: the mechanism in one clause, the boundary in the next. This is a record rather than a
@@ -60,7 +60,16 @@ write outside a working directory, and none has a `--store` or dry-run escape. *
 added 2026-11-04, is the one that does**: `--store <dir>` points it at a throwaway directory and
 every line of its output names the store it acted on, so creating a store can be trialled and
 proved without touching the real one. That is one mode of one skill, not a pattern the other three
-have adopted, and the three above are unchanged. A cautious
+have adopted, and the three above are unchanged — **this entry's count stays at three on purpose**:
+`init` was never one of them, because it did not exist. What the criterion behind it asked was that
+the *new* mode not join the list, and it did not.
+
+**`--store` isolates the store and not the key.** `ws-env init`'s age key is `--key`, defaulting to
+`~/.config/sops/age/keys.txt`, which is outside every store and every working directory. A trial
+run on a machine that already has a key reuses it and touches nothing; a trial on a machine with
+**no** key — the mode's own stated audience — generates a real one unless `--key` is pointed
+somewhere throwaway too. Both flags exist for that reason, and the mode says so where it is
+documented. A cautious
 first-time user therefore cannot trial the pack without writing to their own machine. Measured
 2026-11-02 when two agents following `INSTALL.md` refused all three.
 
@@ -79,10 +88,14 @@ open is the one the mechanism exists for: a CLI that is present, unauthenticated
 be asked. Measured as a design limit on 2026-11-04 rather than from an instance.
 
 **Nothing enforces that a `check:` is read-only.** The rule is written where the key is recorded —
-`ws-setup` refuses to record a command that is not — and `ws-sync` runs whatever it finds there. So
-a cartridge that was hand-edited, or whose author ignored the rule, hands a machine catch-up an
-arbitrary command. It is a written rule rather than a mechanism, stated here because the step that
-relies on it runs unprompted.
+`ws-setup`'s services section and its Rules both refuse to record a command that is not — and
+`ws-sync` step 3b runs whatever it finds there, unprompted, on every machine catch-up. So a
+cartridge that was hand-edited, or whose author ignored the rule, hands that step an arbitrary
+command. It is a written rule rather than a mechanism, stated here because the step that relies on
+it runs unasked. What *is* mechanical is the blast radius: 3b runs every check with stdin at
+`/dev/null` and bounded in time, so a command that prompts or spins is reported as `TIMED OUT`
+rather than holding the step open — measured 2026-11-04, when a real platform CLI did exactly
+that.
 
 **A retirement block that must run whole can be refused for being exactly that.**
 `ws-shared/tracks.md` requires its removal block to run in one shell, because an in-script `$id`
