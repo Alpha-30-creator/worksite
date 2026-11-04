@@ -9,7 +9,7 @@
 out of the private library behind the leak guard, and the pack has reached this repo that way
 since 2026-11-01. The reference documentation exists — the cartridge schema at
 `docs/integration/cartridge-schema.md`, the concepts page at `docs/product/overview.md`, the four
-extension guides under `docs/engineering/`, six ADRs under `docs/decisions/` — and `check.sh` is
+extension guides under `docs/engineering/`, seven ADRs under `docs/decisions/` — and `check.sh` is
 green on all **seven** sections. **Section 7 reads the README's own claims** (p7.3): every
 quantity it enumerates is read out of `README.md` and compared to the tree, so a stale front-page
 claim now fails the same gate as a private name. It was a script nothing ran until 2026-11-03. **CI runs it** on every pull request and every push to `main`, so a
@@ -41,7 +41,11 @@ the audit's own awk programs did not survive delivery; it overturns the parts of
 ADR 0004 that had rejected this shape, and accepts the one objection that still binds. ADR 0006
 (`docs/decisions/0006-retirement-refuses-what-removal-would-lose.md`) — retirement refuses what its
 own removal would leave unreachable rather than what is missing from a remote, because
-`git worktree remove` removes a checkout and not a branch.
+`git worktree remove` removes a checkout and not a branch. ADR 0007
+(`docs/decisions/0007-service-access-is-researched-and-declared.md`) — the agent's access to a
+managed service is researched at setup and declared in the cartridge, from a closed vocabulary of
+four access kinds; the pack names no service, and a table of named services was rejected after the
+author's own setup disproved its central assumption.
 
 ## In progress
 
@@ -49,9 +53,11 @@ own removal would leave unreachable rather than what is missing from a remote, b
 earlier and 9 at the start of that day; p5.3 is the one row on it since, and it **reopened P5**,
 which had closed on the reasoning that an init mode was work for a user who did not exist yet.
 That user is the owner: `ws-env` gains an `init` mode that creates a store from nothing, and
-`ws-setup` gains the question that asks which managed services the agent must drive and then
-generates the credential file those services need — one row, because the generated file is what
-`init` encrypts.
+`ws-setup` gains the question that asks which managed services the agent must drive — the user
+names them, the agent researches each and concludes **how** access works from four kinds, and a
+credential file is generated **only where a service needs one**, which is the minority case: a CLI
+the human signed in once needs none. One row, because where a file does exist it is what `init`
+encrypts.
 
 **p8.34 shipped 2026-11-03** ([PR #29](https://github.com/Alpha-30-creator/worksite/pull/29)): the
 last row. `ws-setup`'s profile is **asked** rather than inferred from folder shape, on a three-rung
@@ -109,8 +115,9 @@ Nothing.
 ## The 2026-11-02 triage
 
 **32 open tasks became 12, plus one deliberate thirteenth.** Done on the owner's instruction,
-after an independent audit of the board, and implemented rather than re-triaged. **P2, P5 and P6
-are closed as phases** — each says so at the top of its file. P8 is renamed from *Pack
+after an independent audit of the board, and implemented rather than re-triaged. **P2 and P6 remain closed as
+phases** and each says so at the top of its file; **P5 was closed by that same triage and reopened
+on 2026-11-04** for p5.3, which is what a phase closed on "revisit when a user exists" is for. P8 is renamed from *Pack
 improvements* to *Pack defects* and now holds only the defects where something reports success
 while doing the wrong thing; its 23 open tasks became eight, three of them merges of several.
 Everything else was dropped with its reason on the heading line and **its body kept**, because the

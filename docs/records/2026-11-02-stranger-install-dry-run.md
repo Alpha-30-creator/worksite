@@ -43,6 +43,13 @@ of the 44 a third would hit.
   skill edits**, verified by `diff -rq` against the repo.
 - **`ws-env` and `ws-sync` run with no cartridge**, as `cartridge-schema.md`'s R1 promises. The word
   "cartridge" does not appear in `ws-env/SKILL.md` at all.
+  > **Amended 2026-11-04 (p5.3), @Alpha-30-creator.** The measurement above was true when taken and
+  > the second sentence no longer is: `ws-env`'s new `init` mode names the cartridge, because the
+  > credential file it offers as the store's first manifest row is a cartridge key (`agent_env`).
+  > The *finding* is unchanged — `ws-env` still resolves no cartridge and still runs without one;
+  > `init` acts on the value only when the user or `ws-setup` hands it over, and says so where a
+  > reader would otherwise expect it to go looking. Amended in place rather than rewritten, because
+  > this folder is immutable in substance.
 - **p4.2's comparison guard held on a relocated store** — the case its review was fixed for, tested
   live here for the first time.
 

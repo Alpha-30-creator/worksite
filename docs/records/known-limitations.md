@@ -1,9 +1,18 @@
 # Known limitations
 
-**Started 2026-11-02 with eleven entries; it has grown with every task since** — 48 now, under six
+**Started 2026-11-02 with eleven entries; it has grown with every task since** — 53 now, under six
 headings. (Both numbers were wrong one draft ago: the preamble said seventeen, and the correction
 said 49 — a count that includes this paragraph's own bold lead-in. The file's first commit is
-titled "record eleven known limitations".) Each names a mechanism in this repo or in the pack that works, and the boundary it
+titled "record eleven known limitations". **How to re-measure it**, since every previous count was
+taken by hand and three were wrong — the third by this very note, which listed its exceptions by
+hand and went stale one entry later. An entry starts at a bold lead-in that **follows a blank
+line**; a bold phrase that merely begins a wrapped line inside an entry does not. So:
+
+```bash
+awk 'prev=="" && /^\*\*/ {n++} {prev=$0} END {print n-1}' docs/records/known-limitations.md
+```
+
+`n-1` because this paragraph's own lead-in qualifies. It prints 53.) Each names a mechanism in this repo or in the pack that works, and the boundary it
 stops at: the mechanism in one clause, the boundary in the next. This is a record rather than a
 task list, and it is the one **living** file in `records/` — an entry is edited when the mechanism
 changes, when a limitation closes, and when its stated cause turns out to have been wrong. All
@@ -53,14 +62,66 @@ project.
 **Three of the pack's documented steps cannot be run in a sandbox.** `ws-sync` step 1
 (`agent-sync sync` — pull, apply, push against the real library, with no read-only form),
 `ws-env pull` (decrypts to disk), and `agent-sync save` (deploys to every agent and pushes) all
-write outside a working directory, and none has a `--store` or dry-run escape. A cautious
-first-time user therefore cannot trial the pack without writing to their own machine. Measured
-2026-11-02 when two agents following `INSTALL.md` refused all three.
+write outside a working directory, and none has a `--store` or dry-run escape. **`ws-env init`,
+added 2026-11-04, is the one that does**: `--store <dir>` points it at a throwaway directory and
+every line of its output names the store it acted on, so creating a store can be trialled and
+proved without touching the real one. That is one mode of one skill, not a pattern the other three
+have adopted, and the three above are unchanged — **this entry's count stays at three on purpose**:
+`init` was never one of them, because it did not exist. What the criterion behind it asked was that
+the *new* mode not join the list, and it did not. So a cautious first-time user still cannot trial
+**those three** without writing to their own machine — measured 2026-11-02, when two agents
+following `INSTALL.md` refused all three.
+
+**`--store` isolates the store and not the key.** `ws-env init`'s age key is `--key`, defaulting to
+`~/.config/sops/age/keys.txt`, which is outside every store and every working directory. A trial
+run on a machine that already has a key reuses it and touches nothing; a trial on a machine with no
+key at all — the mode's own stated audience — generates a real one unless `--key` is pointed
+somewhere throwaway too. Both flags exist for that reason, and the mode says so where it is
+documented. Added 2026-11-04 with the mode.
+
+**`ws-sync` step 3b reads a cartridge's YAML with `sed` and `case`, not a parser.** No `yq` or `jq`
+can be assumed on any machine the pack supports, so the services block is scanned by hand: it ends
+at the next top-level key, skips comment lines, strips a trailing ` #` comment from each value, and
+unwraps a quoted scalar only when both quotes are present. A cartridge written in a flow style it
+does not parse reports `0 declared` against a block that is not empty — which is why the count and
+the block's presence are printed on the same line rather than one instead of the other. It is also
+not fence-aware, the same shape as `check.sh` section 3 above; on a cartridge whose frontmatter is
+followed by prose the closing `---` and the next top-level heading both terminate the scan, so this
+has not bitten, and it is an assumption rather than a guarantee. Every clause here was measured
+2026-11-04 by running the block against three cartridge shapes and a six-service fixture.
+
+**`ws-env pull` writes before the compare-and-ask it promises, and the comparator reads names
+only.** The mode's code block writes every destination, and the rule that a differing local file is
+compared and asked about follows it, with a `diff` of variable **names**. So two things it is relied
+on for, it cannot do: a value that changed is invisible to it, and a file whose values are still
+empty — the hazard `ws-env init` and `ws-setup` both warn about when a generated `agents.env` has
+not been filled in — compares equal and overwrites a filled-in copy. Pre-existing, found
+2026-11-04 while the init-paste-push path was being written, and recorded rather than fixed because
+re-ordering that mode is its own change.
 
 **`ws-env status` cannot be fully answered without the age key.** Its table promises whether each
 file matches the store "by variable names, never values", which requires decrypting. So the mode
 the skill calls "read-only and always safe" is complete only on a machine that already holds the
-key; elsewhere the match column is unverified rather than clean.
+key; elsewhere the match column is unverified rather than clean. Since 2026-11-04 the skill says
+that itself rather than only this record: it names the columns it could not answer, because
+"unverified" and "matches" must not render the same.
+
+**A service's access can be unverifiable, and then nothing proves it.** `services[].check:` is the
+read-only command that turns "the agent has access" into evidence, and `ws-setup` and `ws-sync`
+step 3b both run it. Where a service offers no such command the key is `null` and both report
+`UNPROVED` rather than `ok` — which is honest and is still an absence of proof. The case it leaves
+open is the one the mechanism exists for: a CLI that is present, unauthenticated, and has no way to
+be asked. Measured as a design limit on 2026-11-04 rather than from an instance.
+
+**Nothing enforces that a `check:` is read-only.** The rule is written where the key is recorded —
+`ws-setup`'s services section and its Rules both refuse to record a command that is not — and
+`ws-sync` step 3b runs whatever it finds there, unprompted, on every machine catch-up. So a
+cartridge that was hand-edited, or whose author ignored the rule, hands that step an arbitrary
+command. It is a written rule rather than a mechanism, stated here because the step that relies on
+it runs unasked. What *is* mechanical is the blast radius: 3b runs every check with stdin at
+`/dev/null` and bounded in time, so a command that prompts or spins is reported as `TIMED OUT`
+rather than holding the step open — measured 2026-11-04, when a real platform CLI did exactly
+that.
 
 **A retirement block that must run whole can be refused for being exactly that.**
 `ws-shared/tracks.md` requires its removal block to run in one shell, because an in-script `$id`
