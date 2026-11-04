@@ -322,7 +322,9 @@ skill that owns them; the guarantee is the part worth knowing from here.
 
 ## What this is not
 
-An honest list, because a page that oversells this is worse than no page.
+It is installable — [`INSTALL.md`](../../INSTALL.md) is the entry point, written for the agent
+that will run it. What follows is an honest list of what it is not, because a page that oversells
+this is worse than no page.
 
 - **Not CI.** Nothing here runs on a push or blocks a merge by itself. The checks are the
   project's own, run by a skill in a session; a project that wants them enforced still needs CI.
@@ -331,9 +333,6 @@ An honest list, because a page that oversells this is worse than no page.
 - **Not multi-user.** Tracks keep two sessions from colliding, and the file-based trackers give a
   real claim lock, but this is one person's working setup with a handle on it, not a team system
   with permissions.
-- **Not installable yet, and not yet proven by anyone but its author.** The repo is public and the
-  pack is generic, but the install path is still being written and no stranger has run the loop
-  end to end from these instructions. [docs/STATUS.md](../STATUS.md) says where that stands.
 - **Not accepting pull requests.** This is a one-way mirror of one person's setup; a merge here
   would be overwritten by the next publish. Fork it if you want it different.
 - **Not finished being argued about.** The cartridge has unspecified keys, the tracker adapters do
