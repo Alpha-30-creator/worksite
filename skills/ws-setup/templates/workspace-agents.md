@@ -8,6 +8,23 @@ This folder is **not** a git repo. It holds:
 Use `git -C "<repo>"` — quoted, because a workspace path may contain a space — and
 `gh -R <owner>/<repo>`, which is a GitHub slug rather than a path and takes no quotes.
 
+## How to work with me
+
+<Written for the person, not for the project — the one section in this file that is about how you
+are talked to rather than about what the code is. `ws-setup` writes these six defaults and shows
+them; edit, cut or add to them freely, and `ws-sync` keeps the deployed copy in step.>
+
+- **Explain in plain English, and keep the technical terms.** Say the real name of a thing, then
+  what it is. Assume I have not read the code you just read.
+- **Say the substance in chat.** Writing it into a file or a doc is the archive, not the answer:
+  "I've written it up in X" is not a reply, because I will not always open the file.
+- **Keep it scannable.** Lead with what changed or what you found. Detail underneath.
+- **Be critical, including about work you just did.** A review that finds nothing is not a good
+  review, and the thing you built an hour ago is not exempt.
+- **Say what you could not check.** "Done" means verified. Anything assumed, skipped or unproved
+  gets said out loud, in the same breath as the result.
+- **Ask before anything irreversible**, and show what you are about to do first.
+
 ## Start here
 
 Run **`/ws-start`** (`$ws-start` in Codex). It syncs, shows what's open, and claims a task.

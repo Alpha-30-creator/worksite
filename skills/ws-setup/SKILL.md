@@ -417,10 +417,37 @@ the generated `AGENTS.md`, where every later session meets them without being as
 
 Show the full file list first and wait for a yes. Then, from `templates/`:
 
+**One generated block is shown in full rather than by filename: the `AGENTS.md` template's *How to
+work with me* section.** Every other thing here is a fact about the project that the interview
+already settled, so naming the file is enough. That section is the only one written for the
+**person** — how they want to be talked to — and it is the one whose words they will want to
+change. So say them, and ask:
+
+> I'm going to put this at the top of `AGENTS.md`, above *Start here*. These six are defaults, not
+> house style — tell me what to change:
+>
+> *(the six bullets, verbatim)*
+>
+> Anything you want different, or anything to add? Rules that are about **you** rather than the
+> project belong here: how to address you, a writing convention for anything you will send, a
+> format you want answers in.
+
+**It is shown, not asked as an open question.** "How do you want to be talked to?" gets an empty
+answer or a vague one from most people, and a vague section is worse than none: an agent reads it
+and acts on it. Six concrete defaults get edited; a blank prompt gets skipped. The same reason
+every other question here carries its recommendation.
+
+**Write them even if the user says nothing.** The defaults are true for anyone — they are the
+pack's own rules about reporting, stated to the agent in plain words rather than left implicit in
+thirteen skills — so silence means the defaults stand, not that the section is omitted.
+
+**On `upgrade`, a project without the section gets it offered as an `add` row** like anything else:
+that is how an existing project acquires it, and the words are shown there too.
+
 | Write | From | Profile | Notes |
 |---|---|---|---|
 | `<docs_home>/reference.md` | `templates/cartridge.md` | all three | the cartridge: frontmatter + prose |
-| `<docs_home>/workspace/AGENTS.md` | `templates/workspace-agents.md` | all three | **the source** of the workspace instructions |
+| `<docs_home>/workspace/AGENTS.md` | `templates/workspace-agents.md` | all three | **the source** of the workspace instructions, including *How to work with me* — the one block whose words are shown before they are written |
 | `<root>/AGENTS.md` | copy of the above | all three | with the generated-by header |
 | `<root>/CLAUDE.md` | `@AGENTS.md` | all three | one line |
 | `<state_dir>/`, `<state_dir>/tracks/` | — | all three | and `me` if there are collaborators |
@@ -486,6 +513,7 @@ Never write first. Read, compare, show, wait.
 | Thing | Now | Would become | Action |
 |---|---|---|---|
 | cartridge | absent | <docs_home>/reference.md | add |
+| AGENTS.md *How to work with me* | absent | six default lines, shown before writing | add |
 | AGENTS.md | symlink into docs repo | generated copy + source | change (Windows-safe) |
 | tracker | roadmap files | unchanged | leave |
 | state dir | .<project>/active-task.md | .<project>/tracks/<id>/ | migrate |

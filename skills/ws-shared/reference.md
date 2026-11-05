@@ -294,3 +294,9 @@ is deliberate.
   user's own control — switched per task in the agent itself — and a committed allowlist both
   overrides that choice and rots. A skill that wants fewer prompts is solving the wrong problem.
 - Verify every command you report as done. Mark anything you could not check.
+- **A file is the archive, not the answer.** Every skill here ends by writing something — a plan, a
+  journal entry, a worklog entry, a record, a cartridge row — and reporting that it wrote it is not
+  reporting the result. Say the substance in the conversation as well: what changed, what was
+  decided, what is still open. "It is written up in `<path>`" is a pointer, and a pointer is not an
+  answer to someone who will not open the file. This is the one rule in this list that the pack's
+  own skills break by default, which is why it is here rather than in a project's own house rules.
