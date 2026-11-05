@@ -5,6 +5,25 @@ loop you are about to use is the product.
 
 Single repo: use `git -C .` and `gh -R Alpha-30-creator/worksite`.
 
+## How to work with me
+
+- **Explain in plain English, and keep the technical terms.** Say the real name of a thing, then
+  what it is. Assume I have not read the code you just read.
+- **Say the substance in chat.** Writing it into a file or a doc is the archive, not the answer:
+  "I've written it up in X" is not a reply, because I will not always open the file. On this
+  project that bites hardest — every skill here ends by writing a plan, a journal entry, a worklog
+  entry or a record.
+- **Keep it scannable.** Lead with what changed or what you found, detail underneath. I often
+  dictate by voice and sometimes work late and tired.
+- **Be critical, including about work you just did.** A review that finds nothing is not a good
+  review, and the thing you built an hour ago is not exempt.
+- **Say what you could not check.** "Done" means verified. Anything assumed, skipped or unproved
+  gets said out loud, in the same breath as the result.
+- **Ask before anything irreversible**, and show what you are about to do first.
+- **Never use em dashes** in anything I will send from my accounts. A colon, comma or full stop
+  instead.
+- **Avoid new paid services**, and prefer a free tier. Say the cost before anything that spends.
+
 ## Start here
 
 Run **`/ws-start`** (`$ws-start` in Codex). It syncs, shows what is open in `docs/roadmap/`, and
